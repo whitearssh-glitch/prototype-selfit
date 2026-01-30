@@ -55,7 +55,8 @@ export function LectureScreen14({ onNext }: { onNext: () => void }) {
   }, [recognitionDone, onNext]);
 
   const startRecognition = () => {
-    const SR = window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition: typeof SpeechRecognition }).webkitSpeechRecognition;
+    const win = window as unknown as { SpeechRecognition?: new () => SpeechRecognition; webkitSpeechRecognition?: new () => SpeechRecognition };
+    const SR = win.SpeechRecognition || win.webkitSpeechRecognition;
     if (!SR) {
       onResult();
       return;
