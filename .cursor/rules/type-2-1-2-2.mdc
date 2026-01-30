@@ -1,0 +1,54 @@
+---
+description: SELFit 2-1·2-2 타입 화면 설정 – Speed Up 섹션 공통 레이아웃 및 타입별 차이
+alwaysApply: false
+globs: "**/LectureScreen*.tsx,**/index.css,preview.html"
+---
+
+# 2-1·2-2 타입 화면 스펙
+
+새 화면을 **2-1 타입** 또는 **2-2 타입**으로 추가할 때 아래 설정을 기준으로 적용한다.
+
+## 공통 레이아웃 (2-1·2-2)
+
+- **토픽**: `topic-box` + TOPIC_TEXT
+- **속도 표시**: 토픽 아래 오른쪽 정렬
+  - `.speed-display` 안에 `.speed-display-item` Slow / `.speed-display-sep` / `.speed-display-item` Fast
+  - Slow에만 `.speed-display-item--slow` (분홍 그라데이션 배경, 흰색 텍스트)
+- **중앙 텍스트**: 두 줄 – 영어(위) + 한글(아래)
+  - 공통 클래스: `.main-text.main-text--two-lines`
+  - 한글 전용: `.main-text--sub` (작은 크기, 연한 회색, 행간 붙음)
+- **하단**: Next 버튼 없음. 마이크 버튼만.
+- **진행**: 체크 표시 후 1.5초 뒤 자동 다음 화면 (`setTimeout(onNext, 1500)`)
+
+## 2-1 타입
+
+- **음원**: 있음. 화면 탭 시 1회 재생 (예: `/nice-to-meet-you.mp3`).
+- **중앙 텍스트**: 처음부터 영어·한글 둘 다 표시.
+  - 영어: 마이크 인식 중/완료 시 `main-text--gradient` 적용 (그라데이션 채워짐).
+  - 한글: 그라데이션 없음, 항상 `.main-text--sub` 스타일.
+- **상태**: `audioPlayed`, `recognitionDone`, `showCheckmark`, `isListening`
+- **참고**: `src/screens/LectureScreen9.tsx`, preview `renderScreen9` / `screen9State`
+
+## 2-2 타입
+
+- **음원**: 없음. 탭 재생 없음.
+- **중앙 텍스트**: 처음엔 한글만 표시(영어 숨김).
+  - 마이크 버튼 누르자마자 영어 그라데이션 텍스트 등장: `(isListening || recognitionDone)` 일 때 영어 줄 렌더 + `main-text--gradient`.
+  - 한글: 항상 표시, `.main-text--sub`.
+- **상태**: `recognitionDone`, `showCheckmark`, `isListening` (audioPlayed 없음)
+- **참고**: `src/screens/LectureScreen10.tsx`, preview `renderScreen10` / `screen10State`
+
+## CSS (src/index.css)
+
+- **.speed-display**: flex, justify-content flex-end, width 100%, padding, margin-bottom
+- **.speed-display-item**: font-size 0.7rem, color #880e4f, padding, border-radius, background rgba(255,255,255,0.7)
+- **.speed-display-item--slow**: background 분홍 그라데이션, color #fff
+- **.speed-display-sep**: font-size 0.65rem, color #ad1457, opacity 0.8
+- **.main-text--two-lines**: margin 0, padding 0 1rem, line-height 1.2
+- **.main-text.main-text--sub**: font-size 1.1rem, color #666, margin-top -0.2em
+
+## 공통 로직
+
+- `playDingDong()`: 인식 완료 시 재생
+- 체크 표시: 1.2초 후 숨김, 1.5초 후 `onNext()`
+- SpeechRecognition: lang 'en-US', continuous false, interimResults false

@@ -1,0 +1,51 @@
+---
+description: SELFit 2-3 타입 화면 설정 – Speed Up 섹션, I am + 빈칸/이름 + 순차 그라데이션
+alwaysApply: false
+globs: "**/LectureScreen*.tsx,**/index.css,preview.html"
+---
+
+# 2-3 타입 화면 스펙
+
+**2-3 타입**은 1줄에 "I am " + 흰색 빈칸 박스(또는 인식 후 이름) + 마침표, 2줄에 한글 문장을 쓰고, 마이크 인식 후 **전체 문장이 왼쪽→오른쪽 순차 그라데이션**으로 채워진다.
+
+## 공통 레이아웃 (2-1·2-2와 동일)
+
+- **토픽**: `topic-box` + TOPIC_TEXT
+- **속도 표시**: `.speed-display` (Slow / Fast), Slow에 `.speed-display-item--slow`
+- **하단**: Next 버튼 없음. 마이크 버튼만.
+- **진행**: 체크 표시 후 1.5초 뒤 자동 다음 화면 (`setTimeout(onNext, 1500)`)
+
+## 2-3 전용 – 1줄 중앙 텍스트
+
+- **초기**: `"I am "` + 흰색 빈칸 박스 + `"."`
+  - 빈칸 박스: `.main-text-blank-box` (둥근 모서리, 흰색 테두리/배경)
+- **마이크 인식 후** (`showFill = isListening || recognitionDone`):
+  - **한 span**에 전체 문장: `"I am Peter."` (또는 해당 이름)
+  - 클래스: **`.main-text--gradient-sequential`**
+  - 효과: **왼쪽에서 오른쪽으로** 순차적으로 그라데이션이 채워짐
+  - 색: 왼쪽 ~40% 분홍 그라데이션(`#880e4f → #ad1457 → #d81b60`), 40%~100% 청보라 그라데이션(`#26c6da → #5c6bc0 → #7e57c2`)
+- **2줄**: 한글만 (예: "나는 피터야."), `.main-text--sub` (작은 크기, 연한 회색)
+
+## 음원·상태
+
+- **음원**: 있음. 화면 탭 시 1회 재생 (예: `/i-am-peter.mp3`).
+- **상태**: `audioPlayed`, `recognitionDone`, `showCheckmark`, `isListening`, `checkmarkShownRef`
+
+## CSS (src/index.css)
+
+- **.main-text-blank-box**: inline-block, min-width 4rem, height 1.4em, 흰색 테두리/배경, border-radius 0.5rem
+- **.main-text--gradient-sequential**:  
+  - `background`: linear-gradient(90deg, 분홍 0%~40%, 청보라 40%~100%)  
+  - `background-size: 0% 100%` → 애니메이션으로 `100% 100%` (1.4s ease-out)  
+  - `background-clip: text`, `color: transparent`  
+  - 기존 `@keyframes main-text-gradient-fill` 재사용
+
+## 참고 파일
+
+- `src/screens/LectureScreen13.tsx` (2-3 구현)
+- preview.html: `renderScreen13`, `screen13State`, CENTER_TEXT_S13_LINE1_PREFIX, CENTER_TEXT_S13_FILL, CENTER_TEXT_S13_LINE2
+
+## 요약
+
+- 빈칸 뒤·이름 뒤 **마침표** 반드시 포함.
+- 마이크 클릭 후 문장은 **한 span**으로 묶고 `.main-text--gradient-sequential`만 적용해, "I am Peter." 전체가 왼쪽부터 순차적으로 분홍→청보라 그라데이션으로 채워지게 한다.
