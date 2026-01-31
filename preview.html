@@ -23,6 +23,7 @@
       justify-content: center;
       align-items: center;
       min-height: 100%;
+      overflow-x: auto;
     }
     .app {
       display: flex;
@@ -36,9 +37,7 @@
       padding: 0.75rem;
       background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 40%, #ffe4ec 100%);
       box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
-    }
-    @media (max-width: 430px) {
-      .app { width: 100%; min-width: 0; }
+      flex-shrink: 0;
     }
     @media (min-height: 800px) {
       .app { min-height: 667px; border-radius: 1.25rem; }
