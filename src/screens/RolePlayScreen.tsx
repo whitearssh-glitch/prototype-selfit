@@ -267,7 +267,22 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
   const processedRef = useRef(false);
   const lastTranscriptRef = useRef('');
   const whisperRecorderRef = useRef<ReturnType<typeof createWhisperRecorder> | null>(null);
+  const turn3AdvancedRef = useRef(false); // 턴3 TTS/클릭 중복 진행 방지
   const [useWhisper, setUseWhisper] = useState(false);
+
+  /** 턴1 말풍선 탭: TTS가 안 나와도 클릭하면 학생 차례로 진행 */
+  const handleTurn1Tap = useCallback(() => {
+    setTurn1Done(true);
+    setTurn(2);
+  }, []);
+
+  /** 턴3 말풍선/영역 탭: TTS가 안 나와도 클릭하면 완료 팝업 → 다음 화면 */
+  const advanceFromTurn3 = useCallback(() => {
+    if (turn3AdvancedRef.current) return;
+    turn3AdvancedRef.current = true;
+    setShowCompletePopup(true);
+    playDingDong();
+  }, []);
 
   useEffect(() => {
     isWhisperAvailable().then(setUseWhisper);
@@ -363,22 +378,16 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
     };
   }, [turn, showTurn1Bubble, scriptIndex, script.turn1Text, script.ttsVoice]);
 
-  /* Turn 3: 캐릭터 마무리 TTS 1회만 재생 → 체크 마크 + 딩동 → 다음 화면 */
+  /* Turn 3: 캐릭터 마무리 TTS 1회만 재생 → 완료 팝업 + 딩동. 클릭/8초 폴백으로도 같은 advanceFromTurn3 호출 */
   useEffect(() => {
     if (turn !== 3 || !resolvedTurn3Text) return;
     if (turn3TTSPlayedByScript[scriptIndex]) return;
     turn3TTSPlayedByScript[scriptIndex] = true;
-    let done = false;
-    const goNext = () => {
-      if (done) return;
-      done = true;
-      setShowCompletePopup(true);
-      playDingDong();
-    };
-    speakTTS(resolvedTurn3Text, goNext, { voice: script.ttsVoice });
-    const fallback = setTimeout(goNext, 8000); // TTS 실패 시 8초 후 자동 진행
+    turn3AdvancedRef.current = false;
+    speakTTS(resolvedTurn3Text, advanceFromTurn3, { voice: script.ttsVoice });
+    const fallback = setTimeout(advanceFromTurn3, 8000); // TTS 실패 시 8초 후 자동 진행
     return () => clearTimeout(fallback);
-  }, [turn, resolvedTurn3Text, scriptIndex, script.ttsVoice]);
+  }, [turn, resolvedTurn3Text, scriptIndex, script.ttsVoice, advanceFromTurn3]);
 
   /* 별 팝업 1.2초 후: 인덱스 28이면 GOOD 도장으로, 아니면 다음 화면으로 */
   useEffect(() => {
@@ -514,9 +523,16 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
         </div>
 
         <div className="roleplay-chat">
-          {/* Turn 1: 상황 블록 1초 뒤 말풍선 표시 → TTS → 1초 후 학생 영역 */}
+          {/* Turn 1: 상황 블록 1초 뒤 말풍선 표시 → TTS → 1초 후 학생 영역. TTS 안 나오면 탭해서 다음으로 */}
           {showTurn1Bubble && (
-            <div className="roleplay-bubble-row roleplay-bubble-row--character">
+            <div
+              className="roleplay-bubble-row roleplay-bubble-row--character"
+              role="button"
+              tabIndex={0}
+              onClick={handleTurn1Tap}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTurn1Tap(); } }}
+              aria-label="다음으로 (탭)"
+            >
               <img src="/ch.png" alt="" className="roleplay-avatar" aria-hidden />
               <div className="roleplay-bubble-wrap">
                 <span className="roleplay-name">{script.characterName}</span>
@@ -524,7 +540,7 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
                   {showTurn1Ko && script.turn1TextKo ? script.turn1TextKo : script.turn1Text}
                 </div>
                 {script.turn1TextKo && (
-                  <button type="button" className="roleplay-k-btn" onClick={() => setShowTurn1Ko((k) => !k)} aria-label="한글 해석 보기">
+                  <button type="button" className="roleplay-k-btn" onClick={(e) => { e.stopPropagation(); setShowTurn1Ko((k) => !k); }} aria-label="한글 해석 보기">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="10" ry="3"/><ellipse cx="12" cy="12" rx="3" ry="10"/></svg>
                 </button>
                 )}
@@ -589,9 +605,16 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
             </div>
           )}
 
-          {/* Turn 3: Character closing (발화 키워드에 따라 turn3ByKeyword 대사 표시) */}
+          {/* Turn 3: Character closing. TTS 안 나오면 탭해서 다음으로 */}
           {turn === 3 && (
-            <div className="roleplay-bubble-row roleplay-bubble-row--character">
+            <div
+              className="roleplay-bubble-row roleplay-bubble-row--character"
+              role="button"
+              tabIndex={0}
+              onClick={advanceFromTurn3}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); advanceFromTurn3(); } }}
+              aria-label="다음으로 (탭)"
+            >
               <img src="/ch.png" alt="" className="roleplay-avatar" aria-hidden />
               <div className="roleplay-bubble-wrap">
                 <span className="roleplay-name">{script.characterName}</span>
@@ -601,7 +624,7 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
                     : (resolvedTurn3Text || getTurn3Text(script, studentTranscript))}
                 </div>
                 {(script.turn3TextKo || resolvedTurn3TextKo) && (
-                  <button type="button" className="roleplay-k-btn" onClick={() => setShowTurn3Ko((k) => !k)} aria-label="한글 해석 보기">
+                  <button type="button" className="roleplay-k-btn" onClick={(e) => { e.stopPropagation(); setShowTurn3Ko((k) => !k); }} aria-label="한글 해석 보기">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="10" ry="3"/><ellipse cx="12" cy="12" rx="3" ry="10"/></svg>
                 </button>
                 )}
