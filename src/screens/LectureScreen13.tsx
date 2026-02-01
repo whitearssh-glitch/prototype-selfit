@@ -35,7 +35,13 @@ function playDingDong() {
   }
 }
 
-export function LectureScreen13({ onNext }: { onNext: () => void }) {
+export interface LectureScreen13Props {
+  onNext: () => void;
+  speedDisplayVariant?: 'slow' | 'fast';
+  playbackRate?: number;
+}
+
+export function LectureScreen13({ onNext, speedDisplayVariant = 'slow', playbackRate = 0.6 }: LectureScreen13Props) {
   const [audioPlayed, setAudioPlayed] = useState(false);
   const [recognitionDone, setRecognitionDone] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);
@@ -85,7 +91,7 @@ export function LectureScreen13({ onNext }: { onNext: () => void }) {
     if (audioPlayed) return;
     setAudioPlayed(true);
     const audio = new Audio(AUDIO_FILE);
-    audio.playbackRate = 0.6;
+    audio.playbackRate = playbackRate;
     audio.onerror = () => {};
     const p = audio.play();
     if (p && typeof p.catch === 'function') p.catch(() => {});
@@ -97,10 +103,10 @@ export function LectureScreen13({ onNext }: { onNext: () => void }) {
     <div className="screen-content" onClick={handleTapToPlayAudio} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleTapToPlayAudio(); }} aria-label="Tap to listen">
       <div className="screen-center">
         <div className="topic-box">{TOPIC_TEXT}</div>
-        <div className="speed-display">
+        <div className={'speed-display' + (speedDisplayVariant === 'fast' ? ' speed-display--fast-active' : '')}>
           <span className="speed-display-item speed-display-item--slow">Slow</span>
           <span className="speed-display-sep" aria-hidden>/</span>
-          <span className="speed-display-item">Fast</span>
+          <span className={'speed-display-item' + (speedDisplayVariant === 'fast' ? ' speed-display-item--fast' : '')}>Fast</span>
         </div>
         <div className="screen-main screen-main--vertical-center">
           <p className="main-text main-text--two-lines">
@@ -109,7 +115,9 @@ export function LectureScreen13({ onNext }: { onNext: () => void }) {
             ) : (
               <>
                 {CENTER_TEXT_LINE1_PREFIX}
-                <span className="main-text-blank-box" aria-hidden />
+                <span className="main-text-blank-box">
+                  <span className="main-text-blank-box__hint">{CENTER_TEXT_FILL}</span>
+                </span>
                 .
               </>
             )}

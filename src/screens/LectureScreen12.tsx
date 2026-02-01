@@ -32,7 +32,7 @@ function playDingDong() {
   }
 }
 
-export function LectureScreen12({ onNext }: { onNext: () => void }) {
+export function LectureScreen12({ onNext, hideSpeedDisplay }: { onNext: () => void; hideSpeedDisplay?: boolean }) {
   const [recognitionDone, setRecognitionDone] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -81,11 +81,13 @@ export function LectureScreen12({ onNext }: { onNext: () => void }) {
     <div className="screen-content">
       <div className="screen-center">
         <div className="topic-box">{TOPIC_TEXT}</div>
-        <div className="speed-display">
-          <span className="speed-display-item speed-display-item--slow">Slow</span>
-          <span className="speed-display-sep" aria-hidden>/</span>
-          <span className="speed-display-item">Fast</span>
-        </div>
+        {!hideSpeedDisplay && (
+          <div className="speed-display">
+            <span className="speed-display-item speed-display-item--slow">Slow</span>
+            <span className="speed-display-sep" aria-hidden>/</span>
+            <span className="speed-display-item">Fast</span>
+          </div>
+        )}
         <div className="screen-main screen-main--vertical-center">
           {(isListening || recognitionDone) && (
             <p className="main-text main-text--two-lines main-text--gradient">{CENTER_TEXT_LINE1}</p>

@@ -121,6 +121,15 @@ body {
   background: linear-gradient(135deg, #880e4f 0%, #ad1457 50%, #d81b60 100%);
   color: #fff;
 }
+/* 인덱스 20~24: Slow 흰배경+컬러텍스트, Fast 컬러배경+흰글씨 */
+.speed-display--fast-active .speed-display-item--slow {
+  background: #fff;
+  color: #880e4f;
+}
+.speed-display--fast-active .speed-display-item--fast {
+  background: linear-gradient(135deg, #880e4f 0%, #ad1457 50%, #d81b60 100%);
+  color: #fff;
+}
 .speed-display-sep {
   font-size: 0.65rem;
   color: #ad1457;
@@ -142,15 +151,25 @@ body {
 
 /* 2-3 타입: 흰색 빈칸 박스 (모서리 둥근 박스) */
 .main-text-blank-box {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 4rem;
   height: 1.4em;
   margin-left: 0.2em;
+  padding: 0 0.4em;
   vertical-align: middle;
   border: 2px solid rgba(255, 255, 255, 0.9);
   border-radius: 0.5rem;
   background: rgba(255, 255, 255, 0.95);
   box-sizing: border-box;
+}
+
+/* 2-3 타입: 빈칸 박스 안 힌트 텍스트 (연한 회색) */
+.main-text-blank-box__hint {
+  color: #aaa;
+  font-size: inherit;
+  font-weight: inherit;
 }
 
 /* 2-3 타입: Peter 등 – 청보라색 그라데이션 텍스트 */
@@ -551,4 +570,20 @@ body {
   width: 48px;
   height: 48px;
   color: #2e7d32;
+}
+
+/* Speed Up! 팝업 (인덱스 14 전용) */
+.speed-up-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 1rem 1.5rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #880e4f 0%, #ad1457 50%, #d81b60 100%);
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: pop 0.3s ease;
 }

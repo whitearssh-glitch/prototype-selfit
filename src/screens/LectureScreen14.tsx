@@ -1,15 +1,15 @@
 /**
  * Screen 14 – Type 2-4 (Speed Up section)
- * Same base as 2-3. Center text: "나는 피터예요" only (English hidden).
- * No audio. After mic click: "I am Peter." with same sequential gradient as 2-3.
+ * Same base as 2-3. Center text: "나는 행복해요." only (English hidden).
+ * No audio. After mic click: "I am happy." with same sequential gradient as 2-3.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { TOPIC_TEXT } from '../App';
 
 const CENTER_TEXT_LINE1_PREFIX = 'I am ';
-const CENTER_TEXT_FILL = 'Peter';
-const CENTER_TEXT_LINE2 = '나는 피터예요.';
+const CENTER_TEXT_FILL = 'happy';
+const CENTER_TEXT_LINE2 = '나는 행복해요.';
 
 function playDingDong() {
   try {
@@ -33,7 +33,7 @@ function playDingDong() {
   }
 }
 
-export function LectureScreen14({ onNext }: { onNext: () => void }) {
+export function LectureScreen14({ onNext, hideSpeedDisplay }: { onNext: () => void; hideSpeedDisplay?: boolean }) {
   const [recognitionDone, setRecognitionDone] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -84,11 +84,13 @@ export function LectureScreen14({ onNext }: { onNext: () => void }) {
     <div className="screen-content">
       <div className="screen-center">
         <div className="topic-box">{TOPIC_TEXT}</div>
-        <div className="speed-display">
-          <span className="speed-display-item speed-display-item--slow">Slow</span>
-          <span className="speed-display-sep" aria-hidden>/</span>
-          <span className="speed-display-item">Fast</span>
-        </div>
+        {!hideSpeedDisplay && (
+          <div className="speed-display">
+            <span className="speed-display-item speed-display-item--slow">Slow</span>
+            <span className="speed-display-sep" aria-hidden>/</span>
+            <span className="speed-display-item">Fast</span>
+          </div>
+        )}
         <div className="screen-main screen-main--vertical-center">
           {showFill && (
             <p className="main-text main-text--two-lines">

@@ -1,16 +1,15 @@
 /**
- * Screen 9 – Type 2-1 (Speed Up section)
- * Type B layout + speed 2-step display (slow / fast) below topic on the right.
- * Center text: Nice to meet you! / 만나서 반가워요!
- * Audio: nice-to-meet-you.mp3 (tap to play)
+ * Screen 17 – Type 2-4 (Speed Up section)
+ * Center text: "나는 학생이에요." only (English hidden).
+ * No audio. After mic click: "I am a student." with same sequential gradient as 2-3.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { TOPIC_TEXT } from '../App';
 
-const CENTER_TEXT_LINE1 = 'Nice to meet you!';
-const CENTER_TEXT_LINE2 = '만나서 반가워요!';
-const AUDIO_FILE = '/nice-to-meet-you.mp3';
+const CENTER_TEXT_LINE1_PREFIX = 'I am ';
+const CENTER_TEXT_FILL = 'a student';
+const CENTER_TEXT_LINE2 = '나는 학생이에요.';
 
 function playDingDong() {
   try {
@@ -34,16 +33,7 @@ function playDingDong() {
   }
 }
 
-export interface LectureScreen9Props {
-  onNext: () => void;
-  /** 'fast' = Slow 흰배경+컬러, Fast 컬러+흰글씨 (인덱스 20용) */
-  speedDisplayVariant?: 'slow' | 'fast';
-  /** 음원 재생 속도 (기본 0.6, 인덱스 20은 1) */
-  playbackRate?: number;
-}
-
-export function LectureScreen9({ onNext, speedDisplayVariant = 'slow', playbackRate = 0.6 }: LectureScreen9Props) {
-  const [audioPlayed, setAudioPlayed] = useState(false);
+export function LectureScreen17({ onNext, hideSpeedDisplay }: { onNext: () => void; hideSpeedDisplay?: boolean }) {
   const [recognitionDone, setRecognitionDone] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -88,34 +78,32 @@ export function LectureScreen9({ onNext, speedDisplayVariant = 'slow', playbackR
     rec.start();
   };
 
-  const handleTapToPlayAudio = () => {
-    if (audioPlayed) return;
-    setAudioPlayed(true);
-    const audio = new Audio(AUDIO_FILE);
-    audio.playbackRate = playbackRate;
-    audio.onerror = () => {};
-    const p = audio.play();
-    if (p && typeof p.catch === 'function') p.catch(() => {});
-  };
+  const showFill = isListening || recognitionDone;
 
   return (
-    <div className="screen-content" onClick={handleTapToPlayAudio} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleTapToPlayAudio(); }} aria-label="Tap to listen">
+    <div className="screen-content">
       <div className="screen-center">
         <div className="topic-box">{TOPIC_TEXT}</div>
-        <div className={'speed-display' + (speedDisplayVariant === 'fast' ? ' speed-display--fast-active' : '')}>
-          <span className="speed-display-item speed-display-item--slow">Slow</span>
-          <span className="speed-display-sep" aria-hidden>/</span>
-          <span className={'speed-display-item' + (speedDisplayVariant === 'fast' ? ' speed-display-item--fast' : '')}>Fast</span>
-        </div>
+        {!hideSpeedDisplay && (
+          <div className="speed-display">
+            <span className="speed-display-item speed-display-item--slow">Slow</span>
+            <span className="speed-display-sep" aria-hidden>/</span>
+            <span className="speed-display-item">Fast</span>
+          </div>
+        )}
         <div className="screen-main screen-main--vertical-center">
-          <p className={`main-text main-text--two-lines ${isListening || recognitionDone ? 'main-text--gradient' : ''}`}>{CENTER_TEXT_LINE1}</p>
+          {showFill && (
+            <p className="main-text main-text--two-lines">
+              <span className="main-text--gradient-sequential">{CENTER_TEXT_LINE1_PREFIX}{CENTER_TEXT_FILL}.</span>
+            </p>
+          )}
           <p className="main-text main-text--two-lines main-text--sub">{CENTER_TEXT_LINE2}</p>
         </div>
         <div className="screen-bottom">
           <button
             type="button"
             className="mic-btn"
-            onClick={(e) => { e.stopPropagation(); startRecognition(); }}
+            onClick={startRecognition}
             disabled={isListening || recognitionDone}
             aria-label="Microphone"
           >

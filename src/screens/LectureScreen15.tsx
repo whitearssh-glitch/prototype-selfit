@@ -1,16 +1,16 @@
 /**
- * Screen 9 – Type 2-1 (Speed Up section)
- * Type B layout + speed 2-step display (slow / fast) below topic on the right.
- * Center text: Nice to meet you! / 만나서 반가워요!
- * Audio: nice-to-meet-you.mp3 (tap to play)
+ * Screen 15 – Type 2-3 (Speed Up section)
+ * Line 1: "I am" + white blank box → on recognition "happy" with sequential gradient. Line 2: 나는 행복해요.
+ * Audio: i-am-happy.mp3 (tap to play). After mic: I am happy.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { TOPIC_TEXT } from '../App';
 
-const CENTER_TEXT_LINE1 = 'Nice to meet you!';
-const CENTER_TEXT_LINE2 = '만나서 반가워요!';
-const AUDIO_FILE = '/nice-to-meet-you.mp3';
+const CENTER_TEXT_LINE1_PREFIX = 'I am ';
+const CENTER_TEXT_FILL = 'happy';
+const CENTER_TEXT_LINE2 = '나는 행복해요.';
+const AUDIO_FILE = '/i-am-happy.mp3';
 
 function playDingDong() {
   try {
@@ -34,15 +34,13 @@ function playDingDong() {
   }
 }
 
-export interface LectureScreen9Props {
+export interface LectureScreen15Props {
   onNext: () => void;
-  /** 'fast' = Slow 흰배경+컬러, Fast 컬러+흰글씨 (인덱스 20용) */
   speedDisplayVariant?: 'slow' | 'fast';
-  /** 음원 재생 속도 (기본 0.6, 인덱스 20은 1) */
   playbackRate?: number;
 }
 
-export function LectureScreen9({ onNext, speedDisplayVariant = 'slow', playbackRate = 0.6 }: LectureScreen9Props) {
+export function LectureScreen15({ onNext, speedDisplayVariant = 'slow', playbackRate = 0.6 }: LectureScreen15Props) {
   const [audioPlayed, setAudioPlayed] = useState(false);
   const [recognitionDone, setRecognitionDone] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);
@@ -98,6 +96,8 @@ export function LectureScreen9({ onNext, speedDisplayVariant = 'slow', playbackR
     if (p && typeof p.catch === 'function') p.catch(() => {});
   };
 
+  const showFill = isListening || recognitionDone;
+
   return (
     <div className="screen-content" onClick={handleTapToPlayAudio} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleTapToPlayAudio(); }} aria-label="Tap to listen">
       <div className="screen-center">
@@ -108,7 +108,19 @@ export function LectureScreen9({ onNext, speedDisplayVariant = 'slow', playbackR
           <span className={'speed-display-item' + (speedDisplayVariant === 'fast' ? ' speed-display-item--fast' : '')}>Fast</span>
         </div>
         <div className="screen-main screen-main--vertical-center">
-          <p className={`main-text main-text--two-lines ${isListening || recognitionDone ? 'main-text--gradient' : ''}`}>{CENTER_TEXT_LINE1}</p>
+          <p className="main-text main-text--two-lines">
+            {showFill ? (
+              <span className="main-text--gradient-sequential">{CENTER_TEXT_LINE1_PREFIX}{CENTER_TEXT_FILL}.</span>
+            ) : (
+              <>
+                {CENTER_TEXT_LINE1_PREFIX}
+                <span className="main-text-blank-box">
+                  <span className="main-text-blank-box__hint">{CENTER_TEXT_FILL}</span>
+                </span>
+                .
+              </>
+            )}
+          </p>
           <p className="main-text main-text--two-lines main-text--sub">{CENTER_TEXT_LINE2}</p>
         </div>
         <div className="screen-bottom">

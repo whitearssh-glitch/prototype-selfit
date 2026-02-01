@@ -14,6 +14,10 @@ import { LectureScreen11 } from './screens/LectureScreen11';
 import { LectureScreen12 } from './screens/LectureScreen12';
 import { LectureScreen13 } from './screens/LectureScreen13';
 import { LectureScreen14 } from './screens/LectureScreen14';
+import { LectureScreen15 } from './screens/LectureScreen15';
+import { LectureScreen16 } from './screens/LectureScreen16';
+import { LectureScreen17 } from './screens/LectureScreen17';
+import { LectureScreen18 } from './screens/LectureScreen18';
 
 const HEADER_TITLE = 'Basic 01 Day 01';
 export const TOPIC_TEXT = 'TOPIC: Self-introduction';
@@ -26,11 +30,11 @@ function getInitialScreenIndex(): number {
 export default function App() {
   const [screenIndex, setScreenIndex] = useState(getInitialScreenIndex);
 
-  const goNext = () => setScreenIndex((i) => (i < 16 ? i + 1 : i));
+  const goNext = () => setScreenIndex((i) => (i < 25 ? i + 1 : i));
 
   return (
     <div className="app">
-      {screenIndex > 0 && screenIndex !== 1 && screenIndex !== 9 && screenIndex !== 16 && <header className="app-header">{HEADER_TITLE}</header>}
+      {screenIndex > 0 && screenIndex !== 1 && screenIndex !== 9 && screenIndex !== 25 && <header className="app-header">{HEADER_TITLE}</header>}
 
       <div className="app-content">
         {screenIndex === 0 && (
@@ -49,12 +53,21 @@ export default function App() {
         {screenIndex === 8 && <LectureScreen7 onNext={goNext} />}
         {screenIndex === 9 && <CornerIntroScreen step="STEP 2" title="Speed Up" onNext={goNext} />}
         {screenIndex === 10 && <LectureScreen9 onNext={goNext} />}
-        {screenIndex === 11 && <LectureScreen10 onNext={goNext} />}
-        {screenIndex === 12 && <LectureScreen11 onNext={goNext} />}
-        {screenIndex === 13 && <LectureScreen12 onNext={goNext} />}
-        {screenIndex === 14 && <LectureScreen13 onNext={goNext} />}
-        {screenIndex === 15 && <LectureScreen14 onNext={goNext} />}
-        {screenIndex === 16 && <div className="screen-content" />}
+        {screenIndex === 11 && <LectureScreen11 onNext={goNext} />}
+        {screenIndex === 12 && <LectureScreen13 onNext={goNext} />}
+        {screenIndex === 13 && <LectureScreen15 onNext={goNext} />}
+        {screenIndex === 14 && <LectureScreen16 onNext={goNext} />}
+        {screenIndex === 15 && <LectureScreen9 onNext={goNext} speedDisplayVariant="fast" playbackRate={1} />}
+        {screenIndex === 16 && <LectureScreen11 onNext={goNext} speedDisplayVariant="fast" playbackRate={1} />}
+        {screenIndex === 17 && <LectureScreen13 onNext={goNext} speedDisplayVariant="fast" playbackRate={1} />}
+        {screenIndex === 18 && <LectureScreen15 onNext={goNext} speedDisplayVariant="fast" playbackRate={1} />}
+        {screenIndex === 19 && <LectureScreen16 onNext={goNext} speedDisplayVariant="fast" playbackRate={1} afterCheckPopupText="Your turn!" />}
+        {screenIndex === 20 && <LectureScreen10 onNext={goNext} hideSpeedDisplay />}
+        {screenIndex === 21 && <LectureScreen12 onNext={goNext} hideSpeedDisplay />}
+        {screenIndex === 22 && <LectureScreen18 onNext={goNext} hideSpeedDisplay />}
+        {screenIndex === 23 && <LectureScreen14 onNext={goNext} hideSpeedDisplay />}
+        {screenIndex === 24 && <LectureScreen17 onNext={goNext} hideSpeedDisplay />}
+        {screenIndex === 25 && <div className="screen-content" />}
       </div>
     </div>
   );

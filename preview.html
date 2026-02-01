@@ -69,6 +69,16 @@
       border-radius: 2px;
     }
     .app-content { position: relative; }
+    .app-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .app-overlay > * { pointer-events: auto; }
     .corner-select-screen {
       position: absolute;
       inset: 0;
@@ -237,15 +247,23 @@
     .main-text--two-lines { margin: 0; padding: 0 1rem; line-height: 1.2; }
     .main-text.main-text--sub { font-size: 1.1rem; color: #666; margin-top: -0.2em; }
     .main-text-blank-box {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       min-width: 4rem;
       height: 1.4em;
       margin-left: 0.2em;
+      padding: 0 0.4em;
       vertical-align: middle;
       border: 2px solid rgba(255, 255, 255, 0.9);
       border-radius: 0.5rem;
       background: rgba(255, 255, 255, 0.95);
       box-sizing: border-box;
+    }
+    .main-text-blank-box__hint {
+      color: #aaa;
+      font-size: inherit;
+      font-weight: inherit;
     }
     .main-text-fill--cyan {
       background: linear-gradient(135deg, #26c6da 0%, #5c6bc0 50%, #7e57c2 100%);
@@ -285,6 +303,14 @@
       background: rgba(255, 255, 255, 0.7);
     }
     .speed-display-item--slow {
+      background: linear-gradient(135deg, #880e4f 0%, #ad1457 50%, #d81b60 100%);
+      color: #fff;
+    }
+    .speed-display--fast-active .speed-display-item--slow {
+      background: #fff;
+      color: #880e4f;
+    }
+    .speed-display--fast-active .speed-display-item--fast {
       background: linear-gradient(135deg, #880e4f 0%, #ad1457 50%, #d81b60 100%);
       color: #fff;
     }
@@ -360,6 +386,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+      z-index: 1000;
       width: 80px;
       height: 80px;
       border-radius: 50%;
@@ -376,6 +403,22 @@
       100% { transform: translate(-50%, -50%) scale(1); }
     }
     .checkmark-popup svg { width: 48px; height: 48px; color: #2e7d32; }
+    .speed-up-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      padding: 1rem 1.5rem;
+      border-radius: 1rem;
+      background: linear-gradient(135deg, #880e4f 0%, #ad1457 50%, #d81b60 100%);
+      color: #fff;
+      font-size: 1.25rem;
+      font-weight: 700;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      animation: pop 0.3s ease;
+      pointer-events: auto;
+    }
 
     /* Screen 7 only: Good! stamp popup when Next is clicked */
     .screen7-stamp-popup {
@@ -415,6 +458,7 @@
     <header class="app-header" id="app-header">Basic 01 Day 01</header>
     <div class="app-content" id="app-content"></div>
   </div>
+  <div id="app-overlay" class="app-overlay"></div>
 
   <script>
     var CORNER_TITLE = 'Patterns';
@@ -429,14 +473,28 @@
     const CENTER_TEXT_S10_LINE1 = 'Nice to meet you!';
     const CENTER_TEXT_S10_LINE2 = '만나서 반가워요!';
     const CENTER_TEXT_S11_LINE1 = 'I am';
-    const CENTER_TEXT_S11_LINE2 = '나는 ~예요';
+    const CENTER_TEXT_S11_LINE2 = '나는 ~예요, 해요';
     var SCREEN11_AUDIO = './i-am.mp3';
     const CENTER_TEXT_S12_LINE1 = 'I am';
-    const CENTER_TEXT_S12_LINE2 = '나는 ~예요';
+    const CENTER_TEXT_S12_LINE2 = '나는 ~예요, 해요';
     const CENTER_TEXT_S13_LINE1_PREFIX = 'I am ';
-    const CENTER_TEXT_S13_FILL = 'Peter';
-    const CENTER_TEXT_S13_LINE2 = '나는 피터예요.';
-    var SCREEN13_AUDIO = './i-am-peter.mp3';
+    const CENTER_TEXT_S13_FILL = 'happy';
+    const CENTER_TEXT_S13_LINE2 = '나는 행복해요.';
+    var SCREEN13_AUDIO = './i-am-happy.mp3';
+    const CENTER_TEXT_S15_LINE1_PREFIX = 'I am ';
+    const CENTER_TEXT_S15_FILL = 'happy';
+    const CENTER_TEXT_S15_LINE2 = '나는 행복해요.';
+    var SCREEN15_AUDIO = './i-am-happy.mp3';
+    const CENTER_TEXT_S16_LINE1_PREFIX = 'I am ';
+    const CENTER_TEXT_S16_FILL = 'a student';
+    const CENTER_TEXT_S16_LINE2 = '나는 학생이에요.';
+    var SCREEN16_AUDIO = './i-am-a-student.mp3';
+    const CENTER_TEXT_S17_LINE1_PREFIX = 'I am ';
+    const CENTER_TEXT_S17_FILL = 'a student';
+    const CENTER_TEXT_S17_LINE2 = '나는 학생이에요.';
+    const CENTER_TEXT_S18_LINE1_PREFIX = 'I am ';
+    const CENTER_TEXT_S18_FILL = 'Peter';
+    const CENTER_TEXT_S18_LINE2 = '나는 피터예요.';
     var TEXT_BOX_LINE1 = 'Hello, everyone!';
     var TEXT_BOX_LINE2 = 'Welcome to SELFit!';
 
@@ -481,6 +539,22 @@
         }
         playTone(523, 0, 0.15);
         playTone(659, 0.2, 0.2);
+      } catch (e) {}
+    }
+
+    function playNotificationSound() {
+      try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.25, 0);
+        gain.gain.exponentialRampToValueAtTime(0.01, 0.1);
+        osc.start(0);
+        osc.stop(0.1);
       } catch (e) {}
     }
 
@@ -894,9 +968,72 @@
       isListening: false,
       checkmarkShown: false
     };
+    var screen15State = {
+      audioPlayed: false,
+      recognitionDone: false,
+      showCheckmark: false,
+      isListening: false,
+      checkmarkShown: false
+    };
+    var screen16State = {
+      audioPlayed: false,
+      recognitionDone: false,
+      showCheckmark: false,
+      showSpeedUpPopup: false,
+      isListening: false,
+      checkmarkShown: false
+    };
+    var screen17State = {
+      recognitionDone: false,
+      showCheckmark: false,
+      isListening: false,
+      checkmarkShown: false
+    };
+    var screen18State = {
+      recognitionDone: false,
+      showCheckmark: false,
+      isListening: false,
+      checkmarkShown: false
+    };
+    var screen20State = {
+      audioPlayed: false,
+      recognitionDone: false,
+      showCheckmark: false,
+      isListening: false,
+      checkmarkShown: false
+    };
+    var screen21State = {
+      audioPlayed: false,
+      recognitionDone: false,
+      showCheckmark: false,
+      isListening: false,
+      checkmarkShown: false
+    };
+    var screen22State = {
+      audioPlayed: false,
+      recognitionDone: false,
+      showCheckmark: false,
+      isListening: false,
+      checkmarkShown: false
+    };
+    var screen23State = {
+      audioPlayed: false,
+      recognitionDone: false,
+      showCheckmark: false,
+      isListening: false,
+      checkmarkShown: false
+    };
+    var screen24State = {
+      audioPlayed: false,
+      recognitionDone: false,
+      showCheckmark: false,
+      showSpeedUpPopup: false,
+      isListening: false,
+      checkmarkShown: false
+    };
 
     function goNext() {
-      if (screenIndex < 16) screenIndex++;
+      if (screenIndex < 25) screenIndex++;
       mount();
     }
 
@@ -1206,12 +1343,12 @@
       rec.onend = function () {
         screen12State.isListening = false;
         if (!screen12State.checkmarkShown) onRecognitionDone12();
-        else mount();
+        else if (screenIndex === 21) mount();
       };
       rec.onerror = function () {
         screen12State.isListening = false;
         if (!screen12State.checkmarkShown) onRecognitionDone12();
-        else mount();
+        else if (screenIndex === 21) mount();
       };
       rec.start();
     }
@@ -1309,7 +1446,386 @@
       rec.start();
     }
 
-    function renderScreen9(state) {
+    function onScreen15Tap() {
+      if (screen15State.audioPlayed) return;
+      screen15State.audioPlayed = true;
+      try {
+        var a = new Audio(SCREEN15_AUDIO);
+        a.playbackRate = 0.6;
+        a.play().catch(function () {});
+      } catch (e) {}
+      mount();
+    }
+
+    function onRecognitionDone15() {
+      if (screen15State.checkmarkShown) return;
+      screen15State.checkmarkShown = true;
+      screen15State.recognitionDone = true;
+      screen15State.showCheckmark = true;
+      screen15State.isListening = false;
+      playDingDong();
+      mount();
+      setTimeout(function () {
+        screen15State.showCheckmark = false;
+        mount();
+      }, 1200);
+      setTimeout(goNext, 1500);
+    }
+
+    function startRecognition15() {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        onRecognitionDone15();
+        return;
+      }
+      screen15State.isListening = true;
+      mount();
+      var rec = new SR();
+      rec.continuous = false;
+      rec.lang = 'en-US';
+      rec.interimResults = false;
+      rec.onresult = onRecognitionDone15;
+      rec.onend = function () {
+        screen15State.isListening = false;
+        if (!screen15State.checkmarkShown) onRecognitionDone15();
+        else mount();
+      };
+      rec.onerror = function () {
+        screen15State.isListening = false;
+        if (!screen15State.checkmarkShown) onRecognitionDone15();
+        else mount();
+      };
+      rec.start();
+    }
+
+    function onScreen16Tap() {
+      if (screen16State.audioPlayed) return;
+      screen16State.audioPlayed = true;
+      try {
+        var a = new Audio(SCREEN16_AUDIO);
+        a.playbackRate = 0.6;
+        a.play().catch(function () {});
+      } catch (e) {}
+      mount();
+    }
+
+    function onRecognitionDone16() {
+      if (screen16State.checkmarkShown) return;
+      screen16State.checkmarkShown = true;
+      screen16State.recognitionDone = true;
+      screen16State.showCheckmark = true;
+      screen16State.isListening = false;
+      playDingDong();
+      if (screenIndex !== 14) return;
+      mount();
+      setTimeout(function () {
+        if (screenIndex !== 14) return;
+        screen16State.showCheckmark = false;
+        screen16State.showSpeedUpPopup = true;
+        playNotificationSound();
+        requestAnimationFrame(function () {
+          updateScreen16OverlayOnly(screen16State, 'Speed Up!');
+        });
+        setTimeout(function () {
+          if (screenIndex === 14) goNext();
+        }, 1500);
+      }, 1200);
+    }
+
+    function startRecognition16() {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        onRecognitionDone16();
+        return;
+      }
+      screen16State.isListening = true;
+      mount();
+      var rec = new SR();
+      rec.continuous = false;
+      rec.lang = 'en-US';
+      rec.interimResults = false;
+      rec.onresult = onRecognitionDone16;
+      rec.onend = function () {
+        screen16State.isListening = false;
+        if (!screen16State.checkmarkShown) onRecognitionDone16();
+        else if (screenIndex !== 14) setTimeout(function () { mount(); }, 0);
+      };
+      rec.onerror = function () {
+        screen16State.isListening = false;
+        if (!screen16State.checkmarkShown) onRecognitionDone16();
+        else if (screenIndex !== 14) setTimeout(function () { mount(); }, 0);
+      };
+      rec.start();
+    }
+
+    function onRecognitionDone17() {
+      if (screen17State.checkmarkShown) return;
+      screen17State.checkmarkShown = true;
+      screen17State.recognitionDone = true;
+      screen17State.showCheckmark = true;
+      screen17State.isListening = false;
+      playDingDong();
+      mount();
+      setTimeout(function () {
+        screen17State.showCheckmark = false;
+        mount();
+      }, 1200);
+      setTimeout(goNext, 1500);
+    }
+
+    function startRecognition17() {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        onRecognitionDone17();
+        return;
+      }
+      screen17State.isListening = true;
+      mount();
+      var rec = new SR();
+      rec.continuous = false;
+      rec.lang = 'en-US';
+      rec.interimResults = false;
+      rec.onresult = onRecognitionDone17;
+      rec.onend = function () {
+        screen17State.isListening = false;
+        if (!screen17State.checkmarkShown) onRecognitionDone17();
+        else mount();
+      };
+      rec.onerror = function () {
+        screen17State.isListening = false;
+        if (!screen17State.checkmarkShown) onRecognitionDone17();
+        else mount();
+      };
+      rec.start();
+    }
+
+    function onRecognitionDone18() {
+      if (screen18State.checkmarkShown) return;
+      screen18State.checkmarkShown = true;
+      screen18State.recognitionDone = true;
+      screen18State.showCheckmark = true;
+      screen18State.isListening = false;
+      playDingDong();
+      mount();
+      setTimeout(function () {
+        screen18State.showCheckmark = false;
+        mount();
+      }, 1200);
+      setTimeout(goNext, 1500);
+    }
+
+    function startRecognition18() {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        onRecognitionDone18();
+        return;
+      }
+      screen18State.isListening = true;
+      mount();
+      var rec = new SR();
+      rec.continuous = false;
+      rec.lang = 'en-US';
+      rec.interimResults = false;
+      rec.onresult = onRecognitionDone18;
+      rec.onend = function () {
+        screen18State.isListening = false;
+        if (!screen18State.checkmarkShown) onRecognitionDone18();
+        else mount();
+      };
+      rec.onerror = function () {
+        screen18State.isListening = false;
+        if (!screen18State.checkmarkShown) onRecognitionDone18();
+        else mount();
+      };
+      rec.start();
+    }
+
+    function onScreen20Tap() {
+      if (screen20State.audioPlayed) return;
+      screen20State.audioPlayed = true;
+      try {
+        var a = new Audio(SCREEN9_AUDIO);
+        a.playbackRate = 1;
+        a.play().catch(function () {});
+      } catch (e) {}
+      mount();
+    }
+    function onRecognitionDone20() {
+      if (screen20State.checkmarkShown) return;
+      screen20State.checkmarkShown = true;
+      screen20State.recognitionDone = true;
+      screen20State.showCheckmark = true;
+      screen20State.isListening = false;
+      playDingDong();
+      mount();
+      setTimeout(function () { screen20State.showCheckmark = false; mount(); }, 1200);
+      setTimeout(goNext, 1500);
+    }
+    function startRecognition20() {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { onRecognitionDone20(); return; }
+      screen20State.isListening = true;
+      mount();
+      var rec = new SR();
+      rec.continuous = false;
+      rec.lang = 'en-US';
+      rec.interimResults = false;
+      rec.onresult = onRecognitionDone20;
+      rec.onend = function () { screen20State.isListening = false; if (!screen20State.checkmarkShown) onRecognitionDone20(); else mount(); };
+      rec.onerror = function () { screen20State.isListening = false; if (!screen20State.checkmarkShown) onRecognitionDone20(); else mount(); };
+      rec.start();
+    }
+
+    function onScreen21Tap() {
+      if (screen21State.audioPlayed) return;
+      screen21State.audioPlayed = true;
+      try {
+        var a = new Audio(SCREEN11_AUDIO);
+        a.playbackRate = 1;
+        a.play().catch(function () {});
+      } catch (e) {}
+      mount();
+    }
+    function onRecognitionDone21() {
+      if (screen21State.checkmarkShown) return;
+      screen21State.checkmarkShown = true;
+      screen21State.recognitionDone = true;
+      screen21State.showCheckmark = true;
+      screen21State.isListening = false;
+      playDingDong();
+      mount();
+      setTimeout(function () { screen21State.showCheckmark = false; mount(); }, 1200);
+      setTimeout(goNext, 1500);
+    }
+    function startRecognition21() {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { onRecognitionDone21(); return; }
+      screen21State.isListening = true;
+      mount();
+      var rec = new SR();
+      rec.continuous = false;
+      rec.lang = 'en-US';
+      rec.interimResults = false;
+      rec.onresult = onRecognitionDone21;
+      rec.onend = function () { screen21State.isListening = false; if (!screen21State.checkmarkShown) onRecognitionDone21(); else mount(); };
+      rec.onerror = function () { screen21State.isListening = false; if (!screen21State.checkmarkShown) onRecognitionDone21(); else mount(); };
+      rec.start();
+    }
+
+    function onScreen22Tap() {
+      if (screen22State.audioPlayed) return;
+      screen22State.audioPlayed = true;
+      try {
+        var a = new Audio(SCREEN13_AUDIO);
+        a.playbackRate = 1;
+        a.play().catch(function () {});
+      } catch (e) {}
+      mount();
+    }
+    function onRecognitionDone22() {
+      if (screen22State.checkmarkShown) return;
+      screen22State.checkmarkShown = true;
+      screen22State.recognitionDone = true;
+      screen22State.showCheckmark = true;
+      screen22State.isListening = false;
+      playDingDong();
+      mount();
+      setTimeout(function () { screen22State.showCheckmark = false; mount(); }, 1200);
+      setTimeout(goNext, 1500);
+    }
+    function startRecognition22() {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { onRecognitionDone22(); return; }
+      screen22State.isListening = true;
+      mount();
+      var rec = new SR();
+      rec.continuous = false;
+      rec.lang = 'en-US';
+      rec.interimResults = false;
+      rec.onresult = onRecognitionDone22;
+      rec.onend = function () { screen22State.isListening = false; if (!screen22State.checkmarkShown) onRecognitionDone22(); else mount(); };
+      rec.onerror = function () { screen22State.isListening = false; if (!screen22State.checkmarkShown) onRecognitionDone22(); else mount(); };
+      rec.start();
+    }
+
+    function onScreen23Tap() {
+      if (screen23State.audioPlayed) return;
+      screen23State.audioPlayed = true;
+      try {
+        var a = new Audio(SCREEN15_AUDIO);
+        a.playbackRate = 1;
+        a.play().catch(function () {});
+      } catch (e) {}
+      mount();
+    }
+    function onRecognitionDone23() {
+      if (screen23State.checkmarkShown) return;
+      screen23State.checkmarkShown = true;
+      screen23State.recognitionDone = true;
+      screen23State.showCheckmark = true;
+      screen23State.isListening = false;
+      playDingDong();
+      mount();
+      setTimeout(function () { screen23State.showCheckmark = false; mount(); }, 1200);
+      setTimeout(goNext, 1500);
+    }
+    function startRecognition23() {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { onRecognitionDone23(); return; }
+      screen23State.isListening = true;
+      mount();
+      var rec = new SR();
+      rec.continuous = false;
+      rec.lang = 'en-US';
+      rec.interimResults = false;
+      rec.onresult = onRecognitionDone23;
+      rec.onend = function () { screen23State.isListening = false; if (!screen23State.checkmarkShown) onRecognitionDone23(); else mount(); };
+      rec.onerror = function () { screen23State.isListening = false; if (!screen23State.checkmarkShown) onRecognitionDone23(); else mount(); };
+      rec.start();
+    }
+
+    function onScreen24Tap() {
+      if (screen24State.audioPlayed) return;
+      screen24State.audioPlayed = true;
+      try {
+        var a = new Audio(SCREEN16_AUDIO);
+        a.playbackRate = 1;
+        a.play().catch(function () {});
+      } catch (e) {}
+      mount();
+    }
+    function onRecognitionDone24() {
+      if (screen24State.checkmarkShown) return;
+      screen24State.checkmarkShown = true;
+      screen24State.recognitionDone = true;
+      screen24State.showCheckmark = true;
+      screen24State.isListening = false;
+      playDingDong();
+      setTimeout(function () { mount(); }, 0);
+      setTimeout(function () {
+        screen24State.showCheckmark = false;
+        screen24State.showSpeedUpPopup = true;
+        playNotificationSound();
+        updateScreen16OverlayOnly(screen24State, 'Your turn!');
+        setTimeout(goNext, 1500);
+      }, 1200);
+    }
+    function startRecognition24() {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { onRecognitionDone24(); return; }
+      screen24State.isListening = true;
+      mount();
+      var rec = new SR();
+      rec.continuous = false;
+      rec.lang = 'en-US';
+      rec.interimResults = false;
+      rec.onresult = onRecognitionDone24;
+      rec.onend = function () { screen24State.isListening = false; if (!screen24State.checkmarkShown) onRecognitionDone24(); else setTimeout(function () { mount(); }, 0); };
+      rec.onerror = function () { screen24State.isListening = false; if (!screen24State.checkmarkShown) onRecognitionDone24(); else setTimeout(function () { mount(); }, 0); };
+      rec.start();
+    }
+
+    function renderScreen9(state, fastActive) {
       var recognitionDone = state.recognitionDone;
       var showCheckmark = state.showCheckmark;
       var isListening = state.isListening;
@@ -1323,14 +1839,16 @@
           '</div>'
         : '';
       var gradLine1 = (isListening || recognitionDone) ? ' main-text--gradient' : '';
+      var speedCls = fastActive ? ' speed-display--fast-active' : '';
+      var fastCls = fastActive ? ' speed-display-item--fast' : '';
       return (
         '<div class="screen-content">' +
           '<div class="screen-center">' +
             '<div class="topic-box">' + TOPIC_TEXT + '</div>' +
-            '<div class="speed-display">' +
+            '<div class="speed-display' + speedCls + '">' +
               '<span class="speed-display-item speed-display-item--slow">Slow</span>' +
               '<span class="speed-display-sep" aria-hidden>/</span>' +
-              '<span class="speed-display-item">Fast</span>' +
+              '<span class="speed-display-item' + fastCls + '">Fast</span>' +
             '</div>' +
             '<div class="screen-main screen-main--vertical-center">' +
               '<p class="main-text main-text--two-lines' + gradLine1 + '">' + CENTER_TEXT_S9_LINE1 + '</p>' +
@@ -1343,7 +1861,7 @@
       );
     }
 
-    function renderScreen10(state) {
+    function renderScreen10(state, hideSpeedDisplay) {
       var recognitionDone = state.recognitionDone;
       var showCheckmark = state.showCheckmark;
       var isListening = state.isListening;
@@ -1359,15 +1877,15 @@
       var englishHtml = (isListening || recognitionDone)
         ? '<p class="main-text main-text--two-lines main-text--gradient">' + CENTER_TEXT_S10_LINE1 + '</p>'
         : '';
+      var speedDisplayHtml = hideSpeedDisplay ? '' : '<div class="speed-display">' +
+        '<span class="speed-display-item speed-display-item--slow">Slow</span>' +
+        '<span class="speed-display-sep" aria-hidden>/</span>' +
+        '<span class="speed-display-item">Fast</span></div>';
       return (
         '<div class="screen-content">' +
           '<div class="screen-center">' +
             '<div class="topic-box">' + TOPIC_TEXT + '</div>' +
-            '<div class="speed-display">' +
-              '<span class="speed-display-item speed-display-item--slow">Slow</span>' +
-              '<span class="speed-display-sep" aria-hidden>/</span>' +
-              '<span class="speed-display-item">Fast</span>' +
-            '</div>' +
+            speedDisplayHtml +
             '<div class="screen-main screen-main--vertical-center">' +
               englishHtml +
               '<p class="main-text main-text--two-lines main-text--sub">' + CENTER_TEXT_S10_LINE2 + '</p>' +
@@ -1379,7 +1897,8 @@
       );
     }
 
-    function renderScreen11(state) {
+    // Index 12 – Type 2-1: audio on tap, English + Korean both visible, mic → gradient on English
+    function renderScreen11(state, fastActive) {
       var recognitionDone = state.recognitionDone;
       var showCheckmark = state.showCheckmark;
       var isListening = state.isListening;
@@ -1393,14 +1912,16 @@
           '</div>'
         : '';
       var gradLine1 = (isListening || recognitionDone) ? ' main-text--gradient' : '';
+      var speedCls = fastActive ? ' speed-display--fast-active' : '';
+      var fastCls = fastActive ? ' speed-display-item--fast' : '';
       return (
         '<div class="screen-content">' +
           '<div class="screen-center">' +
             '<div class="topic-box">' + TOPIC_TEXT + '</div>' +
-            '<div class="speed-display">' +
+            '<div class="speed-display' + speedCls + '">' +
               '<span class="speed-display-item speed-display-item--slow">Slow</span>' +
               '<span class="speed-display-sep" aria-hidden>/</span>' +
-              '<span class="speed-display-item">Fast</span>' +
+              '<span class="speed-display-item' + fastCls + '">Fast</span>' +
             '</div>' +
             '<div class="screen-main screen-main--vertical-center">' +
               '<p class="main-text main-text--two-lines' + gradLine1 + '">' + CENTER_TEXT_S11_LINE1 + '</p>' +
@@ -1413,7 +1934,7 @@
       );
     }
 
-    function renderScreen12(state) {
+    function renderScreen12(state, hideSpeedDisplay) {
       var recognitionDone = state.recognitionDone;
       var showCheckmark = state.showCheckmark;
       var isListening = state.isListening;
@@ -1429,15 +1950,15 @@
       var englishHtml = (isListening || recognitionDone)
         ? '<p class="main-text main-text--two-lines main-text--gradient">' + CENTER_TEXT_S12_LINE1 + '</p>'
         : '';
+      var speedDisplayHtml = hideSpeedDisplay ? '' : '<div class="speed-display">' +
+        '<span class="speed-display-item speed-display-item--slow">Slow</span>' +
+        '<span class="speed-display-sep" aria-hidden>/</span>' +
+        '<span class="speed-display-item">Fast</span></div>';
       return (
         '<div class="screen-content">' +
           '<div class="screen-center">' +
             '<div class="topic-box">' + TOPIC_TEXT + '</div>' +
-            '<div class="speed-display">' +
-              '<span class="speed-display-item speed-display-item--slow">Slow</span>' +
-              '<span class="speed-display-sep" aria-hidden>/</span>' +
-              '<span class="speed-display-item">Fast</span>' +
-            '</div>' +
+            speedDisplayHtml +
             '<div class="screen-main screen-main--vertical-center">' +
               englishHtml +
               '<p class="main-text main-text--two-lines main-text--sub">' + CENTER_TEXT_S12_LINE2 + '</p>' +
@@ -1449,7 +1970,7 @@
       );
     }
 
-    function renderScreen13(state) {
+    function renderScreen13(state, fastActive) {
       var recognitionDone = state.recognitionDone;
       var showCheckmark = state.showCheckmark;
       var isListening = state.isListening;
@@ -1467,15 +1988,17 @@
         ? '<p class="main-text main-text--two-lines">' +
             '<span class="main-text--gradient-sequential">' + CENTER_TEXT_S13_LINE1_PREFIX + CENTER_TEXT_S13_FILL + '.</span>' +
           '</p>'
-        : '<p class="main-text main-text--two-lines">' + CENTER_TEXT_S13_LINE1_PREFIX + '<span class="main-text-blank-box" aria-hidden></span>.</p>';
+        : '<p class="main-text main-text--two-lines">' + CENTER_TEXT_S13_LINE1_PREFIX + '<span class="main-text-blank-box"><span class="main-text-blank-box__hint">' + CENTER_TEXT_S13_FILL + '</span></span>.</p>';
+      var speedCls = fastActive ? ' speed-display--fast-active' : '';
+      var fastCls = fastActive ? ' speed-display-item--fast' : '';
       return (
         '<div class="screen-content">' +
           '<div class="screen-center">' +
             '<div class="topic-box">' + TOPIC_TEXT + '</div>' +
-            '<div class="speed-display">' +
+            '<div class="speed-display' + speedCls + '">' +
               '<span class="speed-display-item speed-display-item--slow">Slow</span>' +
               '<span class="speed-display-sep" aria-hidden>/</span>' +
-              '<span class="speed-display-item">Fast</span>' +
+              '<span class="speed-display-item' + fastCls + '">Fast</span>' +
             '</div>' +
             '<div class="screen-main screen-main--vertical-center">' +
               line1Html +
@@ -1488,7 +2011,7 @@
       );
     }
 
-    function renderScreen14(state) {
+    function renderScreen14(state, hideSpeedDisplay) {
       var recognitionDone = state.recognitionDone;
       var showCheckmark = state.showCheckmark;
       var isListening = state.isListening;
@@ -1507,15 +2030,15 @@
             '<span class="main-text--gradient-sequential">' + CENTER_TEXT_S13_LINE1_PREFIX + CENTER_TEXT_S13_FILL + '.</span>' +
           '</p>'
         : '';
+      var speedDisplayHtml = hideSpeedDisplay ? '' : '<div class="speed-display">' +
+        '<span class="speed-display-item speed-display-item--slow">Slow</span>' +
+        '<span class="speed-display-sep" aria-hidden>/</span>' +
+        '<span class="speed-display-item">Fast</span></div>';
       return (
         '<div class="screen-content">' +
           '<div class="screen-center">' +
             '<div class="topic-box">' + TOPIC_TEXT + '</div>' +
-            '<div class="speed-display">' +
-              '<span class="speed-display-item speed-display-item--slow">Slow</span>' +
-              '<span class="speed-display-sep" aria-hidden>/</span>' +
-              '<span class="speed-display-item">Fast</span>' +
-            '</div>' +
+            speedDisplayHtml +
             '<div class="screen-main screen-main--vertical-center">' +
               englishHtml +
               '<p class="main-text main-text--two-lines main-text--sub">' + CENTER_TEXT_S13_LINE2 + '</p>' +
@@ -1527,9 +2050,196 @@
       );
     }
 
+    function renderScreen15(state, fastActive) {
+      var recognitionDone = state.recognitionDone;
+      var showCheckmark = state.showCheckmark;
+      var isListening = state.isListening;
+      var micHtml = '<button type="button" class="mic-btn" id="btn-mic" aria-label="Microphone"' +
+        (isListening || recognitionDone ? ' disabled' : '') + '>' +
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg>' +
+        '</button>';
+      var checkmarkHtml = showCheckmark
+        ? '<div class="checkmark-popup" role="status">' +
+            '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' +
+          '</div>'
+        : '';
+      var showFill = isListening || recognitionDone;
+      var line1Html = showFill
+        ? '<p class="main-text main-text--two-lines">' +
+            '<span class="main-text--gradient-sequential">' + CENTER_TEXT_S15_LINE1_PREFIX + CENTER_TEXT_S15_FILL + '.</span>' +
+          '</p>'
+        : '<p class="main-text main-text--two-lines">' + CENTER_TEXT_S15_LINE1_PREFIX + '<span class="main-text-blank-box"><span class="main-text-blank-box__hint">' + CENTER_TEXT_S15_FILL + '</span></span>.</p>';
+      var speedCls = fastActive ? ' speed-display--fast-active' : '';
+      var fastCls = fastActive ? ' speed-display-item--fast' : '';
+      return (
+        '<div class="screen-content">' +
+          '<div class="screen-center">' +
+            '<div class="topic-box">' + TOPIC_TEXT + '</div>' +
+            '<div class="speed-display' + speedCls + '">' +
+              '<span class="speed-display-item speed-display-item--slow">Slow</span>' +
+              '<span class="speed-display-sep" aria-hidden>/</span>' +
+              '<span class="speed-display-item' + fastCls + '">Fast</span>' +
+            '</div>' +
+            '<div class="screen-main screen-main--vertical-center">' +
+              line1Html +
+              '<p class="main-text main-text--two-lines main-text--sub">' + CENTER_TEXT_S15_LINE2 + '</p>' +
+            '</div>' +
+            '<div class="screen-bottom">' + micHtml + '</div>' +
+          '</div>' +
+          checkmarkHtml +
+        '</div>'
+      );
+    }
+
+    function renderScreen16(state, fastActive, popupText) {
+      var recognitionDone = state.recognitionDone;
+      var showCheckmark = state.showCheckmark;
+      var showSpeedUpPopup = state.showSpeedUpPopup;
+      var isListening = state.isListening;
+      var micHtml = '<button type="button" class="mic-btn" id="btn-mic" aria-label="Microphone"' +
+        (isListening || recognitionDone ? ' disabled' : '') + '>' +
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg>' +
+        '</button>';
+      var checkmarkHtml = '';
+      var speedUpPopupHtml = '';
+      var showFill = isListening || recognitionDone;
+      var line1Html = showFill
+        ? '<p class="main-text main-text--two-lines">' +
+            '<span class="main-text--gradient-sequential">' + CENTER_TEXT_S16_LINE1_PREFIX + CENTER_TEXT_S16_FILL + '.</span>' +
+          '</p>'
+        : '<p class="main-text main-text--two-lines">' + CENTER_TEXT_S16_LINE1_PREFIX + '<span class="main-text-blank-box"><span class="main-text-blank-box__hint">' + CENTER_TEXT_S16_FILL + '</span></span>.</p>';
+      var speedCls = fastActive ? ' speed-display--fast-active' : '';
+      var fastCls = fastActive ? ' speed-display-item--fast' : '';
+      return (
+        '<div class="screen-content">' +
+          '<div class="screen-center">' +
+            '<div class="topic-box">' + TOPIC_TEXT + '</div>' +
+            '<div class="speed-display' + speedCls + '">' +
+              '<span class="speed-display-item speed-display-item--slow">Slow</span>' +
+              '<span class="speed-display-sep" aria-hidden>/</span>' +
+              '<span class="speed-display-item' + fastCls + '">Fast</span>' +
+            '</div>' +
+            '<div class="screen-main screen-main--vertical-center">' +
+              line1Html +
+              '<p class="main-text main-text--two-lines main-text--sub">' + CENTER_TEXT_S16_LINE2 + '</p>' +
+            '</div>' +
+            '<div class="screen-bottom">' + micHtml + '</div>' +
+          '</div>' +
+          checkmarkHtml +
+          speedUpPopupHtml +
+        '</div>'
+      );
+    }
+
+    function getScreen16OverlayHtml(state, popupText) {
+      if (state.showCheckmark) {
+        return '<div class="checkmark-popup" role="status">' +
+          '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>';
+      }
+      if (state.showSpeedUpPopup) {
+        return '<div class="speed-up-popup" role="status">' + (popupText !== undefined ? popupText : 'Speed Up!') + '</div>';
+      }
+      return '';
+    }
+
+    function updateScreen16OverlayOnly(state, popupText) {
+      var overlayEl = document.getElementById('app-overlay');
+      if (!overlayEl) {
+        overlayEl = document.createElement('div');
+        overlayEl.id = 'app-overlay';
+        overlayEl.className = 'app-overlay';
+        document.body.appendChild(overlayEl);
+      }
+      overlayEl.innerHTML = getScreen16OverlayHtml(state, popupText);
+      var speedUpPopup = overlayEl.querySelector('.speed-up-popup');
+      if (speedUpPopup) speedUpPopup.addEventListener('click', function (e) { e.stopPropagation(); goNext(); });
+    }
+
+    function renderScreen17(state, hideSpeedDisplay) {
+      var recognitionDone = state.recognitionDone;
+      var showCheckmark = state.showCheckmark;
+      var isListening = state.isListening;
+      var micHtml = '<button type="button" class="mic-btn" id="btn-mic" aria-label="Microphone"' +
+        (isListening || recognitionDone ? ' disabled' : '') + '>' +
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg>' +
+        '</button>';
+      var checkmarkHtml = showCheckmark
+        ? '<div class="checkmark-popup" role="status">' +
+            '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' +
+          '</div>'
+        : '';
+      var showFill = isListening || recognitionDone;
+      var englishHtml = showFill
+        ? '<p class="main-text main-text--two-lines">' +
+            '<span class="main-text--gradient-sequential">' + CENTER_TEXT_S17_LINE1_PREFIX + CENTER_TEXT_S17_FILL + '.</span>' +
+          '</p>'
+        : '';
+      var speedDisplayHtml = hideSpeedDisplay ? '' : '<div class="speed-display">' +
+        '<span class="speed-display-item speed-display-item--slow">Slow</span>' +
+        '<span class="speed-display-sep" aria-hidden>/</span>' +
+        '<span class="speed-display-item">Fast</span></div>';
+      return (
+        '<div class="screen-content">' +
+          '<div class="screen-center">' +
+            '<div class="topic-box">' + TOPIC_TEXT + '</div>' +
+            speedDisplayHtml +
+            '<div class="screen-main screen-main--vertical-center">' +
+              englishHtml +
+              '<p class="main-text main-text--two-lines main-text--sub">' + CENTER_TEXT_S17_LINE2 + '</p>' +
+            '</div>' +
+            '<div class="screen-bottom">' + micHtml + '</div>' +
+          '</div>' +
+          checkmarkHtml +
+        '</div>'
+      );
+    }
+
+    // Index 15 – Type 2-4: 나는 피터예요. (English hidden) → mic → I am Peter.
+    function renderScreen18(state, hideSpeedDisplay) {
+      var recognitionDone = state.recognitionDone;
+      var showCheckmark = state.showCheckmark;
+      var isListening = state.isListening;
+      var micHtml = '<button type="button" class="mic-btn" id="btn-mic" aria-label="Microphone"' +
+        (isListening || recognitionDone ? ' disabled' : '') + '>' +
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg>' +
+        '</button>';
+      var checkmarkHtml = showCheckmark
+        ? '<div class="checkmark-popup" role="status">' +
+            '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' +
+          '</div>'
+        : '';
+      var showFill = isListening || recognitionDone;
+      var englishHtml = showFill
+        ? '<p class="main-text main-text--two-lines">' +
+            '<span class="main-text--gradient-sequential">' + CENTER_TEXT_S18_LINE1_PREFIX + CENTER_TEXT_S18_FILL + '.</span>' +
+          '</p>'
+        : '';
+      var speedDisplayHtml = hideSpeedDisplay ? '' : '<div class="speed-display">' +
+        '<span class="speed-display-item speed-display-item--slow">Slow</span>' +
+        '<span class="speed-display-sep" aria-hidden>/</span>' +
+        '<span class="speed-display-item">Fast</span></div>';
+      return (
+        '<div class="screen-content">' +
+          '<div class="screen-center">' +
+            '<div class="topic-box">' + TOPIC_TEXT + '</div>' +
+            speedDisplayHtml +
+            '<div class="screen-main screen-main--vertical-center">' +
+              englishHtml +
+              '<p class="main-text main-text--two-lines main-text--sub">' + CENTER_TEXT_S18_LINE2 + '</p>' +
+            '</div>' +
+            '<div class="screen-bottom">' + micHtml + '</div>' +
+          '</div>' +
+          checkmarkHtml +
+        '</div>'
+      );
+    }
+
     function mount() {
       var el = document.getElementById('app-content');
+      if (!el) return;
       var header = document.getElementById('app-header');
+      var overlayEl = document.getElementById('app-overlay');
+      if (overlayEl && screenIndex !== 14 && screenIndex !== 19) overlayEl.innerHTML = '';
 
       if (screenIndex === 0) {
         if (header) header.style.display = 'none';
@@ -1608,13 +2318,6 @@
       }
 
       if (screenIndex === 11) {
-        el.innerHTML = renderScreen10(screen10State);
-        var btnMic = document.getElementById('btn-mic');
-        if (btnMic) btnMic.onclick = function (e) { e.stopPropagation(); startRecognition10(); };
-        return;
-      }
-
-      if (screenIndex === 12) {
         el.innerHTML = renderScreen11(screen11State);
         el.querySelector('.screen-content').addEventListener('click', onScreen11Tap);
         var btnMic = document.getElementById('btn-mic');
@@ -1622,14 +2325,7 @@
         return;
       }
 
-      if (screenIndex === 13) {
-        el.innerHTML = renderScreen12(screen12State);
-        var btnMic = document.getElementById('btn-mic');
-        if (btnMic) btnMic.onclick = function (e) { e.stopPropagation(); startRecognition12(); };
-        return;
-      }
-
-      if (screenIndex === 14) {
+      if (screenIndex === 12) {
         el.innerHTML = renderScreen13(screen13State);
         el.querySelector('.screen-content').addEventListener('click', onScreen13Tap);
         var btnMic = document.getElementById('btn-mic');
@@ -1637,14 +2333,115 @@
         return;
       }
 
+      if (screenIndex === 13) {
+        el.innerHTML = renderScreen15(screen15State);
+        el.querySelector('.screen-content').addEventListener('click', onScreen15Tap);
+        var btnMic = document.getElementById('btn-mic');
+        if (btnMic) btnMic.onclick = function (e) { e.stopPropagation(); startRecognition15(); };
+        return;
+      }
+
+      if (screenIndex === 14) {
+        el.innerHTML = renderScreen16(screen16State);
+        var screenContent = el.querySelector('.screen-content');
+        if (screenContent) screenContent.addEventListener('click', onScreen16Tap);
+        var btnMic = document.getElementById('btn-mic');
+        if (btnMic) btnMic.onclick = function (e) { e.stopPropagation(); startRecognition16(); };
+        if (overlayEl) {
+          overlayEl.innerHTML = getScreen16OverlayHtml(screen16State, 'Speed Up!');
+          var speedUpPopup = overlayEl.querySelector('.speed-up-popup');
+          if (speedUpPopup) speedUpPopup.addEventListener('click', function (e) { e.stopPropagation(); goNext(); });
+        }
+        return;
+      }
+
       if (screenIndex === 15) {
-        el.innerHTML = renderScreen14(screen14State);
+        el.innerHTML = renderScreen9(screen20State, true);
+        el.querySelector('.screen-content').addEventListener('click', onScreen20Tap);
+        var btnMic = document.getElementById('btn-mic');
+        if (btnMic) btnMic.onclick = function (e) { e.stopPropagation(); startRecognition20(); };
+        return;
+      }
+
+      if (screenIndex === 16) {
+        el.innerHTML = renderScreen11(screen21State, true);
+        el.querySelector('.screen-content').addEventListener('click', onScreen21Tap);
+        var btnMic = document.getElementById('btn-mic');
+        if (btnMic) btnMic.onclick = function (e) { e.stopPropagation(); startRecognition21(); };
+        return;
+      }
+
+      if (screenIndex === 17) {
+        el.innerHTML = renderScreen13(screen22State, true);
+        el.querySelector('.screen-content').addEventListener('click', onScreen22Tap);
+        var btnMic = document.getElementById('btn-mic');
+        if (btnMic) btnMic.onclick = function (e) { e.stopPropagation(); startRecognition22(); };
+        return;
+      }
+
+      if (screenIndex === 18) {
+        el.innerHTML = renderScreen15(screen23State, true);
+        el.querySelector('.screen-content').addEventListener('click', onScreen23Tap);
+        var btnMic = document.getElementById('btn-mic');
+        if (btnMic) btnMic.onclick = function (e) { e.stopPropagation(); startRecognition23(); };
+        return;
+      }
+
+      if (screenIndex === 19) {
+        el.innerHTML = renderScreen16(screen24State, true, 'Your turn!');
+        el.querySelector('.screen-content').addEventListener('click', onScreen24Tap);
+        var btnMic = document.getElementById('btn-mic');
+        if (btnMic) btnMic.onclick = function (e) { e.stopPropagation(); startRecognition24(); };
+        if (overlayEl) {
+          overlayEl.innerHTML = getScreen16OverlayHtml(screen24State, 'Your turn!');
+          var speedUpPopup = overlayEl.querySelector('.speed-up-popup');
+          if (speedUpPopup) speedUpPopup.addEventListener('click', function (e) { e.stopPropagation(); goNext(); });
+        }
+        return;
+      }
+
+      if (screenIndex === 20) {
+        el.innerHTML = renderScreen10(screen10State, true);
+        var btnMic = document.getElementById('btn-mic');
+        if (btnMic) btnMic.onclick = function (e) { e.stopPropagation(); startRecognition10(); };
+        return;
+      }
+
+      if (screenIndex === 21) {
+        el.innerHTML = renderScreen12(screen12State, true);
+        var btnMic = document.getElementById('btn-mic');
+        if (btnMic) btnMic.onclick = function (e) { e.stopPropagation(); startRecognition12(); };
+        return;
+      }
+
+      if (screenIndex === 22) {
+        var html22 = renderScreen18(screen18State, true);
+        el.innerHTML = html22;
+        var btnMic = document.getElementById('btn-mic');
+        if (btnMic) btnMic.onclick = function (e) { e.stopPropagation(); startRecognition18(); };
+        setTimeout(function () {
+          if (screenIndex !== 22) return;
+          var el22 = document.getElementById('app-content');
+          if (el22) { el22.innerHTML = html22; var m = document.getElementById('btn-mic'); if (m) m.onclick = function (e) { e.stopPropagation(); startRecognition18(); }; }
+        }, 0);
+        return;
+      }
+
+      if (screenIndex === 23) {
+        el.innerHTML = renderScreen14(screen14State, true);
         var btnMic = document.getElementById('btn-mic');
         if (btnMic) btnMic.onclick = function (e) { e.stopPropagation(); startRecognition14(); };
         return;
       }
 
-      if (screenIndex === 16) {
+      if (screenIndex === 24) {
+        el.innerHTML = renderScreen17(screen17State, true);
+        var btnMic = document.getElementById('btn-mic');
+        if (btnMic) btnMic.onclick = function (e) { e.stopPropagation(); startRecognition17(); };
+        return;
+      }
+
+      if (screenIndex === 25) {
         el.innerHTML = '<div class="screen-content"></div>';
         return;
       }

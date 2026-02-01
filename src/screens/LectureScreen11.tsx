@@ -8,7 +8,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { TOPIC_TEXT } from '../App';
 
 const CENTER_TEXT_LINE1 = 'I am';
-const CENTER_TEXT_LINE2 = '나는 ~예요';
+const CENTER_TEXT_LINE2 = '나는 ~예요, 해요';
 const AUDIO_FILE = '/i-am.mp3';
 
 function playDingDong() {
@@ -33,7 +33,13 @@ function playDingDong() {
   }
 }
 
-export function LectureScreen11({ onNext }: { onNext: () => void }) {
+export interface LectureScreen11Props {
+  onNext: () => void;
+  speedDisplayVariant?: 'slow' | 'fast';
+  playbackRate?: number;
+}
+
+export function LectureScreen11({ onNext, speedDisplayVariant = 'slow', playbackRate = 0.6 }: LectureScreen11Props) {
   const [audioPlayed, setAudioPlayed] = useState(false);
   const [recognitionDone, setRecognitionDone] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);
@@ -83,7 +89,7 @@ export function LectureScreen11({ onNext }: { onNext: () => void }) {
     if (audioPlayed) return;
     setAudioPlayed(true);
     const audio = new Audio(AUDIO_FILE);
-    audio.playbackRate = 0.6;
+    audio.playbackRate = playbackRate;
     audio.onerror = () => {};
     const p = audio.play();
     if (p && typeof p.catch === 'function') p.catch(() => {});
@@ -93,10 +99,10 @@ export function LectureScreen11({ onNext }: { onNext: () => void }) {
     <div className="screen-content" onClick={handleTapToPlayAudio} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleTapToPlayAudio(); }} aria-label="Tap to listen">
       <div className="screen-center">
         <div className="topic-box">{TOPIC_TEXT}</div>
-        <div className="speed-display">
+        <div className={'speed-display' + (speedDisplayVariant === 'fast' ? ' speed-display--fast-active' : '')}>
           <span className="speed-display-item speed-display-item--slow">Slow</span>
           <span className="speed-display-sep" aria-hidden>/</span>
-          <span className="speed-display-item">Fast</span>
+          <span className={'speed-display-item' + (speedDisplayVariant === 'fast' ? ' speed-display-item--fast' : '')}>Fast</span>
         </div>
         <div className="screen-main screen-main--vertical-center">
           <p className={`main-text main-text--two-lines ${isListening || recognitionDone ? 'main-text--gradient' : ''}`}>{CENTER_TEXT_LINE1}</p>
