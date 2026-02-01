@@ -28,6 +28,16 @@ body {
   overflow-x: auto;
 }
 
+/* 스텝3(26·27·28): 양옆 여백도 화면 영역과 동일한 청보라 그라데이션 */
+/* 스텝1 코너 인트로: 양옆 여백도 연한 분홍~분홍 그라데이션 */
+body.app-step1-margins {
+  background: linear-gradient(135deg, #ffc8d4 0%, #ffd0db 40%, #ffdde5 70%, #ffe4ec 100%);
+}
+
+body.app-step3-margins {
+  background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%);
+}
+
 /* Mobile viewport – 고정 가로 414px (모바일/PC 동일), 좁은 화면에서는 가로 스크롤 */
 #root {
   min-width: 414px;
@@ -55,7 +65,23 @@ body {
   }
 }
 
-/* Header – transparent bg, gradient text, gradient divider below */
+/* 스텝1: 앱 영역·프레임을 여백과 같은 연한 분홍 그라데이션으로 */
+.app.app--step1-colors {
+  background: linear-gradient(135deg, #ffc8d4 0%, #ffd0db 40%, #ffdde5 70%, #ffe4ec 100%) !important;
+}
+
+.app.app--step3-colors {
+  background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%) !important;
+  border: 6px solid #5c6bc0 !important;
+}
+
+.app.app--step3-colors-no-frame {
+  background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Header – no color box; text + divider only */
 .app-header {
   position: relative;
   width: 100%;
@@ -64,13 +90,16 @@ body {
   font-weight: bold;
   padding: 0.5rem 1rem;
   flex-shrink: 0;
+  text-align: center;
+  box-sizing: border-box;
+  background: none;
+}
+
+.app-header-text {
   background: linear-gradient(135deg, #880e4f 0%, #ad1457 50%, #d81b60 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-align: center;
-  border-radius: 0 0 0.5rem 0.5rem;
-  box-sizing: border-box;
 }
 
 .app-header::after {
@@ -82,6 +111,17 @@ body {
   height: 1.5px;
   background: linear-gradient(90deg, #880e4f 0%, #ad1457 50%, #d81b60 100%);
   border-radius: 2px;
+}
+
+/* Step 3 theme: header text + divider */
+.app-header--step3 .app-header-text {
+  background: linear-gradient(135deg, #9fa8da 0%, #5c6bc0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.app-header--step3::after {
+  background: linear-gradient(90deg, #9fa8da 0%, #5c6bc0 100%);
 }
 
 /* Topic in center area – rounded frame box, pink bg, white text */
@@ -96,6 +136,30 @@ body {
   align-self: center;
   margin-bottom: 0.75rem;
   flex-shrink: 0;
+}
+
+.topic-box--step3 {
+  background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%);
+  color: #37474f;
+  font-weight: 600;
+}
+
+.screen-content--step3-colors {
+  flex: 1;
+  min-height: 0;
+  background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%);
+  border: 6px solid #5c6bc0;
+  border-radius: inherit;
+  box-sizing: border-box;
+}
+
+.screen-content--step3-colors-no-frame {
+  flex: 1;
+  min-height: 0;
+  background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%);
+  border: none;
+  border-radius: inherit;
+  box-sizing: border-box;
 }
 
 /* Speed 2-step display (Type 2-1) – below topic, right-aligned */
@@ -240,6 +304,9 @@ body {
 .corner-select-btn:hover {
   filter: brightness(1.08);
 }
+.corner-select-btn--step3 {
+  background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 35%, #9fa8da 65%, #5c6bc0 100%);
+}
 
 /* Corner Intro Screen – full-screen corner title card */
 .corner-intro-screen {
@@ -253,6 +320,27 @@ body {
   border-radius: inherit;
   box-sizing: border-box;
   cursor: pointer;
+}
+
+/* 스텝1 전용: 연한 분홍 ~ 분홍 그라데이션, 테두리도 여백과 자연스럽게 연결 */
+.corner-intro-screen--step1 {
+  background: linear-gradient(135deg, #ffc8d4 0%, #ffd0db 40%, #ffdde5 70%, #ffe4ec 100%);
+  border-color: #ad1457;
+}
+.corner-intro-screen--step1 .corner-intro-step {
+  background: linear-gradient(135deg, #880e4f 0%, #ad1457 40%, #e91e63 100%);
+}
+.corner-intro-screen--step1 .corner-intro-title {
+  background: linear-gradient(135deg, #880e4f 0%, #c2185b 50%, #e91e63 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* 스텝2 코너 인트로: 스텝1과 동일한 배경·테두리(연한 분홍) */
+.corner-intro-screen--step2 {
+  background: linear-gradient(135deg, #ffc8d4 0%, #ffd0db 40%, #ffdde5 70%, #ffe4ec 100%);
+  border-color: #ad1457;
 }
 
 .corner-intro-inner {
@@ -285,6 +373,20 @@ body {
   color: transparent;
   text-align: center;
   letter-spacing: 0.02em;
+}
+
+.corner-intro-screen--step3 {
+  background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%);
+  border-color: #5c6bc0;
+}
+.corner-intro-screen--step3 .corner-intro-step {
+  background: linear-gradient(135deg, #e1bee7 0%, #7986cb 100%);
+}
+.corner-intro-screen--step3 .corner-intro-title {
+  background: linear-gradient(135deg, #9fa8da 0%, #5c6bc0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* Screen layout: center block full width (equal left/right margin), Next floats right */
@@ -496,6 +598,308 @@ body {
   height: 28px;
 }
 
+/* Step 3 Role Play: mic button color */
+.mic-btn--step3 {
+  background: linear-gradient(135deg, #e1bee7 0%, #7986cb 50%, #5c6bc0 100%);
+  box-shadow: 0 2px 12px rgba(92, 107, 192, 0.35);
+}
+
+/* ===== Role Play Screen (Index 26) ===== */
+.roleplay-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+}
+
+/* Topic row: centered. Progress row: same position as Step 2 slow/fast (right-aligned) */
+.roleplay-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.25rem 0.5rem 0.5rem;
+  flex-shrink: 0;
+}
+
+.roleplay-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 0 0.5rem 0.25rem;
+  margin-bottom: 0.25rem;
+  flex-shrink: 0;
+}
+
+.roleplay-progress {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.roleplay-progress-segment {
+  width: 24px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(92, 107, 192, 0.3);
+  transition: background 0.2s ease;
+}
+
+.roleplay-progress-segment.roleplay-progress-segment--filled {
+  background: linear-gradient(135deg, #9fa8da 0%, #5c6bc0 100%);
+}
+
+/* 상황 블록: Situation 1 라벨 + 설명을 하나의 프레임으로 */
+.roleplay-situation-wrap {
+  flex-shrink: 0;
+  margin: 0 0.5rem 0.5rem;
+  border: 1px solid rgba(92, 107, 192, 0.28);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(92, 107, 192, 0.06);
+}
+
+.roleplay-situation-label {
+  padding: 0.28rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+  letter-spacing: 0.03em;
+  background: linear-gradient(135deg, #5c6bc0 0%, #4a58a8 100%);
+  border-bottom: 1px solid rgba(92, 107, 192, 0.35);
+}
+
+.roleplay-situation-wrap .roleplay-description {
+  margin: 0;
+  border-radius: 0;
+  padding: 0.5rem 0.75rem;
+  background: rgba(92, 107, 192, 0.1);
+  font-size: 0.8rem;
+  font-weight: bold;
+  line-height: 1.4;
+  color: #37474f;
+  text-align: center;
+}
+
+.roleplay-description-line {
+  display: block;
+}
+
+.roleplay-chat {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  min-height: 0;
+}
+
+.roleplay-chat--tap-to-listen {
+  cursor: pointer;
+}
+
+.roleplay-tap-hint {
+  font-size: 0.8em;
+  color: #5c6bc0;
+  opacity: 0.85;
+  font-weight: normal;
+}
+
+.roleplay-bubble-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.roleplay-bubble-row--character {
+  justify-content: flex-start;
+}
+
+.roleplay-bubble-row--student {
+  justify-content: flex-end;
+  flex-direction: row-reverse;
+  align-self: flex-end;
+  width: calc(100% + 0.75rem);
+  max-width: none;
+  margin-left: auto;
+  margin-right: -0.75rem;
+  box-sizing: border-box;
+}
+
+.roleplay-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.roleplay-avatar--student {
+  /* 아이 캐릭터 프로필 (학생 쪽) */
+}
+
+.roleplay-bubble-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 80%;
+}
+
+.roleplay-bubble-row--student .roleplay-bubble-wrap {
+  align-items: flex-end;
+  text-align: right;
+  width: fit-content;
+  max-width: min(18rem, 85%);
+  max-width: min(18rem, 85%);
+  min-width: min(14rem, 50%);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.roleplay-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #37474f;
+  margin-bottom: 2px;
+}
+
+.roleplay-bubble {
+  padding: 0.5rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.roleplay-bubble--character {
+  background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%);
+  color: #283593;
+  border-bottom-left-radius: 4px;
+}
+
+.roleplay-bubble--student {
+  background: linear-gradient(135deg, #5c6bc0 0%, #3949ab 50%, #283593 100%);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+  min-height: 2rem;
+  width: fit-content;
+  max-width: min(18rem, 85%);
+  white-space: pre-wrap;
+  box-sizing: border-box;
+}
+
+.roleplay-bubble--student.roleplay-bubble--hint {
+  font-size: 0.85em;
+  color: #b8bce0;
+}
+
+/* 말풍선 아래 한글 해석 토글 버튼 (지구본 아이콘, 원형) */
+.roleplay-k-btn {
+  margin-top: 0.25rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #5c6bc0;
+  background: rgba(92, 107, 192, 0.12);
+  border: 1px solid rgba(92, 107, 192, 0.35);
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.roleplay-k-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+.roleplay-k-btn:hover {
+  background: rgba(92, 107, 192, 0.2);
+  color: #3949ab;
+}
+
+.roleplay-choices-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-top: 0.5rem;
+}
+
+.roleplay-choices-label {
+  font-size: 0.75rem;
+  color: #5c6bc0;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.roleplay-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: flex-end;
+}
+
+.roleplay-choice {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  background: rgba(92, 107, 192, 0.15);
+  color: #37474f;
+  border: 1px solid rgba(92, 107, 192, 0.4);
+}
+
+.roleplay-choice-btn {
+  cursor: pointer;
+  font: inherit;
+  text-align: inherit;
+  width: 100%;
+}
+.roleplay-choice-btn:hover {
+  background: rgba(92, 107, 192, 0.25);
+  border-color: rgba(92, 107, 192, 0.6);
+}
+
+.roleplay-feedback {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 235, 59, 0.25);
+  border: 1px solid rgba(255, 193, 7, 0.6);
+  font-size: 0.85rem;
+  color: #5d4037;
+}
+
+.roleplay-feedback-suggestion {
+  margin-top: 0.35rem;
+  font-weight: 600;
+  color: #5c6bc0;
+}
+
+.roleplay-retry-btn {
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: linear-gradient(135deg, #9fa8da 0%, #5c6bc0 100%);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.roleplay-bottom {
+  flex-shrink: 0;
+  padding: 0.75rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 /* Screen 7 only: Good! stamp popup when Next is clicked */
 .screen7-stamp-popup {
   position: absolute;
@@ -506,6 +910,16 @@ body {
   z-index: 10;
   cursor: pointer;
   animation: screen7-stamp-pop 0.4s ease-out;
+}
+
+/* Index 24: GOOD stamp as full-screen overlay */
+.screen7-stamp-popup--overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
 }
 
 @keyframes screen7-stamp-pop {
@@ -543,6 +957,11 @@ body {
   font-weight: normal;
 }
 
+/* 인덱스 28: GOOD 도장 청보라색 */
+.roleplay-good-stamp-overlay .roleplay-good-stamp-circle {
+  background: linear-gradient(135deg, #3949ab 0%, #5c6bc0 50%, #7986cb 100%);
+}
+
 /* Checkmark popup */
 .checkmark-popup {
   position: fixed;
@@ -570,6 +989,82 @@ body {
   width: 48px;
   height: 48px;
   color: #2e7d32;
+}
+
+/* 롤플레이 완료 팝업: 청보라색 별 */
+.roleplay-complete-popup svg {
+  width: 48px;
+  height: 48px;
+  color: #7986cb;
+}
+
+/* 스텝1·2 완료 팝업: 분홍색 별 */
+.step12-complete-popup svg {
+  width: 48px;
+  height: 48px;
+  color: #ec407a;
+}
+
+/* 오답 표시 (인덱스 20 등) */
+.wrong-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pop 0.3s ease;
+}
+.wrong-popup svg {
+  width: 48px;
+  height: 48px;
+  color: #c62828;
+}
+
+/* 인덱스 20 오답: 이전 디자인 유지, 아이콘만 청보라 */
+.wrong-popup--exclamation-blue svg {
+  width: 48px;
+  height: 48px;
+  color: #7986cb;
+}
+
+/* 인덱스 20 오답 후: 기존 문장 자리에서 정답 문장 왼쪽→오른쪽 그라데이션 (기존 영어와 동일 1.5rem) */
+.answer-reveal-text {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #880e4f 0%, #ad1457 50%, #d81b60 100%);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: answer-reveal-fill 1.6s ease-out forwards;
+}
+/* 인덱스 22~24 오답 후: 원래 그라데이션처럼 앞쪽 분홍 → 뒤쪽 청보라 (텍스트에만 채움) */
+.answer-reveal-text--sequential {
+  background: linear-gradient(90deg, #880e4f 0%, #ad1457 20%, #d81b60 40%, #26c6da 40%, #5c6bc0 70%, #7e57c2 100%);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: answer-reveal-fill 1.6s ease-out forwards;
+}
+@keyframes answer-reveal-fill {
+  from {
+    background-size: 0% 100%;
+  }
+  to {
+    background-size: 100% 100%;
+  }
 }
 
 /* Speed Up! 팝업 (인덱스 14 전용) */

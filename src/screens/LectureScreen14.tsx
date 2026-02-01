@@ -6,10 +6,21 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { TOPIC_TEXT } from '../App';
-
+import { useSTT } from '../useSTT';
 const CENTER_TEXT_LINE1_PREFIX = 'I am ';
 const CENTER_TEXT_FILL = 'happy';
+const CENTER_TEXT_LINE1 = CENTER_TEXT_LINE1_PREFIX + CENTER_TEXT_FILL + '.';
 const CENTER_TEXT_LINE2 = '나는 행복해요.';
+const WRONG_AUDIO = '/i-am-happy.mp3';
+
+function normalizeForCompare(s: string): string {
+  return (s || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[.,!?\-']/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 function playDingDong() {
   try {
@@ -33,50 +44,59 @@ function playDingDong() {
   }
 }
 
+function playWrongAudio(onEnd: () => void) {
+  try {
+    const audio = new Audio(WRONG_AUDIO);
+    audio.playbackRate = 1.0;
+    audio.onended = onEnd;
+    audio.play().catch(onEnd);
+  } catch {
+    onEnd();
+  }
+}
+
 export function LectureScreen14({ onNext, hideSpeedDisplay }: { onNext: () => void; hideSpeedDisplay?: boolean }) {
   const [recognitionDone, setRecognitionDone] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);
-  const [isListening, setIsListening] = useState(false);
+  const [showWrongMark, setShowWrongMark] = useState(false);
+  const [showAnswerReveal, setShowAnswerReveal] = useState(false);
   const checkmarkShownRef = useRef(false);
 
-  const onResult = useCallback(() => {
+  const onResult = useCallback((transcript: string) => {
     if (checkmarkShownRef.current) return;
     checkmarkShownRef.current = true;
     setRecognitionDone(true);
-    setShowCheckmark(true);
-    playDingDong();
-    setTimeout(() => setShowCheckmark(false), 1200);
+    const expected = normalizeForCompare(CENTER_TEXT_LINE1);
+    const said = normalizeForCompare(transcript);
+    if (said === expected || (said.includes('i am') && said.includes('happy')) || (said.includes('i m') && said.includes('happy'))) {
+      setShowCheckmark(true);
+      playDingDong();
+      setTimeout(() => setShowCheckmark(false), 1200);
+    } else {
+      setShowWrongMark(true);
+      setTimeout(() => {
+        setShowWrongMark(false);
+        setShowAnswerReveal(true);
+        playWrongAudio(() => {});
+      }, 800);
+    }
   }, []);
+  const { start, isListening, useWhisper } = useSTT(onResult);
 
   useEffect(() => {
-    if (!recognitionDone) return;
+    if (!recognitionDone || showWrongMark) return;
     const t = setTimeout(onNext, 1500);
     return () => clearTimeout(t);
-  }, [recognitionDone, onNext]);
+  }, [recognitionDone, showWrongMark, onNext]);
 
-  const startRecognition = () => {
-    const win = window as unknown as { SpeechRecognition?: new () => SpeechRecognition; webkitSpeechRecognition?: new () => SpeechRecognition };
-    const SR = win.SpeechRecognition || win.webkitSpeechRecognition;
-    if (!SR) {
-      onResult();
-      return;
-    }
-    const rec = new SR();
-    rec.continuous = false;
-    rec.lang = 'en-US';
-    rec.interimResults = false;
-    rec.onresult = () => onResult();
-    rec.onend = () => {
-      setIsListening(false);
-      if (!checkmarkShownRef.current) onResult();
-    };
-    rec.onerror = () => {
-      setIsListening(false);
-      if (!checkmarkShownRef.current) onResult();
-    };
-    setIsListening(true);
-    rec.start();
-  };
+  useEffect(() => {
+    if (!showAnswerReveal) return;
+    const t = setTimeout(() => {
+      setShowAnswerReveal(false);
+      onNext();
+    }, 2800);
+    return () => clearTimeout(t);
+  }, [showAnswerReveal, onNext]);
 
   const showFill = isListening || recognitionDone;
 
@@ -92,20 +112,29 @@ export function LectureScreen14({ onNext, hideSpeedDisplay }: { onNext: () => vo
           </div>
         )}
         <div className="screen-main screen-main--vertical-center">
-          {showFill && (
-            <p className="main-text main-text--two-lines">
-              <span className="main-text--gradient-sequential">{CENTER_TEXT_LINE1_PREFIX}{CENTER_TEXT_FILL}.</span>
-            </p>
+          {showAnswerReveal ? (
+            <>
+              <p className="main-text main-text--two-lines answer-reveal-text answer-reveal-text--sequential">{CENTER_TEXT_LINE1}</p>
+              <p className="main-text main-text--two-lines main-text--sub">{CENTER_TEXT_LINE2}</p>
+            </>
+          ) : (
+            <>
+              {showFill && (
+                <p className="main-text main-text--two-lines">
+                  <span className="main-text--gradient-sequential">{CENTER_TEXT_LINE1_PREFIX}{CENTER_TEXT_FILL}.</span>
+                </p>
+              )}
+              <p className="main-text main-text--two-lines main-text--sub">{CENTER_TEXT_LINE2}</p>
+            </>
           )}
-          <p className="main-text main-text--two-lines main-text--sub">{CENTER_TEXT_LINE2}</p>
         </div>
         <div className="screen-bottom">
           <button
             type="button"
             className="mic-btn"
-            onClick={startRecognition}
-            disabled={isListening || recognitionDone}
-            aria-label="Microphone"
+            onClick={start}
+            disabled={(!useWhisper && isListening) || recognitionDone}
+            aria-label={useWhisper ? (isListening ? 'Stop and transcribe' : 'Start recording') : 'Microphone'}
           >
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
               <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z" />
@@ -115,9 +144,17 @@ export function LectureScreen14({ onNext, hideSpeedDisplay }: { onNext: () => vo
       </div>
 
       {showCheckmark && (
-        <div className="checkmark-popup" role="status" aria-live="polite">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+        <div className="checkmark-popup step12-complete-popup" role="status" aria-live="polite">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+          </svg>
+        </div>
+      )}
+
+      {showWrongMark && (
+        <div className="wrong-popup wrong-popup--exclamation-blue" role="status" aria-live="polite">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <path d="M13 7h-2v6h2V7zm0 8h-2v2h2v-2z" />
           </svg>
         </div>
       )}
