@@ -1,6 +1,6 @@
 /**
- * 공통 STT 훅: 서버에 OPENAI_API_KEY 있으면 Whisper, 없으면 Web Speech API
- * Whisper: 마이크 1회 클릭 → 녹음 시작, 2회 클릭 → 녹음 종료 후 전사 → onResult(텍스트)
+ * 공통 STT 훅: useApiStt true면 Gemini STT(API), false면 Web Speech API만 사용
+ * 스텝1·2는 useApiStt: false로 API 사용량 절감
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
@@ -10,43 +10,59 @@ import {
   transcribeWithWhisper,
 } from './stt';
 
-export function useSTT(onResult: (transcript: string) => void) {
+export type UseSTTOptions = {
+  /** false면 API(STT) 호출 없이 Web Speech API만 사용 (스텝1·2 기본) */
+  useApiStt?: boolean;
+};
+
+export function useSTT(onResult: (transcript: string) => void, options?: UseSTTOptions) {
+  const useApiStt = options?.useApiStt !== false;
   const [useWhisper, setUseWhisper] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [webSpeechUnavailable, setWebSpeechUnavailable] = useState(false);
   const recorderRef = useRef<ReturnType<typeof createWhisperRecorder> | null>(null);
+  const transcribingRef = useRef(false);
   const lastTranscriptRef = useRef('');
   const onResultRef = useRef(onResult);
   onResultRef.current = onResult;
 
   useEffect(() => {
+    if (!useApiStt) return;
     isWhisperAvailable().then(setUseWhisper);
-  }, []);
+  }, [useApiStt]);
 
   const start = useCallback(() => {
     const report = (t: string) => onResultRef.current(t ?? '');
 
     if (useWhisper) {
       if (!isListening) {
-        recorderRef.current = createWhisperRecorder();
-        recorderRef.current
-          .start()
+        if (recorderRef.current) return;
+        const rec = createWhisperRecorder();
+        recorderRef.current = rec;
+        rec.start()
           .then(() => setIsListening(true))
-          .catch(() => setIsListening(false));
+          .catch(() => {
+            recorderRef.current = null;
+            setIsListening(false);
+          });
       } else {
         const rec = recorderRef.current;
         recorderRef.current = null;
         setIsListening(false);
-        if (!rec) return;
+        if (!rec || transcribingRef.current) return;
+        transcribingRef.current = true;
         rec.stop().then(async (blob) => {
-          if (!blob) {
-            report('');
-            return;
-          }
           try {
+            if (!blob) {
+              report('');
+              return;
+            }
             const text = await transcribeWithWhisper(blob);
             report(text || '');
           } catch {
             report('');
+          } finally {
+            transcribingRef.current = false;
           }
         });
       }
@@ -59,9 +75,11 @@ export function useSTT(onResult: (transcript: string) => void) {
     };
     const SR = win.SpeechRecognition || win.webkitSpeechRecognition;
     if (!SR) {
+      setWebSpeechUnavailable(true);
       report('');
       return;
     }
+    console.log('[STT] Web Speech API 사용 중 (Gemini API 미사용)');
     lastTranscriptRef.current = '';
     const rec = new SR();
     rec.continuous = false;
@@ -94,5 +112,5 @@ export function useSTT(onResult: (transcript: string) => void) {
     }
   }, [useWhisper, isListening]);
 
-  return { start, isListening, useWhisper };
+  return { start, isListening, useWhisper, webSpeechUnavailable };
 }

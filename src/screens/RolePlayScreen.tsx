@@ -1,15 +1,21 @@
 /**
  * Role Play Screen (Index 26, 27, …)
  * 캐릭터 말풍선 → 학생 말풍선 + 보기 3개 + 마이크 → (정답 시) 캐릭터 마무리 → 다음 화면
- * 캐릭터 대사(Turn 1, Turn 3)는 TTS로 재생 (ElevenLabs / VoiceRSS / 브라우저).
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { TOPIC_TEXT } from '../App';
 import { isWhisperAvailable, createWhisperRecorder, transcribeWithWhisper } from '../stt';
-import { speakTTS, type TTSOptions, type VoiceStyle } from '../tts';
 
 const STUDENT_NAME = 'Me';
+
+/** 인덱스 26 Lisa, 27 Kevin, 28 Vicky – 말풍선 옆 원형 프로필 */
+const ROLEPLAY_CHARACTER_AVATAR: Record<number, string> = {
+  0: '/lisa.png',   // index 26
+  1: '/kevin.png',  // index 27
+  2: '/vicky.png',  // index 28
+};
+const ROLEPLAY_STUDENT_AVATAR = '/student.png';
 
 export type RolePlayScript = {
   situationLabel: string;
@@ -29,34 +35,42 @@ export type RolePlayScript = {
   matchKeywords: string[];
   /** true면 (said에 'i am' / 'i m' / 'i feel' 중 하나) && (matchKeywords 중 하나) 일 때만 정답 */
   matchRequiresIAmAndKeyword?: boolean;
-  ttsVoice: VoiceStyle;
   studentHint: string;
   feedbackPrefix: string;
 };
+
+/** 롤플레이 턴1 음원: role1-1, role2-1, role3-1 / 턴3: role1-3, role2-3, role3-3. 재생 종료 후 delayMs 뒤 onDone */
+function playRoleplayTurnAudio(scriptIndex: number, turn: 1 | 3, onDone: () => void, delayMs: number): void {
+  const base = `role${scriptIndex + 1}-${turn}`;
+  const audio = new Audio(`/${base}.mp3`);
+  const schedule = () => setTimeout(onDone, delayMs);
+  audio.onended = schedule;
+  audio.onerror = schedule;
+  audio.play().catch(schedule);
+}
 
 const ROLEPLAY_SCRIPTS: RolePlayScript[] = [
   {
     situationLabel: 'Situation 1',
     situationLines: ['처음 보는 사람에게 자기 소개를 하는 상황이야.', '내 이름을 말해 볼까?'],
     characterName: 'Lisa',
-    turn1Text: "Hello. What's your name?",
+    turn1Text: "Hello! What's your name?",
     choices: ['I am Kate.', "I'm Peter.", 'My name is Olivia.'],
-    turn3Text: 'My name is Lisa. Happy to meet you!',
+    turn3Text: 'My name is Lisa. Nice to meet you.',
     turn3ByKeyword: {
-      'i am': 'My name is Lisa. Happy to meet you!',
-      'i m': 'My name is Lisa. Nice to meet you!',
-      'my name is': 'My name is Lisa. Great to meet you!',
+      'i am': 'My name is Lisa. Nice to meet you.',
+      'i m': 'My name is Lisa. Nice to meet you.',
+      'my name is': 'My name is Lisa. Nice to meet you.',
     },
     matchKeywords: ['i am', 'my name is', 'i m'],
     turn1TextKo: '안녕. 이름이 뭐야?',
     choicesKo: ['나는 Kate예요.', '나는 Peter예요.', '나는 Olivia예요.'],
-    turn3TextKo: '나는 Lisa예요. 만나서 반가워!',
+    turn3TextKo: '나는 Lisa예요. 만나서 반가워요.',
     turn3ByKeywordKo: {
-      'i am': '나는 Lisa예요. 만나서 반가워!',
-      'i m': '나는 Lisa예요. 만나서 반가워!',
-      'my name is': '나는 Lisa예요. 만나서 반가워!',
+      'i am': '나는 Lisa예요. 만나서 반가워요.',
+      'i m': '나는 Lisa예요. 만나서 반가워요.',
+      'my name is': '나는 Lisa예요. 만나서 반가워요.',
     },
-    ttsVoice: 'girl',
     studentHint: '나는(내 이름은) ~예요.',
     feedbackPrefix: "Ah, I understand! But how about saying it like this?",
   },
@@ -66,37 +80,21 @@ const ROLEPLAY_SCRIPTS: RolePlayScript[] = [
     characterName: 'Kevin',
     turn1Text: 'Hi! My name is Kevin.',
     choices: ['Nice to meet you.', 'Happy to meet you.', 'Glad to meet you.'],
-    turn3Text: "Nice to meet you, too! Let's play together!",
+    turn3Text: "Glad to meet you, too! Let's talk some more!",
     turn3ByKeyword: {
-      'nice to meet you': [
-        "Nice to meet you, too! Let's play together!",
-        "Nice to meet you, too! Let's be friends!",
-        "Nice to meet you, too! Let's have fun!",
-        "Nice to meet you, too! Let's talk more!",
-      ],
-      'happy to meet you': [
-        "Happy to meet you, too! Let's play together!",
-        "Happy to meet you, too! Let's be friends!",
-        "Happy to meet you, too! Let's have fun!",
-        "Happy to meet you, too! Let's talk more!",
-      ],
-      'glad to meet you': [
-        "Glad to meet you, too! Let's play together!",
-        "Glad to meet you, too! Let's be friends!",
-        "Glad to meet you, too! Let's have fun!",
-        "Glad to meet you, too! Let's talk more!",
-      ],
+      'nice to meet you': "Glad to meet you, too! Let's talk some more!",
+      'happy to meet you': "Glad to meet you, too! Let's talk some more!",
+      'glad to meet you': "Glad to meet you, too! Let's talk some more!",
     },
     matchKeywords: ['nice to meet you', 'happy to meet you', 'glad to meet you'],
     turn1TextKo: '안녕! 나는 Kevin이야.',
     choicesKo: ['만나서 반가워.', '만나서 반가워.', '만나서 반가워.'],
-    turn3TextKo: '나도 만나서 반가워! 같이 놀자!',
+    turn3TextKo: '나도 만나서 반가워! 더 이야기해요!',
     turn3ByKeywordKo: {
-      'nice to meet you': '나도 만나서 반가워! 같이 놀자!',
-      'happy to meet you': '나도 만나서 반가워! 같이 놀자!',
-      'glad to meet you': '나도 만나서 반가워! 같이 놀자!',
+      'nice to meet you': '나도 만나서 반가워! 더 이야기해요!',
+      'happy to meet you': '나도 만나서 반가워! 더 이야기해요!',
+      'glad to meet you': '나도 만나서 반가워! 더 이야기해요!',
     },
-    ttsVoice: 'boy',
     studentHint: '만나서 반가워요.',
     feedbackPrefix: "Ah, I understand! But how about saying it like this?",
   },
@@ -106,53 +104,52 @@ const ROLEPLAY_SCRIPTS: RolePlayScript[] = [
     characterName: 'Vicky',
     turn1Text: 'How are you today?',
     choices: ['I am happy.', 'I am sad.', 'I am excited.'],
-    turn3Text: 'I see. Thank you for telling me!',
+    turn3Text: "Oh, then let's get something to eat!",
     turn3ByKeyword: {
-      happy: "That's great! I'm glad to hear that!",
-      excited: "That's great! I'm glad to hear that!",
-      good: "That's great! I'm glad to hear that!",
-      great: "That's great! I'm glad to hear that!",
-      fine: "That's great! I'm glad to hear that!",
-      okay: "That's great! I'm glad to hear that!",
-      calm: "That's great! I'm glad to hear that!",
-      sad: "I'm sorry to hear that. I hope you feel better soon.",
-      bad: "I'm sorry to hear that. I hope you feel better soon.",
-      sick: "I'm sorry to hear that. I hope you feel better soon.",
-      worried: "I'm sorry to hear that. I hope you feel better soon.",
-      scared: "I'm sorry to hear that. I hope you feel better soon.",
-      nervous: "I'm sorry to hear that. I hope you feel better soon.",
-      tired: 'I see. Get some rest if you need it!',
-      sleepy: 'I see. Get some rest if you need it!',
-      bored: 'I see. Get some rest if you need it!',
-      hungry: "Let's get something to eat!",
-      angry: 'I see. I hope you feel better soon.',
+      happy: "Oh, then let's get something to eat!",
+      excited: "Oh, then let's get something to eat!",
+      good: "Oh, then let's get something to eat!",
+      great: "Oh, then let's get something to eat!",
+      fine: "Oh, then let's get something to eat!",
+      okay: "Oh, then let's get something to eat!",
+      calm: "Oh, then let's get something to eat!",
+      sad: "Oh, then let's get something to eat!",
+      bad: "Oh, then let's get something to eat!",
+      sick: "Oh, then let's get something to eat!",
+      worried: "Oh, then let's get something to eat!",
+      scared: "Oh, then let's get something to eat!",
+      nervous: "Oh, then let's get something to eat!",
+      tired: "Oh, then let's get something to eat!",
+      sleepy: "Oh, then let's get something to eat!",
+      bored: "Oh, then let's get something to eat!",
+      hungry: "Oh, then let's get something to eat!",
+      angry: "Oh, then let's get something to eat!",
     },
     matchKeywords: ['happy', 'sad', 'excited', 'angry', 'tired', 'good', 'great', 'fine', 'okay', 'bad', 'sick', 'nervous', 'bored', 'scared', 'worried', 'calm', 'sleepy', 'hungry'],
     matchRequiresIAmAndKeyword: true,
     turn1TextKo: '오늘 어때?',
     choicesKo: ['나는 행복해요.', '나는 슬퍼요.', '나는 신나요.'],
-    turn3TextKo: '그렇구나. 말해줘서 고마워!',
+    turn3TextKo: '그럼 뭐 먹자!',
     turn3ByKeywordKo: {
-      happy: '기쁘다! 잘 들었어!',
-      excited: '기쁘다! 잘 들었어!',
-      good: '기쁘다! 잘 들었어!',
-      great: '기쁘다! 잘 들었어!',
-      fine: '기쁘다! 잘 들었어!',
-      okay: '기쁘다! 잘 들었어!',
-      calm: '기쁘다! 잘 들었어!',
-      sad: '유감이야. 빨리 나아지길 바랄게.',
-      bad: '유감이야. 빨리 나아지길 바랄게.',
-      sick: '유감이야. 빨리 나아지길 바랄게.',
-      worried: '유감이야. 빨리 나아지길 바랄게.',
-      scared: '유감이야. 빨리 나아지길 바랄게.',
-      nervous: '유감이야. 빨리 나아지길 바랄게.',
-      tired: '그렇구나. 푹 쉬어.',
-      sleepy: '그렇구나. 푹 쉬어.',
-      bored: '그렇구나. 푹 쉬어.',
+      happy: '그럼 뭐 먹자!',
+      excited: '그럼 뭐 먹자!',
+      good: '그럼 뭐 먹자!',
+      great: '그럼 뭐 먹자!',
+      fine: '그럼 뭐 먹자!',
+      okay: '그럼 뭐 먹자!',
+      calm: '그럼 뭐 먹자!',
+      sad: '그럼 뭐 먹자!',
+      bad: '그럼 뭐 먹자!',
+      sick: '그럼 뭐 먹자!',
+      worried: '그럼 뭐 먹자!',
+      scared: '그럼 뭐 먹자!',
+      nervous: '그럼 뭐 먹자!',
+      tired: '그럼 뭐 먹자!',
+      sleepy: '그럼 뭐 먹자!',
+      bored: '그럼 뭐 먹자!',
       hungry: '그럼 뭐 먹자!',
-      angry: '그렇구나. 빨리 나아지길 바랄게.',
+      angry: '그럼 뭐 먹자!',
     },
-    ttsVoice: 'girl',
     studentHint: '나는 (기분이나 상태가) ~해요.',
     feedbackPrefix: "Ah, I understand! But how about saying it like this?",
   },
@@ -243,12 +240,9 @@ function formatTranscriptForDisplay(text: string): string {
   return s;
 }
 
-/** TTS 2번 재생 방지 (스크립트별 플래그) */
-const turn1TTSPlayedByScript: Record<number, boolean> = {};
-const turn3TTSPlayedByScript: Record<number, boolean> = {};
-
 export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: number; onNext: () => void }) {
   const script = ROLEPLAY_SCRIPTS[scriptIndex] ?? ROLEPLAY_SCRIPTS[0];
+  const characterAvatar = ROLEPLAY_CHARACTER_AVATAR[scriptIndex] ?? '/ch.png';
   const [showTurn1Bubble, setShowTurn1Bubble] = useState(false);
   const [turn, setTurn] = useState<1 | 2 | 3>(1);
   const [turn1Done, setTurn1Done] = useState(false);
@@ -257,7 +251,7 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
   const [feedbackSuggestion, setFeedbackSuggestion] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const [resolvedTurn3Text, setResolvedTurn3Text] = useState(''); // 턴3 진입 시 한 번만 결정(배열일 때 랜덤), 화면·TTS 공통
+  const [resolvedTurn3Text, setResolvedTurn3Text] = useState(''); // 턴3 진입 시 한 번만 결정(배열일 때 랜덤)
   const [resolvedTurn3TextKo, setResolvedTurn3TextKo] = useState(''); // 턴3 한글 해석 (K 버튼용)
   const [showTurn1Ko, setShowTurn1Ko] = useState(false);
   const [showStudentKo, setShowStudentKo] = useState(false);
@@ -267,16 +261,18 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
   const processedRef = useRef(false);
   const lastTranscriptRef = useRef('');
   const whisperRecorderRef = useRef<ReturnType<typeof createWhisperRecorder> | null>(null);
-  const turn3AdvancedRef = useRef(false); // 턴3 TTS/클릭 중복 진행 방지
+  const whisperTranscribingRef = useRef(false);
+  const turn3AdvancedRef = useRef(false); // 턴3 클릭/타이머 중복 진행 방지
   const [useWhisper, setUseWhisper] = useState(false);
+  const [webSpeechUnavailable, setWebSpeechUnavailable] = useState(false);
 
-  /** 턴1 말풍선 탭: TTS가 안 나와도 클릭하면 학생 차례로 진행 */
+  /** 턴1 말풍선 탭: 클릭하면 학생 차례로 진행 */
   const handleTurn1Tap = useCallback(() => {
     setTurn1Done(true);
     setTurn(2);
   }, []);
 
-  /** 턴3 말풍선/영역 탭: TTS가 안 나와도 클릭하면 완료 팝업 → 다음 화면 */
+  /** 턴3 말풍선/영역 탭: 클릭하면 완료 팝업 → 다음 화면 */
   const advanceFromTurn3 = useCallback(() => {
     if (turn3AdvancedRef.current) return;
     turn3AdvancedRef.current = true;
@@ -288,16 +284,16 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
     isWhisperAvailable().then(setUseWhisper);
   }, []);
 
-  /* 턴3 진입 시 대사 한 번 결정 (turn3ByKeyword 배열이면 랜덤, 화면·TTS 동일하게 사용) + 한글 해석 */
+  /* 턴3 진입 시 고정 대사 + 한글 해석 (말풍선 고정 표시) */
   useEffect(() => {
     if (turn === 3) {
-      setResolvedTurn3Text(getTurn3Text(script, studentTranscript));
-      setResolvedTurn3TextKo(script.turn3TextKo ? getTurn3TextKo(script, studentTranscript) : '');
+      setResolvedTurn3Text(script.turn3Text);
+      setResolvedTurn3TextKo(script.turn3TextKo ?? '');
     } else {
       setResolvedTurn3Text('');
       setResolvedTurn3TextKo('');
     }
-  }, [turn, script, studentTranscript]);
+  }, [turn, script]);
 
   /* 상황 블록 표시 후 1초 뒤 캐릭터 1턴 말풍선 표시 */
   useEffect(() => {
@@ -305,16 +301,14 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
     return () => clearTimeout(t);
   }, []);
 
-  /* 화면 벗어날 때만 플래그 초기화. 지연해서 Strict Mode 재마운트 시에는 플래그가 유지되도록 */
+  /* 캐릭터 1턴: roleN-1 재생 → 종료 후 0.7초 뒤 학생 말풍선 영역 표시 */
   useEffect(() => {
-    let t: ReturnType<typeof setTimeout>;
-    return () => {
-      t = setTimeout(() => {
-        delete turn1TTSPlayedByScript[scriptIndex];
-        delete turn3TTSPlayedByScript[scriptIndex];
-      }, 300);
-    };
-  }, [scriptIndex]);
+    if (!showTurn1Bubble) return;
+    playRoleplayTurnAudio(scriptIndex, 1, () => {
+      setTurn1Done(true);
+      setTurn(2);
+    }, 700);
+  }, [showTurn1Bubble, scriptIndex]);
 
   const goToTurn3 = useCallback(() => {
     setTurn(3);
@@ -360,34 +354,12 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
     /* studentTranscript 유지 – 말풍선 텍스트가 사라지지 않게, 다음 STT 결과로 덮어쓸 때만 갱신 */
   }, [retryCount, goToTurn3]);
 
-  /* Turn 1: 말풍선 뜬 뒤에만 TTS 재생 → 재생 끝난 뒤 1초 후 학생 영역 표시 */
-  useEffect(() => {
-    if (turn !== 1 || !showTurn1Bubble) return;
-    if (turn1TTSPlayedByScript[scriptIndex]) return;
-    turn1TTSPlayedByScript[scriptIndex] = true;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    const ttsVoice: TTSOptions = { voice: script.ttsVoice };
-    speakTTS(script.turn1Text, () => {
-      timeoutId = setTimeout(() => {
-        setTurn1Done(true);
-        setTurn(2);
-      }, 1000);
-    }, ttsVoice);
-    return () => {
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
-    };
-  }, [turn, showTurn1Bubble, scriptIndex, script.turn1Text, script.ttsVoice]);
-
-  /* Turn 3: 캐릭터 마무리 TTS 1회만 재생 → 완료 팝업 + 딩동. 클릭/8초 폴백으로도 같은 advanceFromTurn3 호출 */
+  /* Turn 3: roleN-3 재생 → 종료 후 1초 뒤 별 팝업 + 효과음. 탭하면 즉시 진행 */
   useEffect(() => {
     if (turn !== 3 || !resolvedTurn3Text) return;
-    if (turn3TTSPlayedByScript[scriptIndex]) return;
-    turn3TTSPlayedByScript[scriptIndex] = true;
     turn3AdvancedRef.current = false;
-    speakTTS(resolvedTurn3Text, advanceFromTurn3, { voice: script.ttsVoice });
-    const fallback = setTimeout(advanceFromTurn3, 8000); // TTS 실패 시 8초 후 자동 진행
-    return () => clearTimeout(fallback);
-  }, [turn, resolvedTurn3Text, scriptIndex, script.ttsVoice, advanceFromTurn3]);
+    playRoleplayTurnAudio(scriptIndex, 3, advanceFromTurn3, 1000);
+  }, [turn, resolvedTurn3Text, scriptIndex, advanceFromTurn3]);
 
   /* 별 팝업 1.2초 후: 인덱스 28이면 GOOD 도장으로, 아니면 다음 화면으로 */
   useEffect(() => {
@@ -417,22 +389,30 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
   const startRecognition = useCallback(() => {
     if (useWhisper) {
       if (!isListening) {
+        if (whisperRecorderRef.current) return;
         processedRef.current = false;
         lastTranscriptRef.current = '';
-        whisperRecorderRef.current = createWhisperRecorder();
-        whisperRecorderRef.current.start().then(() => setIsListening(true)).catch(() => setIsListening(false));
+        const rec = createWhisperRecorder();
+        whisperRecorderRef.current = rec;
+        rec.start().then(() => setIsListening(true)).catch(() => {
+          whisperRecorderRef.current = null;
+          setIsListening(false);
+        });
       } else {
         const rec = whisperRecorderRef.current;
         whisperRecorderRef.current = null;
         setIsListening(false);
-        if (!rec) return;
+        if (!rec || whisperTranscribingRef.current) return;
+        whisperTranscribingRef.current = true;
         rec.stop().then(async (blob) => {
-          if (!blob) return;
           try {
+            if (!blob) return;
             const text = await transcribeWithWhisper(blob);
             handleStudentResult(text || '');
           } catch {
             handleStudentResult('');
+          } finally {
+            whisperTranscribingRef.current = false;
           }
         });
       }
@@ -441,6 +421,7 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
     const win = window as unknown as { SpeechRecognition?: new () => SpeechRecognition; webkitSpeechRecognition?: new () => SpeechRecognition };
     const SR = win.SpeechRecognition || win.webkitSpeechRecognition;
     if (!SR) {
+      setWebSpeechUnavailable(true);
       setIsListening(false);
       return;
     }
@@ -523,7 +504,7 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
         </div>
 
         <div className="roleplay-chat">
-          {/* Turn 1: 상황 블록 1초 뒤 말풍선 표시 → TTS → 1초 후 학생 영역. TTS 안 나오면 탭해서 다음으로 */}
+          {/* Turn 1: 상황 블록 1초 뒤 말풍선 표시 → 1초 후 학생 영역. 탭하면 바로 다음으로 */}
           {showTurn1Bubble && (
             <div
               className="roleplay-bubble-row roleplay-bubble-row--character"
@@ -533,7 +514,7 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTurn1Tap(); } }}
               aria-label="다음으로 (탭)"
             >
-              <img src="/ch.png" alt="" className="roleplay-avatar" aria-hidden />
+              <img src={characterAvatar} alt="" className="roleplay-avatar" aria-hidden />
               <div className="roleplay-bubble-wrap">
                 <span className="roleplay-name">{script.characterName}</span>
                 <div className="roleplay-bubble roleplay-bubble--character">
@@ -541,8 +522,8 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
                 </div>
                 {script.turn1TextKo && (
                   <button type="button" className="roleplay-k-btn" onClick={(e) => { e.stopPropagation(); setShowTurn1Ko((k) => !k); }} aria-label="한글 해석 보기">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="10" ry="3"/><ellipse cx="12" cy="12" rx="3" ry="10"/></svg>
-                </button>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="10" ry="3"/><ellipse cx="12" cy="12" rx="3" ry="10"/></svg>
+                  </button>
                 )}
               </div>
             </div>
@@ -551,7 +532,7 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
           {/* Turn 2·3: Student area – STT 결과는 턴 3에서도 말풍선에 유지 */}
           {((turn1Done && turn === 2) || turn === 3) && (
             <div className="roleplay-bubble-row roleplay-bubble-row--student">
-              <img src="/selena.png" alt="" className="roleplay-avatar roleplay-avatar--student" aria-hidden />
+              <img src={ROLEPLAY_STUDENT_AVATAR} alt="" className="roleplay-avatar roleplay-avatar--student" aria-hidden />
               <div className="roleplay-bubble-wrap">
                 <span className="roleplay-name">{STUDENT_NAME}</span>
                 <div
@@ -605,7 +586,7 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
             </div>
           )}
 
-          {/* Turn 3: Character closing. TTS 안 나오면 탭해서 다음으로 */}
+          {/* Turn 3: Character closing. 탭하거나 8초 후 다음으로 */}
           {turn === 3 && (
             <div
               className="roleplay-bubble-row roleplay-bubble-row--character"
@@ -615,18 +596,18 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); advanceFromTurn3(); } }}
               aria-label="다음으로 (탭)"
             >
-              <img src="/ch.png" alt="" className="roleplay-avatar" aria-hidden />
+              <img src={characterAvatar} alt="" className="roleplay-avatar" aria-hidden />
               <div className="roleplay-bubble-wrap">
                 <span className="roleplay-name">{script.characterName}</span>
                 <div className="roleplay-bubble roleplay-bubble--character">
                   {showTurn3Ko && (resolvedTurn3TextKo || script.turn3TextKo)
                     ? (resolvedTurn3TextKo || script.turn3TextKo)
-                    : (resolvedTurn3Text || getTurn3Text(script, studentTranscript))}
+                    : resolvedTurn3Text}
                 </div>
                 {(script.turn3TextKo || resolvedTurn3TextKo) && (
                   <button type="button" className="roleplay-k-btn" onClick={(e) => { e.stopPropagation(); setShowTurn3Ko((k) => !k); }} aria-label="한글 해석 보기">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="10" ry="3"/><ellipse cx="12" cy="12" rx="3" ry="10"/></svg>
-                </button>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="10" ry="3"/><ellipse cx="12" cy="12" rx="3" ry="10"/></svg>
+                  </button>
                 )}
               </div>
             </div>
@@ -636,6 +617,11 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
         {/* Mic: Turn 2에서 항상 표시. 피드백 블록이 떠 있으면 비활성화, Try again 누르면 다시 활성화 */}
         {turn === 2 && turn1Done && (
           <div className="roleplay-bottom">
+            {!useWhisper && webSpeechUnavailable && (
+              <p className="roleplay-stt-hint" role="status">
+                음성 인식을 사용하려면 .env에 GEMINI_API_KEY를 설정하고 개발 서버를 재시작해 주세요.
+              </p>
+            )}
             <button
               type="button"
               className="mic-btn mic-btn--step3"

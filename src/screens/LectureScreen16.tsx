@@ -84,7 +84,7 @@ export function LectureScreen16({ onNext, speedDisplayVariant = 'slow', playback
     setTimeout(hideCheckmarkAndShowSpeedUp, 1200);
     setTimeout(onNext, 2700);
   }, [onNext]);
-  const { start, isListening, useWhisper } = useSTT(onResult);
+  const { start, isListening, useWhisper } = useSTT(onResult, { useApiStt: false });
 
   const handleTapToPlayAudio = () => {
     if (audioPlayed) return;

@@ -99,7 +99,7 @@ function GoodStampOverlay({ onNext }: { onNext: () => void }) {
   );
 }
 
-export function LectureScreen17({ onNext, hideSpeedDisplay, showGoodStampAndFb4 }: { onNext: () => void; hideSpeedDisplay?: boolean; showGoodStampAndFb4?: boolean }) {
+export function LectureScreen17({ onNext, hideSpeedDisplay, showGoodStampAndFb4, forceCorrect }: { onNext: () => void; hideSpeedDisplay?: boolean; showGoodStampAndFb4?: boolean; forceCorrect?: boolean }) {
   const [recognitionDone, setRecognitionDone] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);
   const [showWrongMark, setShowWrongMark] = useState(false);
@@ -121,6 +121,12 @@ export function LectureScreen17({ onNext, hideSpeedDisplay, showGoodStampAndFb4 
     if (checkmarkShownRef.current) return;
     checkmarkShownRef.current = true;
     setRecognitionDone(true);
+    if (forceCorrect) {
+      setShowCheckmark(true);
+      playDingDong();
+      if (!showGoodStampAndFb4) setTimeout(() => setShowCheckmark(false), 1200);
+      return;
+    }
     const expected = normalizeForCompare(CENTER_TEXT_LINE1);
     const said = normalizeForCompare(transcript);
     const isCorrect = said === expected || (said.includes('i am') && said.includes('student')) || (said.includes('i m') && said.includes('student'));
@@ -136,8 +142,8 @@ export function LectureScreen17({ onNext, hideSpeedDisplay, showGoodStampAndFb4 
         playWrongAudio(() => {});
       }, 800);
     }
-  }, [showGoodStampAndFb4]);
-  const { start, isListening, useWhisper } = useSTT(onResult);
+  }, [showGoodStampAndFb4, forceCorrect]);
+  const { start, isListening, useWhisper } = useSTT(onResult, { useApiStt: false });
 
   /* GOOD 스탬프 + fb4 효과음 표시 (스텝1 마지막 강의 LectureScreen7과 동일: 스탬프 클릭으로만 다음 화면) */
   useEffect(() => {

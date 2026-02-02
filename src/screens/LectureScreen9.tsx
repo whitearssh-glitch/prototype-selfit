@@ -57,7 +57,7 @@ export function LectureScreen9({ onNext, speedDisplayVariant = 'slow', playbackR
     playDingDong();
     setTimeout(() => setShowCheckmark(false), 1200);
   }, []);
-  const { start, isListening, useWhisper } = useSTT(onResult);
+  const { start, isListening, useWhisper } = useSTT(onResult, { useApiStt: false });
 
   useEffect(() => {
     if (!recognitionDone) return;

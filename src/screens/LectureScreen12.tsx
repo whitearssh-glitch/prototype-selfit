@@ -7,6 +7,9 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { TOPIC_TEXT } from '../App';
 import { useSTT } from '../useSTT';
+/** 마이크 누를 때 표시할 영어 (인덱스 21) */
+const DISPLAY_TEXT_WHEN_MIC = 'She is';
+/** 오답 시 정답 노출·정답 비교용 */
 const CENTER_TEXT_LINE1 = 'I am';
 const CENTER_TEXT_LINE2 = '나는 ~예요';
 const WRONG_AUDIO = '/i-am.mp3';
@@ -53,7 +56,7 @@ function playWrongAudio(onEnd: () => void) {
   }
 }
 
-export function LectureScreen12({ onNext, hideSpeedDisplay }: { onNext: () => void; hideSpeedDisplay?: boolean }) {
+export function LectureScreen12({ onNext, hideSpeedDisplay, forceWrong }: { onNext: () => void; hideSpeedDisplay?: boolean; forceWrong?: boolean }) {
   const [recognitionDone, setRecognitionDone] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);
   const [showWrongMark, setShowWrongMark] = useState(false);
@@ -64,6 +67,15 @@ export function LectureScreen12({ onNext, hideSpeedDisplay }: { onNext: () => vo
     if (checkmarkShownRef.current) return;
     checkmarkShownRef.current = true;
     setRecognitionDone(true);
+    if (forceWrong) {
+      setShowWrongMark(true);
+      setTimeout(() => {
+        setShowWrongMark(false);
+        setShowAnswerReveal(true);
+        playWrongAudio(() => {});
+      }, 800);
+      return;
+    }
     const expected = normalizeForCompare(CENTER_TEXT_LINE1);
     const said = normalizeForCompare(transcript);
     if (said === expected || said.includes('i am') || said.includes('i m')) {
@@ -78,8 +90,8 @@ export function LectureScreen12({ onNext, hideSpeedDisplay }: { onNext: () => vo
         playWrongAudio(() => {});
       }, 800);
     }
-  }, []);
-  const { start, isListening, useWhisper } = useSTT(onResult);
+  }, [forceWrong]);
+  const { start, isListening, useWhisper } = useSTT(onResult, { useApiStt: false });
 
   useEffect(() => {
     if (!recognitionDone || showWrongMark) return;
@@ -116,7 +128,7 @@ export function LectureScreen12({ onNext, hideSpeedDisplay }: { onNext: () => vo
           ) : (
             <>
               {(isListening || recognitionDone) && (
-                <p className="main-text main-text--two-lines main-text--gradient">{CENTER_TEXT_LINE1}</p>
+                <p className="main-text main-text--two-lines main-text--gradient">{DISPLAY_TEXT_WHEN_MIC}</p>
               )}
               <p className="main-text main-text--two-lines main-text--sub">{CENTER_TEXT_LINE2}</p>
             </>

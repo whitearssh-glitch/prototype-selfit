@@ -19,11 +19,13 @@ import { LectureScreen16 } from './screens/LectureScreen16';
 import { LectureScreen17 } from './screens/LectureScreen17';
 import { LectureScreen18 } from './screens/LectureScreen18';
 import { RolePlayScreen } from './screens/RolePlayScreen';
+import { RealTalkScreen } from './screens/RealTalkScreen';
+import { RealTalkLessonScreen } from './screens/RealTalkLessonScreen';
 
 const HEADER_TITLE = 'Basic 01 Day 01';
 export const TOPIC_TEXT = 'TOPIC: Self-introduction';
 
-const MAX_SCREEN_INDEX = 28;
+const MAX_SCREEN_INDEX = 31;
 
 function getInitialScreenIndex(): number {
   if (typeof window === 'undefined') return 0;
@@ -37,13 +39,13 @@ function getInitialScreenIndex(): number {
 export default function App() {
   const [screenIndex, setScreenIndex] = useState(getInitialScreenIndex);
 
-  const goNext = () => setScreenIndex((i) => (i < 28 ? i + 1 : i));
-  const appStep3Class = screenIndex === 25 || screenIndex === 26 || screenIndex === 27 || screenIndex === 28 ? ' app--step3-colors-no-frame' : '';
+  const goNext = () => setScreenIndex((i) => (i < 31 ? i + 1 : i));
+  const appStep3Class = screenIndex === 25 || screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 29 || screenIndex === 30 || screenIndex === 31 ? ' app--step3-colors-no-frame' : '';
   const isStep1OrStep2 = screenIndex >= 1 && screenIndex <= 24;
-  const isStep3 = screenIndex === 25 || screenIndex === 26 || screenIndex === 27 || screenIndex === 28;
+  const isStep3 = screenIndex === 25 || screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 29 || screenIndex === 30 || screenIndex === 31;
 
   /* 스텝1·2(인덱스 1~24: 코너 인트로 + 강의 화면) body(양옆 여백) + 앱 프레임을 연한 분홍 그라데이션으로 */
-  /* 스텝3(25·26·27·28)일 때 body(양옆 여백) 배경을 청보라 그라데이션으로 */
+  /* 스텝3·4(25~29)일 때 body(양옆 여백) 배경을 청보라 그라데이션으로 */
   useEffect(() => {
     const body = document.body;
     body.classList.toggle('app-step1-margins', isStep1OrStep2);
@@ -54,10 +56,11 @@ export default function App() {
   }, [isStep1OrStep2, isStep3]);
 
   const appStep1Class = isStep1OrStep2 ? ' app--step1-colors' : '';
+  const realtalkFixedHeightClass = screenIndex === 31 ? ' app--realtalk-fixed-height' : '';
   return (
-    <div className={'app' + appStep1Class + appStep3Class}>
-        {screenIndex > 0 && screenIndex !== 1 && screenIndex !== 9 && screenIndex !== 25 && (
-        <header className={'app-header' + (screenIndex === 26 || screenIndex === 27 || screenIndex === 28 ? ' app-header--step3' : '')}>
+    <div className={'app' + appStep1Class + appStep3Class + realtalkFixedHeightClass}>
+        {screenIndex > 0 && screenIndex !== 1 && screenIndex !== 9 && screenIndex !== 25 && screenIndex !== 29 && (
+        <header className={'app-header' + (screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 30 || screenIndex === 31 ? ' app-header--step3' : '')}>
           <span className="app-header-text">{HEADER_TITLE}</span>
         </header>
       )}
@@ -68,6 +71,7 @@ export default function App() {
             onSelectStep1={() => setScreenIndex(1)}
             onSelectStep2={() => setScreenIndex(9)}
             onSelectStep3={() => setScreenIndex(25)}
+            onSelectStep4={() => setScreenIndex(29)}
           />
         )}
         {screenIndex === 1 && <CornerIntroScreen step="STEP 1" title="Patterns" step1 onNext={goNext} />}
@@ -89,15 +93,18 @@ export default function App() {
         {screenIndex === 17 && <LectureScreen13 onNext={goNext} speedDisplayVariant="fast" playbackRate={1} />}
         {screenIndex === 18 && <LectureScreen15 onNext={goNext} speedDisplayVariant="fast" playbackRate={1} />}
         {screenIndex === 19 && <LectureScreen16 onNext={goNext} speedDisplayVariant="fast" playbackRate={1} afterCheckPopupText="Your turn!" />}
-        {screenIndex === 20 && <LectureScreen10 onNext={goNext} hideSpeedDisplay />}
-        {screenIndex === 21 && <LectureScreen12 onNext={goNext} hideSpeedDisplay />}
-        {screenIndex === 22 && <LectureScreen18 onNext={goNext} hideSpeedDisplay />}
-        {screenIndex === 23 && <LectureScreen14 onNext={goNext} hideSpeedDisplay />}
-        {screenIndex === 24 && <LectureScreen17 onNext={goNext} hideSpeedDisplay showGoodStampAndFb4={true} />}
+        {screenIndex === 20 && <LectureScreen10 onNext={goNext} hideSpeedDisplay forceWrong />}
+        {screenIndex === 21 && <LectureScreen12 onNext={goNext} hideSpeedDisplay forceWrong />}
+        {screenIndex === 22 && <LectureScreen18 onNext={goNext} hideSpeedDisplay forceCorrect />}
+        {screenIndex === 23 && <LectureScreen14 onNext={goNext} hideSpeedDisplay forceCorrect />}
+        {screenIndex === 24 && <LectureScreen17 onNext={goNext} hideSpeedDisplay showGoodStampAndFb4={true} forceCorrect />}
         {screenIndex === 25 && <CornerIntroScreen step="STEP 3" title="Role Play" step3 onNext={goNext} />}
         {screenIndex === 26 && <RolePlayScreen scriptIndex={0} onNext={goNext} />}
         {screenIndex === 27 && <RolePlayScreen scriptIndex={1} onNext={goNext} />}
         {screenIndex === 28 && <RolePlayScreen scriptIndex={2} onNext={goNext} />}
+        {screenIndex === 29 && <CornerIntroScreen step="STEP 4" title="Real Talk" step3 onNext={goNext} />}
+        {screenIndex === 30 && <RealTalkScreen onNext={() => setScreenIndex(31)} />}
+        {screenIndex === 31 && <RealTalkLessonScreen onNext={goNext} />}
       </div>
     </div>
   );

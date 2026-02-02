@@ -1,11 +1,11 @@
 /**
- * STT: 서버에 OPENAI_API_KEY 있으면 자동으로 Whisper, 없으면 Web Speech API
- * Whisper: 마이크 클릭 → 녹음 시작, 다시 클릭 → 녹음 종료 후 전사
+ * STT: 서버에 GEMINI_API_KEY 있으면 Gemini 음성→텍스트, 없으면 Web Speech API
+ * Gemini STT: 마이크 클릭 → 녹음 시작, 다시 클릭 → 녹음 종료 후 전사
  */
 
 let whisperAvailableCache: boolean | null = null;
 
-/** 서버에 Whisper 사용 가능 여부 물어보기 (캐시 1회) */
+/** 서버에 STT(Gemini) 사용 가능 여부 물어보기 (캐시 1회) */
 export async function isWhisperAvailable(): Promise<boolean> {
   if (whisperAvailableCache !== null) return whisperAvailableCache;
   try {
@@ -59,7 +59,7 @@ export function createWhisperRecorder(): WhisperRecorder {
       recorder.start(100);
     },
     async stop(): Promise<Blob | null> {
-      if (!recorder || recorder.state === 'inactive') return null;
+      if (!recorder || recorder.state === 'inactive') return Promise.resolve(null);
       const mimeType = recorder.mimeType || 'audio/webm';
       return new Promise((resolve) => {
         recorder!.onstop = () => {

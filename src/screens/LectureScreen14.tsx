@@ -55,7 +55,7 @@ function playWrongAudio(onEnd: () => void) {
   }
 }
 
-export function LectureScreen14({ onNext, hideSpeedDisplay }: { onNext: () => void; hideSpeedDisplay?: boolean }) {
+export function LectureScreen14({ onNext, hideSpeedDisplay, forceCorrect }: { onNext: () => void; hideSpeedDisplay?: boolean; forceCorrect?: boolean }) {
   const [recognitionDone, setRecognitionDone] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);
   const [showWrongMark, setShowWrongMark] = useState(false);
@@ -66,6 +66,12 @@ export function LectureScreen14({ onNext, hideSpeedDisplay }: { onNext: () => vo
     if (checkmarkShownRef.current) return;
     checkmarkShownRef.current = true;
     setRecognitionDone(true);
+    if (forceCorrect) {
+      setShowCheckmark(true);
+      playDingDong();
+      setTimeout(() => setShowCheckmark(false), 1200);
+      return;
+    }
     const expected = normalizeForCompare(CENTER_TEXT_LINE1);
     const said = normalizeForCompare(transcript);
     if (said === expected || (said.includes('i am') && said.includes('happy')) || (said.includes('i m') && said.includes('happy'))) {
@@ -80,8 +86,8 @@ export function LectureScreen14({ onNext, hideSpeedDisplay }: { onNext: () => vo
         playWrongAudio(() => {});
       }, 800);
     }
-  }, []);
-  const { start, isListening, useWhisper } = useSTT(onResult);
+  }, [forceCorrect]);
+  const { start, isListening, useWhisper } = useSTT(onResult, { useApiStt: false });
 
   useEffect(() => {
     if (!recognitionDone || showWrongMark) return;

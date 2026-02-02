@@ -7,6 +7,9 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { TOPIC_TEXT } from '../App';
 import { useSTT } from '../useSTT';
+/** 마이크 누를 때 표시할 영어 (인덱스 20) */
+const DISPLAY_TEXT_WHEN_MIC = 'Hello.';
+/** 오답 시 정답 노출·정답 비교용 */
 const CENTER_TEXT_LINE1 = 'Nice to meet you!';
 const CENTER_TEXT_LINE2 = '만나서 반가워요!';
 const SCREEN10_WRONG_AUDIO = '/nice-to-meet-you.mp3';
@@ -53,7 +56,7 @@ function playWrongAudio(onEnd: () => void) {
   }
 }
 
-export function LectureScreen10({ onNext, hideSpeedDisplay }: { onNext: () => void; hideSpeedDisplay?: boolean }) {
+export function LectureScreen10({ onNext, hideSpeedDisplay, forceWrong }: { onNext: () => void; hideSpeedDisplay?: boolean; forceWrong?: boolean }) {
   const [recognitionDone, setRecognitionDone] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);
   const [showWrongMark, setShowWrongMark] = useState(false);
@@ -64,6 +67,15 @@ export function LectureScreen10({ onNext, hideSpeedDisplay }: { onNext: () => vo
     if (checkmarkShownRef.current) return;
     checkmarkShownRef.current = true;
     setRecognitionDone(true);
+    if (forceWrong) {
+      setShowWrongMark(true);
+      setTimeout(() => {
+        setShowWrongMark(false);
+        setShowAnswerReveal(true);
+        playWrongAudio(() => {});
+      }, 800);
+      return;
+    }
     const expected = normalizeForCompare(CENTER_TEXT_LINE1);
     const said = normalizeForCompare(transcript);
     if (said === expected) {
@@ -72,14 +84,13 @@ export function LectureScreen10({ onNext, hideSpeedDisplay }: { onNext: () => vo
       setTimeout(() => setShowCheckmark(false), 1200);
     } else {
       setShowWrongMark(true);
-      /* 느낌표 잠깐 표시 후 완전히 없애고, 텍스트 그라데이션 + 음원 동시에 */
       setTimeout(() => {
         setShowWrongMark(false);
         setShowAnswerReveal(true);
         playWrongAudio(() => {});
       }, 800);
     }
-  }, []);
+  }, [forceWrong]);
 
   useEffect(() => {
     if (!recognitionDone || showWrongMark) return;
@@ -97,7 +108,7 @@ export function LectureScreen10({ onNext, hideSpeedDisplay }: { onNext: () => vo
     return () => clearTimeout(t);
   }, [showAnswerReveal, onNext]);
 
-  const { start, isListening, useWhisper } = useSTT(onResult);
+  const { start, isListening, useWhisper } = useSTT(onResult, { useApiStt: false });
 
   return (
     <div className="screen-content">
@@ -119,7 +130,7 @@ export function LectureScreen10({ onNext, hideSpeedDisplay }: { onNext: () => vo
           ) : (
             <>
               {(isListening || recognitionDone) && (
-                <p className="main-text main-text--two-lines main-text--gradient">{CENTER_TEXT_LINE1}</p>
+                <p className="main-text main-text--two-lines main-text--gradient">{DISPLAY_TEXT_WHEN_MIC}</p>
               )}
               <p className="main-text main-text--two-lines main-text--sub">{CENTER_TEXT_LINE2}</p>
             </>

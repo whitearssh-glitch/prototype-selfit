@@ -44,7 +44,7 @@ export function LectureScreen2({ onNext }: { onNext: () => void }) {
     playDingDong();
     setTimeout(() => setShowCheckmark(false), 1200);
   }, []);
-  const { start, isListening, useWhisper } = useSTT(onResult);
+  const { start, isListening, useWhisper } = useSTT(onResult, { useApiStt: false });
 
   useEffect(() => {
     const audio = new Audio('/pop.mp3');
