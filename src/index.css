@@ -28,14 +28,25 @@ body {
   overflow-x: auto;
 }
 
+/* 코너 선택(0): body 여백 분홍+청보라+노랑 그라데이션 */
+body.app-corner-select-margins {
+  background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 25%, #e1bee7 50%, #b39ddb 75%, #fff9c4 100%);
+}
+
 /* 스텝3(26·27·28): 양옆 여백도 화면 영역과 동일한 청보라 그라데이션 */
 /* 스텝1 코너 인트로: 양옆 여백도 연한 분홍~분홍 그라데이션 */
+/* 스텝1: 노랑 줄이고 분홍 강조 파스텔 그라데이션 */
 body.app-step1-margins {
-  background: linear-gradient(135deg, #ffc8d4 0%, #ffd0db 40%, #ffdde5 70%, #ffe4ec 100%);
+  background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 35%, #ffc0cb 65%, #f8bbd0 100%);
 }
 
 body.app-step3-margins {
   background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%);
+}
+
+/* 스텝5 코너 인트로(32): 양옆 여백·앱 영역 파스텔 보라-노랑 */
+body.app-step5-margins {
+  background: linear-gradient(135deg, #e1bee7 0%, #d1c4e9 35%, #fff9c4 75%, #fff59d 100%);
 }
 
 /* Mobile viewport – 고정 가로 414px (모바일/PC 동일), 좁은 화면에서는 가로 스크롤 */
@@ -58,6 +69,12 @@ body.app-step3-margins {
   flex-shrink: 0;
 }
 
+/* 코너 선택(0): 앱 영역도 분홍+청보라+노랑 그라데이션 */
+.app.app--corner-select-colors {
+  background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 25%, #e1bee7 50%, #b39ddb 75%, #fff9c4 100%) !important;
+  box-shadow: none !important;
+}
+
 @media (min-height: 800px) {
   .app {
     min-height: 667px;
@@ -67,7 +84,7 @@ body.app-step3-margins {
 
 /* 스텝1: 앱 영역·프레임을 여백과 같은 연한 분홍 그라데이션으로 */
 .app.app--step1-colors {
-  background: linear-gradient(135deg, #ffc8d4 0%, #ffd0db 40%, #ffdde5 70%, #ffe4ec 100%) !important;
+  background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 35%, #ffc0cb 65%, #f8bbd0 100%) !important;
 }
 
 .app.app--step3-colors {
@@ -77,6 +94,12 @@ body.app-step3-margins {
 
 .app.app--step3-colors-no-frame {
   background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.app.app--step5-colors {
+  background: linear-gradient(135deg, #e1bee7 0%, #d1c4e9 35%, #fff9c4 75%, #fff59d 100%) !important;
   border: none !important;
   box-shadow: none !important;
 }
@@ -120,6 +143,17 @@ body.app-step3-margins {
   border-radius: 2px;
 }
 
+/* Step 1 (Patterns·Speed Up) theme: header text + divider – 분홍 강조 */
+.app-header--step1 .app-header-text {
+  background: linear-gradient(135deg, #ffb74d 0%, #f48fb1 50%, #ec407a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.app-header--step1::after {
+  background: linear-gradient(90deg, #ffb74d 0%, #f48fb1 50%, #ec407a 100%);
+}
+
 /* Step 3 theme: header text + divider */
 .app-header--step3 .app-header-text {
   background: linear-gradient(135deg, #9fa8da 0%, #5c6bc0 100%);
@@ -129,6 +163,17 @@ body.app-step3-margins {
 }
 .app-header--step3::after {
   background: linear-gradient(90deg, #9fa8da 0%, #5c6bc0 100%);
+}
+
+/* Step 5 (Recap) theme: header text + divider – 배경(보라·노랑)에 맞춤 */
+.app-header--step5 .app-header-text {
+  background: linear-gradient(135deg, #7e57c2 0%, #9575cd 50%, #b39ddb 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.app-header--step5::after {
+  background: linear-gradient(90deg, #7e57c2 0%, #9575cd 50%, #b39ddb 100%);
 }
 
 /* Topic in center area – rounded frame box, pink bg, white text */
@@ -145,9 +190,23 @@ body.app-step3-margins {
   flex-shrink: 0;
 }
 
+/* Step 1 (Patterns·Speed Up): 토픽 박스 분홍 강조 */
+.app.app--step1-colors .topic-box {
+  background: linear-gradient(135deg, #ffe4ec 0%, #ffc0cb 50%, #f8bbd0 100%);
+  color: #c2185b;
+  font-weight: 600;
+}
+
 .topic-box--step3 {
   background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%);
   color: #37474f;
+  font-weight: 600;
+}
+
+/* Step 5 (Recap): 토픽 박스 – 배경(보라·노랑)에 맞춤 */
+.topic-box--step5 {
+  background: linear-gradient(135deg, #e1bee7 0%, #d1c4e9 40%, #ce93d8 100%);
+  color: #4a148c;
   font-weight: 600;
 }
 
@@ -205,6 +264,26 @@ body.app-step3-margins {
   font-size: 0.65rem;
   color: #ad1457;
   opacity: 0.8;
+}
+
+/* Step 1·2: Slow/Fast 버튼 분홍 강조 */
+.app.app--step1-colors .speed-display-item {
+  color: #ec407a;
+}
+.app.app--step1-colors .speed-display-item--slow {
+  background: linear-gradient(135deg, #ffb74d 0%, #f48fb1 50%, #ec407a 100%);
+  color: #fff;
+}
+.app.app--step1-colors .speed-display--fast-active .speed-display-item--slow {
+  background: #fff;
+  color: #ec407a;
+}
+.app.app--step1-colors .speed-display--fast-active .speed-display-item--fast {
+  background: linear-gradient(135deg, #ffb74d 0%, #f48fb1 50%, #ec407a 100%);
+  color: #fff;
+}
+.app.app--step1-colors .speed-display-sep {
+  color: #f48fb1;
 }
 
 .main-text--two-lines {
@@ -281,9 +360,7 @@ body.app-step3-margins {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 40%, #ffe4ec 100%);
-  border: 6px solid #ad1457;
-  border-radius: inherit;
+  background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 25%, #e1bee7 50%, #b39ddb 75%, #fff9c4 100%);
   box-sizing: border-box;
 }
 
@@ -292,27 +369,84 @@ body.app-step3-margins {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.25rem;
+  gap: 1.85rem;
 }
 
+.corner-select-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.corner-select-heading {
+  margin: 0 0 0.15rem 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #c2185b;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.corner-select-heading::before,
+.corner-select-heading::after {
+  content: '';
+  display: block;
+  width: 2rem;
+  height: 1px;
+  background: #ec407a;
+}
+
+/* Talk Time: 청보라 (진하게) */
+.corner-select-heading--talk-time {
+  color: #3949ab;
+}
+.corner-select-heading--talk-time::before,
+.corner-select-heading--talk-time::after {
+  background: #5c6bc0;
+}
+
+/* Review: 보라색 (진하게) */
+.corner-select-heading--review {
+  color: #5e35b1;
+}
+.corner-select-heading--review::before,
+.corner-select-heading--review::after {
+  background: #7e57c2;
+}
+
+/* 코너 선택: STEP 1~5 통일 – 그라데이션 테두리 / 흰 배경 / 그라데이션 텍스트 */
 .corner-select-btn {
-  min-width: 10rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
+  width: 11rem;
+  min-width: 11rem;
+  padding: 0.75rem 1rem;
+  border: 2px solid transparent;
   border-radius: 1rem;
-  background: linear-gradient(135deg, #880e4f 0%, #ad1457 50%, #d81b60 100%);
-  color: #fff;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(135deg, #f48fb1 0%, #f8bbd0 25%, #ce93d8 50%, #9575cd 75%, #fff59d 100%) border-box;
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: filter 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.1s ease;
 }
 
 .corner-select-btn:hover {
-  filter: brightness(1.08);
+  opacity: 0.95;
 }
-.corner-select-btn--step3 {
-  background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 35%, #9fa8da 65%, #5c6bc0 100%);
+
+.corner-select-btn:active {
+  transform: scale(0.98);
+}
+
+.corner-select-btn-text {
+  background: linear-gradient(135deg, #f48fb1 0%, #f8bbd0 25%, #ce93d8 50%, #9575cd 75%, #fff59d 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* Corner Intro Screen – full-screen corner title card */
@@ -329,25 +463,35 @@ body.app-step3-margins {
   cursor: pointer;
 }
 
-/* 스텝1 전용: 연한 분홍 ~ 분홍 그라데이션, 테두리도 여백과 자연스럽게 연결 */
+/* 스텝2 코너 인트로: 스텝1과 동일한 배경·테두리(연한 분홍) */
+/* 스텝1 코너 인트로: 노랑 줄이고 분홍 강조 */
 .corner-intro-screen--step1 {
-  background: linear-gradient(135deg, #ffc8d4 0%, #ffd0db 40%, #ffdde5 70%, #ffe4ec 100%);
-  border-color: #ad1457;
+  background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 35%, #ffc0cb 65%, #f8bbd0 100%);
+  border-color: #f48fb1;
 }
 .corner-intro-screen--step1 .corner-intro-step {
-  background: linear-gradient(135deg, #880e4f 0%, #ad1457 40%, #e91e63 100%);
+  background: linear-gradient(135deg, #ffb74d 0%, #f48fb1 50%, #ec407a 100%);
 }
 .corner-intro-screen--step1 .corner-intro-title {
-  background: linear-gradient(135deg, #880e4f 0%, #c2185b 50%, #e91e63 100%);
+  background: linear-gradient(135deg, #ffb74d 0%, #f48fb1 40%, #ec407a 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-/* 스텝2 코너 인트로: 스텝1과 동일한 배경·테두리(연한 분홍) */
+/* 스텝2 코너 인트로: 스텝1과 동일 분홍 강조 */
 .corner-intro-screen--step2 {
-  background: linear-gradient(135deg, #ffc8d4 0%, #ffd0db 40%, #ffdde5 70%, #ffe4ec 100%);
-  border-color: #ad1457;
+  background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 35%, #ffc0cb 65%, #f8bbd0 100%);
+  border-color: #f48fb1;
+}
+.corner-intro-screen--step2 .corner-intro-step {
+  background: linear-gradient(135deg, #ffb74d 0%, #f48fb1 50%, #ec407a 100%);
+}
+.corner-intro-screen--step2 .corner-intro-title {
+  background: linear-gradient(135deg, #ffb74d 0%, #f48fb1 40%, #ec407a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .corner-intro-inner {
@@ -391,6 +535,21 @@ body.app-step3-margins {
 }
 .corner-intro-screen--step3 .corner-intro-title {
   background: linear-gradient(135deg, #9fa8da 0%, #5c6bc0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* 스텝5 코너 인트로: Recap, 파스텔 보라-노랑 그라데이션 */
+.corner-intro-screen--step5 {
+  background: linear-gradient(135deg, #e1bee7 0%, #d1c4e9 30%, #ce93d8 55%, #fff9c4 85%, #fff59d 100%);
+  border-color: #b39ddb;
+}
+.corner-intro-screen--step5 .corner-intro-step {
+  background: linear-gradient(135deg, #b39ddb 0%, #ce93d8 50%, #e1bee7 100%);
+}
+.corner-intro-screen--step5 .corner-intro-title {
+  background: linear-gradient(135deg, #9575cd 0%, #b39ddb 40%, #fff59d 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -494,6 +653,19 @@ body.app-step3-margins {
   color: transparent;
 }
 
+/* Step 1: 하단 텍스트 박스 프레임 분홍 강조 */
+.app.app--step1-colors .text-box {
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(135deg, #ffb74d 0%, #f48fb1 40%, #ec407a 100%) border-box;
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+.app.app--step1-colors .text-box-two-lines .text-box-line {
+  background: none;
+  color: #c2185b;
+  font-weight: bold;
+}
+
 /* Center main text (Screen 2) */
 .main-text {
   font-size: 1.5rem;
@@ -574,6 +746,201 @@ body.app-step3-margins {
   cursor: not-allowed;
 }
 
+/* Step 5 (Recap): Next 버튼 – 배경에 맞춤 */
+.next-btn--step5 {
+  background: linear-gradient(135deg, #7e57c2 0%, #9575cd 50%, #b39ddb 100%);
+}
+
+/* Recap (index 33): 하단 중앙 원형 완료 버튼 – 보라 그라데이션 + 체크마크 */
+.recap-complete-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #7e57c2 0%, #9575cd 40%, #b39ddb 80%, #ce93d8 100%);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(126, 87, 194, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.recap-complete-circle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(126, 87, 194, 0.5);
+}
+.recap-complete-circle:active {
+  transform: scale(0.98);
+}
+.recap-complete-circle svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* Recap (index 33): Today's Expressions 헤딩 + 표현 프레임 */
+.recap-main {
+  gap: 1.25rem;
+}
+.recap-expressions-heading {
+  margin: 0;
+  padding: 0.5rem 1.25rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #4a148c;
+  text-align: center;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+.recap-expressions-heading::after {
+  content: '';
+  display: block;
+  width: 6rem;
+  height: 3px;
+  margin: 1.25rem auto 0;
+  border-radius: 2px;
+  background: #5e35b1;
+}
+.recap-expression-frames {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 20rem;
+}
+.recap-expression-frame {
+  width: 100%;
+  padding: 0.9rem 1.25rem;
+  border-radius: 1rem;
+  border: 2px solid #b39ddb;
+  background: linear-gradient(135deg, rgba(225, 190, 231, 0.6) 0%, rgba(209, 196, 233, 0.7) 50%, rgba(255, 249, 196, 0.5) 100%);
+  color: #4a148c;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.recap-expression-frame:hover {
+  opacity: 0.95;
+}
+.recap-expression-frame:active {
+  transform: scale(0.98);
+}
+
+/* Recap (index 34): Speaking Summary – 별 레이팅 + 한글 피드백 */
+.recap-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 22rem;
+}
+.recap-summary-heading {
+  margin: 0;
+  padding: 0.5rem 1.25rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #4a148c;
+  text-align: center;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+.recap-summary-heading::after {
+  content: '';
+  display: block;
+  width: 6rem;
+  height: 3px;
+  margin: 1.25rem auto 0;
+  border-radius: 2px;
+  background: #5e35b1;
+}
+.recap-summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  text-align: center;
+}
+.recap-summary-item + .recap-summary-item {
+  margin-top: 0.75rem;
+}
+.recap-summary-label-frame {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  border-radius: 1.5rem;
+  border: none;
+  background: linear-gradient(135deg, #5e35b1 0%, #7e57c2 40%, #9575cd 100%);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+}
+.recap-star-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+}
+.recap-star {
+  display: inline-flex;
+}
+.recap-star svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+.recap-star--filled {
+  color: #f9a825;
+}
+.recap-star--empty {
+  color: #e0e0e0;
+}
+.recap-summary-feedback {
+  margin: 0;
+  font-size: 1rem;
+  color: #5e35b1;
+  line-height: 1.4;
+}
+
+/* Recap (index 35): Selena's Secret Tip – 턴2·턴4 피드백 요약 (헤드·라벨은 34와 동일) */
+.recap-tips {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 20rem;
+}
+.recap-tip-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  text-align: center;
+}
+.recap-tip-item + .recap-tip-item {
+  margin-top: 0.75rem;
+}
+.recap-tip-text {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #5e35b1;
+  line-height: 1.45;
+  opacity: 0.95;
+}
+.recap-tip-highlight {
+  color: #e91e63;
+  font-weight: 700;
+}
+.recap-tip-bold {
+  font-weight: 700;
+}
+
 /* Microphone button */
 .mic-btn {
   width: 64px;
@@ -603,6 +970,12 @@ body.app-step3-margins {
 .mic-btn svg {
   width: 28px;
   height: 28px;
+}
+
+/* Step 1: 마이크 버튼 분홍 강조 */
+.app.app--step1-colors .mic-btn {
+  background: linear-gradient(135deg, #ffb74d 0%, #f48fb1 50%, #ec407a 100%);
+  box-shadow: 0 2px 12px rgba(244, 143, 177, 0.4);
 }
 
 /* Step 3 Role Play: mic button color */
@@ -1410,9 +1783,19 @@ body.app-step3-margins {
   font-weight: normal;
 }
 
+/* 스텝1 마지막: GOOD 도장 분홍 강조 (인덱스 8, 24) */
+.app.app--step1-colors .screen7-stamp-circle {
+  background: linear-gradient(135deg, #ffb74d 0%, #f48fb1 45%, #ec407a 100%);
+}
+
 /* 인덱스 28: GOOD 도장 청보라색 */
 .roleplay-good-stamp-overlay .roleplay-good-stamp-circle {
   background: linear-gradient(135deg, #3949ab 0%, #5c6bc0 50%, #7986cb 100%);
+}
+
+/* 인덱스 35: Recap 완료 GOOD 도장 보라색 */
+.recap-good-stamp-overlay .recap-good-stamp-circle {
+  background: linear-gradient(135deg, #5e35b1 0%, #7e57c2 50%, #9575cd 100%);
 }
 
 /* Checkmark popup */
@@ -1482,10 +1865,11 @@ body.app-step3-margins {
 }
 
 /* 인덱스 20 오답: 이전 디자인 유지, 아이콘만 청보라 */
+/* 인덱스 20·21: 느낌표 팝업 – Step 1·2 별 팝업과 동일 컬러 */
 .wrong-popup--exclamation-blue svg {
   width: 48px;
   height: 48px;
-  color: #7986cb;
+  color: #ec407a;
 }
 
 /* 인덱스 20 오답 후: 기존 문장 자리에서 정답 문장 왼쪽→오른쪽 그라데이션 (기존 영어와 동일 1.5rem) */
@@ -1520,7 +1904,7 @@ body.app-step3-margins {
   }
 }
 
-/* Speed Up! 팝업 (인덱스 14 전용) */
+/* Speed Up! / Your turn! 팝업 – Slow/Fast처럼 노란 기운 살짝 */
 .speed-up-popup {
   position: fixed;
   top: 50%;
@@ -1528,10 +1912,10 @@ body.app-step3-margins {
   transform: translate(-50%, -50%);
   padding: 1rem 1.5rem;
   border-radius: 1rem;
-  background: linear-gradient(135deg, #880e4f 0%, #ad1457 50%, #d81b60 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #fff59d 0%, #ffe4ec 35%, #ffc0cb 65%, #f8bbd0 100%);
+  color: #c2185b;
   font-size: 1.25rem;
   font-weight: 700;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(244, 143, 177, 0.35);
   animation: pop 0.3s ease;
 }

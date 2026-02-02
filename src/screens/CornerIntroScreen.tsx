@@ -9,6 +9,7 @@ export function CornerIntroScreen({
   step1 = false,
   step2 = false,
   step3 = false,
+  step5 = false,
   onNext,
 }: {
   step?: string;
@@ -16,6 +17,7 @@ export function CornerIntroScreen({
   step1?: boolean;
   step2?: boolean;
   step3?: boolean;
+  step5?: boolean;
   onNext: () => void;
 }) {
   const screenClass = [
@@ -23,6 +25,7 @@ export function CornerIntroScreen({
     step1 && 'corner-intro-screen--step1',
     step2 && 'corner-intro-screen--step2',
     step3 && 'corner-intro-screen--step3',
+    step5 && 'corner-intro-screen--step5',
   ].filter(Boolean).join(' ');
   return (
     <div className={screenClass} onClick={onNext} role="button" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNext(); } }} aria-label="Next">
