@@ -169,9 +169,8 @@ export function RealTalk2Screen({ onNext }: RealTalk2ScreenProps) {
     startSTT();
   }, [showMic, startSTT, attemptCount]);
 
-  useEffect(() => {
+useEffect(() => {
     playRealtalk1(() => setShowMic(true));
-
     return () => {
       if (introAudioRef.current) {
         introAudioRef.current.pause();

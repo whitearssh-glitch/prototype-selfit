@@ -1,6 +1,6 @@
 /**
  * Real Talk 2 – Turn 6 (인덱스 40)
- * 마이크 음성인식 → real7.mp3 재생 완료 후 → Good job 도장 + fb1.mp3 재생.
+ * 마이크 음성인식 → real7.mp3 재생 완료 후 → 별 표시 팝업 + 딩동 효과음 (다른 화면과 동일).
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -9,46 +9,66 @@ import { useSTT } from '../useSTT';
 
 const REALTALK_IMAGE_GIRL1 = '/girl1.png';
 const TURN6_AUDIO = '/real7.mp3';
-const TURN6_STAMP_AUDIO = '/fb1.mp3';
-/** real7 재생 완료 후 도장+fb1까지 대기 시간(ms) */
+/** real7 재생 완료 후 별 팝업+효과음까지 대기 시간(ms) */
 const TURN6_DELAY_AFTER_REAL7_MS = 2000;
+
+function playDingDong() {
+  try {
+    const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+    const playTone = (freq: number, start: number, duration: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.2, start);
+      gain.gain.exponentialRampToValueAtTime(0.01, start + duration);
+      osc.start(start);
+      osc.stop(start + duration);
+    };
+    playTone(523, 0, 0.15);
+    playTone(659, 0.2, 0.2);
+  } catch {
+    // ignore
+  }
+}
 
 export function RealTalk2Turn6Screen() {
   const [showMic, setShowMic] = useState(true);
-  const [showGoodStamp, setShowGoodStamp] = useState(false);
+  const [showStarPopup, setShowStarPopup] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const stampDelayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const stampAndFb1DoneRef = useRef(false);
+  const starDelayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const starPopupDoneRef = useRef(false);
 
   const onSTTResult = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
-    if (stampDelayTimerRef.current) {
-      clearTimeout(stampDelayTimerRef.current);
-      stampDelayTimerRef.current = null;
+    if (starDelayTimerRef.current) {
+      clearTimeout(starDelayTimerRef.current);
+      starDelayTimerRef.current = null;
     }
-    stampAndFb1DoneRef.current = false;
+    starPopupDoneRef.current = false;
     setShowMic(false);
+    setShowStarPopup(false);
 
     const audio = new Audio(TURN6_AUDIO);
     audioRef.current = audio;
 
-    const showStampAndFb1 = () => {
-      if (stampAndFb1DoneRef.current) return;
-      stampAndFb1DoneRef.current = true;
-      stampDelayTimerRef.current = null;
-      setShowGoodStamp(true);
-      const stamp = new Audio(TURN6_STAMP_AUDIO);
-      stamp.onerror = () => {};
-      stamp.play().catch(() => {});
+    const showStarPopupAndSound = () => {
+      if (starPopupDoneRef.current) return;
+      starPopupDoneRef.current = true;
+      starDelayTimerRef.current = null;
+      setShowStarPopup(true);
+      playDingDong();
     };
 
     audio.onended = () => {
       audioRef.current = null;
-      if (stampDelayTimerRef.current) return;
-      stampDelayTimerRef.current = setTimeout(showStampAndFb1, TURN6_DELAY_AFTER_REAL7_MS);
+      if (starDelayTimerRef.current) return;
+      starDelayTimerRef.current = setTimeout(showStarPopupAndSound, TURN6_DELAY_AFTER_REAL7_MS);
     };
     audio.onerror = () => {
       audioRef.current = null;
@@ -60,9 +80,9 @@ export function RealTalk2Turn6Screen() {
 
   useEffect(() => {
     return () => {
-      if (stampDelayTimerRef.current) {
-        clearTimeout(stampDelayTimerRef.current);
-        stampDelayTimerRef.current = null;
+      if (starDelayTimerRef.current) {
+        clearTimeout(starDelayTimerRef.current);
+        starDelayTimerRef.current = null;
       }
       if (audioRef.current) {
         audioRef.current.pause();
@@ -110,34 +130,18 @@ export function RealTalk2Turn6Screen() {
         </div>
       </div>
 
-      {showGoodStamp && (
+      {showStarPopup && (
         <div
-          className="screen7-stamp-popup screen7-stamp-popup--overlay recap-good-stamp-overlay"
+          className="checkmark-popup roleplay-complete-popup"
           role="button"
           tabIndex={0}
-          aria-label="Good"
-          onClick={(e) => { e.stopPropagation(); setShowGoodStamp(false); }}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowGoodStamp(false); } }}
+          aria-label="완료"
+          onClick={(e) => { e.stopPropagation(); setShowStarPopup(false); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowStarPopup(false); } }}
         >
-          <div className="screen7-stamp-circle recap-good-stamp-circle">
-            <svg className="screen7-stamp-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <path id="turn6-stamp-star" d="M0 -2.1 L0.5 -0.5 L2.2 -0.5 L0.8 0.5 L1.3 2.1 L0 1.1 L-1.3 2.1 L-0.8 0.5 L-2.2 -0.5 L-0.5 -0.5 Z" fill="#fff" />
-              </defs>
-              <circle cx="60" cy="60" r="52" fill="none" stroke="#fff" strokeWidth="3" />
-              <use href="#turn6-stamp-star" transform="translate(98, 38) scale(2)" />
-              <use href="#turn6-stamp-star" transform="translate(82, 22) scale(2)" />
-              <use href="#turn6-stamp-star" transform="translate(60, 16) scale(2)" />
-              <use href="#turn6-stamp-star" transform="translate(38, 22) scale(2)" />
-              <use href="#turn6-stamp-star" transform="translate(22, 38) scale(2)" />
-              <use href="#turn6-stamp-star" transform="translate(22, 82) scale(2)" />
-              <use href="#turn6-stamp-star" transform="translate(38, 98) scale(2)" />
-              <use href="#turn6-stamp-star" transform="translate(60, 104) scale(2)" />
-              <use href="#turn6-stamp-star" transform="translate(82, 98) scale(2)" />
-              <use href="#turn6-stamp-star" transform="translate(98, 82) scale(2)" />
-              <text x="60" y="62" textAnchor="middle" dominantBaseline="central" className="screen7-stamp-text" fill="#fff">Good!</text>
-            </svg>
-          </div>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+          </svg>
         </div>
       )}
     </div>

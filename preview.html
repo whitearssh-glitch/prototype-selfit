@@ -450,6 +450,7 @@
       100% { transform: translate(-50%, -50%) scale(1); }
     }
     .checkmark-popup svg { width: 48px; height: 48px; color: #2e7d32; }
+    .roleplay-complete-popup svg { width: 48px; height: 48px; color: #7986cb; }
     .wrong-popup {
       position: fixed;
       top: 50%;
@@ -1189,6 +1190,7 @@
       isListening: false,
       checkmarkShown: false
     };
+    var turn38ShowMic = false;
     var turn39Phase = 0;
     var turn39Playing = false;
     var turn39ShowModelText = false;
@@ -3327,17 +3329,20 @@
             '<div class="realtalk-main"><img src="./girl1.png" alt="" class="realtalk-main-image"></div>' +
             '<div class="realtalk2-text-below realtalk2-slot-two-lines" aria-hidden="true"><span class="realtalk2-text-placeholder"></span></div>' +
             '<div class="realtalk-bottom realtalk2-bottom--fixed-height">' +
-              '<button type="button" class="mic-btn mic-btn--step3" id="btn-mic-38" aria-label="Microphone">' + mic38Svg + '</button>' +
+              '<button type="button" class="mic-btn mic-btn--step3' + (turn38ShowMic ? '' : ' realtalk2-mic--hidden') + '" id="btn-mic-38" aria-label="Microphone">' + mic38Svg + '</button>' +
             '</div></div></div>';
         el.innerHTML = realtalkHtml38;
+        var playIntro38 = function () {
+          var a = new Audio('./realtalk1.mp3');
+          a.onended = a.onerror = function () { turn38ShowMic = true; mount(); };
+          a.play().catch(function () { turn38ShowMic = true; mount(); });
+        };
+        if (!turn38ShowMic) playIntro38();
         var btn38 = document.getElementById('btn-mic-38');
-        if (btn38) btn38.onclick = function (e) {
+        if (btn38 && turn38ShowMic) btn38.onclick = function (e) {
           e.stopPropagation();
           var audio38 = new Audio('./real3.mp3');
-          var go39 = function () {
-            screenIndex = 39;
-            mount();
-          };
+          var go39 = function () { screenIndex = 39; mount(); };
           var t38 = setTimeout(go39, 20000);
           audio38.onended = function () { clearTimeout(t38); go39(); };
           audio38.onerror = function () { clearTimeout(t38); go39(); };
@@ -3429,15 +3434,13 @@
             turn40Playing = true;
             mount();
             var a = new Audio('./real7.mp3');
-            var turn40StampScheduled = false;
+            var turn40StarScheduled = false;
             a.onended = function () {
-              if (turn40StampScheduled) return;
-              turn40StampScheduled = true;
+              if (turn40StarScheduled) return;
+              turn40StarScheduled = true;
               setTimeout(function () {
                 turn40ShowStamp = true;
-                var fb = new Audio('./fb1.mp3');
-                fb.onerror = function () {};
-                fb.play().catch(function () {});
+                playDingDong();
                 mount();
               }, 2000);
             };
@@ -3446,26 +3449,13 @@
           });
         };
         if (turn40ShowStamp) {
-          var stampHtml = '<div class="screen7-stamp-popup screen7-stamp-popup--overlay recap-good-stamp-overlay" role="button" tabindex="0" aria-label="Good" id="stamp-40">' +
-            '<div class="screen7-stamp-circle recap-good-stamp-circle">' +
-              '<svg class="screen7-stamp-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">' +
-                '<defs><path id="turn6-stamp-star-pv" d="M0 -2.1 L0.5 -0.5 L2.2 -0.5 L0.8 0.5 L1.3 2.1 L0 1.1 L-1.3 2.1 L-0.8 0.5 L-2.2 -0.5 L-0.5 -0.5 Z" fill="#fff"/></defs>' +
-                '<circle cx="60" cy="60" r="52" fill="none" stroke="#fff" stroke-width="3"/>' +
-                '<use href="#turn6-stamp-star-pv" transform="translate(98, 38) scale(2)"/>' +
-                '<use href="#turn6-stamp-star-pv" transform="translate(82, 22) scale(2)"/>' +
-                '<use href="#turn6-stamp-star-pv" transform="translate(60, 16) scale(2)"/>' +
-                '<use href="#turn6-stamp-star-pv" transform="translate(38, 22) scale(2)"/>' +
-                '<use href="#turn6-stamp-star-pv" transform="translate(22, 38) scale(2)"/>' +
-                '<use href="#turn6-stamp-star-pv" transform="translate(22, 82) scale(2)"/>' +
-                '<use href="#turn6-stamp-star-pv" transform="translate(38, 98) scale(2)"/>' +
-                '<use href="#turn6-stamp-star-pv" transform="translate(60, 104) scale(2)"/>' +
-                '<use href="#turn6-stamp-star-pv" transform="translate(82, 98) scale(2)"/>' +
-                '<use href="#turn6-stamp-star-pv" transform="translate(98, 82) scale(2)"/>' +
-                '<text x="60" y="62" text-anchor="middle" dominant-baseline="central" class="screen7-stamp-text" fill="#fff">Good!</text>' +
-              '</svg></div></div>';
-          el.insertAdjacentHTML('beforeend', stampHtml);
-          var stampEl = document.getElementById('stamp-40');
-          if (stampEl) stampEl.onclick = function (ev) { ev.stopPropagation(); turn40ShowStamp = false; mount(); };
+          var starPopupHtml = '<div class="checkmark-popup roleplay-complete-popup" role="button" tabindex="0" aria-label="완료" id="star-popup-40">' +
+            '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+              '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>' +
+            '</svg></div>';
+          el.insertAdjacentHTML('beforeend', starPopupHtml);
+          var starEl = document.getElementById('star-popup-40');
+          if (starEl) starEl.onclick = function (ev) { ev.stopPropagation(); turn40ShowStamp = false; mount(); };
         }
         return;
       }
