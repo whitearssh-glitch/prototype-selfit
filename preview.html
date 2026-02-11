@@ -587,12 +587,13 @@
       gap: 0.75rem;
       padding: 0.5rem 0.75rem;
       min-height: 0;
+      background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%);
     }
     .roleplay-chat--tap-to-listen { cursor: pointer; }
     .roleplay-tap-hint { font-size: 0.8em; color: #5c6bc0; opacity: 0.85; font-weight: normal; }
     .roleplay-bubble-row { display: flex; align-items: flex-start; gap: 0.5rem; }
     .roleplay-bubble-row--character { justify-content: flex-start; }
-    .roleplay-bubble-row--student { justify-content: flex-end; flex-direction: row-reverse; align-self: flex-end; width: calc(100% + 0.75rem); max-width: none; margin-left: auto; margin-right: -0.75rem; box-sizing: border-box; }
+    .roleplay-bubble-row--student { justify-content: flex-end; flex-direction: row-reverse; align-self: flex-end; width: 100%; max-width: 100%; box-sizing: border-box; }
     .roleplay-avatar {
       width: 40px;
       height: 40px;
@@ -601,15 +602,20 @@
       flex-shrink: 0;
     }
     .roleplay-bubble-wrap { display: flex; flex-direction: column; align-items: flex-start; max-width: 80%; }
-    .roleplay-bubble-row--student .roleplay-bubble-wrap { align-items: flex-end; text-align: right; width: min(18rem, 85%); max-width: min(18rem, 85%); min-width: min(14rem, 50%); flex-shrink: 0; margin-left: auto; }
+    .roleplay-bubble-row--student .roleplay-bubble-wrap { align-items: flex-end; text-align: right; flex: 1; min-width: 0; max-width: calc(100% - 3rem); }
     .roleplay-name { font-size: 0.7rem; font-weight: 600; color: #37474f; margin-bottom: 2px; }
     .roleplay-bubble {
       padding: 0.5rem 0.75rem;
       border-radius: 1rem;
       font-size: 0.95rem;
-      line-height: 1.35;
-      word-break: break-word;
-      overflow-wrap: break-word;
+      white-space: pre-line;
+    }
+    .roleplay-bubble--single-line {
+      white-space: nowrap;
+    }
+    .roleplay-bubble-row--student .roleplay-bubble-wrap--single-line {
+      min-width: 0;
+      max-width: calc(100% - 3rem);
     }
     .roleplay-bubble--character {
       background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%);
@@ -621,8 +627,8 @@
       color: #fff;
       border-bottom-right-radius: 4px;
       min-height: 2rem;
-      width: min(14rem, 100%);
-      max-width: min(14rem, 100%);
+      width: fit-content;
+      max-width: 100%;
       white-space: pre-wrap;
       box-sizing: border-box;
     }
@@ -659,6 +665,28 @@
       cursor: pointer;
     }
     .roleplay-bottom { flex-shrink: 0; padding: 0.75rem; display: flex; justify-content: center; align-items: center; }
+    .roleplay-bubble-actions { display: flex; align-items: center; gap: 0.35rem; margin-top: 0.25rem; flex-shrink: 0; }
+    .roleplay-k-btn {
+      width: 1.75rem; height: 1.75rem; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+      color: #5c6bc0; background: rgba(92, 107, 192, 0.12); border: 1px solid rgba(92, 107, 192, 0.35);
+      border-radius: 50%; cursor: pointer; flex-shrink: 0;
+    }
+    .roleplay-bubble-actions .roleplay-k-btn { margin-top: 0; }
+    .roleplay-k-btn svg { width: 1rem; height: 1rem; }
+    .roleplay-k-btn:hover { background: rgba(92, 107, 192, 0.2); color: #3949ab; }
+    .roleplay-chat-bottom { display: flex; justify-content: center; padding: 1rem 0 0.5rem; flex-shrink: 0; }
+    .roleplay-check-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 56px; height: 56px; border-radius: 50%; border: none;
+      background: linear-gradient(135deg, #5c6bc0 0%, #7986cb 40%, #9fa8da 100%);
+      color: #fff; cursor: pointer;
+      box-shadow: 0 2px 12px rgba(92, 107, 192, 0.4);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .roleplay-check-btn:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(92, 107, 192, 0.5); }
+    .roleplay-check-btn:active { transform: scale(0.98); }
+    .roleplay-check-btn svg { width: 28px; height: 28px; }
     .topic-box--step3 {
       background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%);
       color: #37474f;
@@ -1168,7 +1196,7 @@
     }
 
     var hash = window.location.hash.slice(1);
-    var screenIndex = (hash === 'speed-up') ? 9 : (function () { var n = parseInt(hash, 10); return (!Number.isNaN(n) && n >= 0 && n <= 40) ? n : 0; })();
+    var screenIndex = (hash === 'speed-up') ? 9 : (function () { var n = parseInt(hash, 10); return (!Number.isNaN(n) && n >= 0 && n <= 42) ? n : 0; })();
     // STT 디버그: 브라우저 Web Speech API 사용 (별도 서버 없음)
     window.__sttDebug = { api: 'Web Speech API (SpeechRecognition)', lastTranscript: '', lastScreenIndex: 0, onResultCount: 0, onEndFired: false };
     if (typeof console !== 'undefined' && console.log) console.log('SELFit preview 로드됨. STT 콘솔 로그 활성화 → 15·20번 화면에서 마이크 누르면 여기 찍힘');
@@ -1196,6 +1224,19 @@
     var turn39ShowModelText = false;
     var turn40Playing = false;
     var turn40ShowStamp = false;
+    var turn41ShowBtn = false;
+    var turn42ShowKo = [false, false, false, false, false, false, false, false, false];
+    var turn42Script = [
+      { speaker: 'Cathy', textEn: "Hi! I'm Cathy. What's your name?", textKo: '안녕! 난 캐시야. 네 이름은 뭐야?', audio: './realtalk1.mp3' },
+      { speaker: 'Me', textEn: 'My name is Jake.', textKo: '내 이름은 제이크야.', audio: null },
+      { speaker: 'Cathy', textEn: 'Oh, nice to meet you.', textKo: '오, 만나서 반가워.', audio: './real2.mp3' },
+      { speaker: 'Me', textEn: 'Nice to meet you.', textKo: '만나서 반가워.', audio: null },
+      { speaker: 'Cathy', textEn: 'Are you a student at this school?', textKo: '넌 이 학교의 학생이야?', audio: './real3.mp3' },
+      { speaker: 'Me', textEn: 'I am a student.', textKo: '난 학생이야.', audio: null },
+      { speaker: 'Cathy', textEn: 'Thanks for answering.\nHow are you feeling today?', textKo: '대답해줘서 고마워. 오늘 기분은 어때?', audio: './real5.mp3' },
+      { speaker: 'Me', textEn: "I'm really hungry right now.", textKo: '난 지금 엄청 배가 고파.', audio: null, singleLine: true },
+      { speaker: 'Cathy', textEn: "Haha. Me, too!\nLet's go eat something!", textKo: '하하. 나도야! 뭔가 먹으러 가자!', audio: './real7.mp3' }
+    ];
     var screen9State = {
       audioPlayed: false,
       recognitionDone: false,
@@ -1506,7 +1547,7 @@
     }
 
     function goNext() {
-      if (screenIndex < 40) screenIndex++;
+      if (screenIndex < 43) screenIndex++;
       mount();
     }
 
@@ -2485,6 +2526,26 @@
       try { rec.start(); } catch (e) { finish(); }
     }
 
+    /* 인덱스 40 전용: 음성인식 끝나면 onDone만 호출 (딩동은 별 팝업 시에만). React 흐름과 동일 */
+    function startRecognition40(onDone) {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { onDone(); return; }
+      var rec = new SR();
+      rec.continuous = false;
+      rec.lang = 'en-US';
+      rec.interimResults = false;
+      var didDone = false;
+      var finish = function () {
+        if (didDone) return;
+        didDone = true;
+        onDone();
+      };
+      rec.onresult = finish;
+      rec.onend = finish;
+      rec.onerror = finish;
+      try { rec.start(); } catch (e) { finish(); }
+    }
+
     function renderScreen9(state, fastActive) {
       var recognitionDone = state.recognitionDone;
       var showCheckmark = state.showCheckmark;
@@ -3282,6 +3343,8 @@
         var step3Bg = 'linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%)';
         document.body.style.background = step3Bg;
         document.documentElement.style.background = step3Bg;
+        document.body.style.backgroundAttachment = 'fixed';
+        document.documentElement.style.backgroundAttachment = 'fixed';
         if (header) { header.style.display = ''; header.className = 'app-header app-header--step3'; }
         if (appEl) {
           appEl.style.background = step3Bg;
@@ -3318,6 +3381,8 @@
         var step3Bg38 = 'linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%)';
         document.body.style.background = step3Bg38;
         document.documentElement.style.background = step3Bg38;
+        document.body.style.backgroundAttachment = 'fixed';
+        document.documentElement.style.backgroundAttachment = 'fixed';
         if (header) { header.style.display = ''; header.className = 'app-header app-header--step3'; }
         if (appEl) { appEl.style.background = step3Bg38; appEl.style.border = ''; appEl.style.boxShadow = 'none'; }
         if (overlayEl) overlayEl.innerHTML = '';
@@ -3430,7 +3495,7 @@
         var btn40 = document.getElementById('btn-mic-40');
         if (btn40 && !turn40Playing) btn40.onclick = function (e) {
           e.stopPropagation();
-          startRecognition39(function () {
+          startRecognition40(function () {
             turn40Playing = true;
             mount();
             var a = new Audio('./real7.mp3');
@@ -3455,8 +3520,132 @@
             '</svg></div>';
           el.insertAdjacentHTML('beforeend', starPopupHtml);
           var starEl = document.getElementById('star-popup-40');
-          if (starEl) starEl.onclick = function (ev) { ev.stopPropagation(); turn40ShowStamp = false; mount(); };
+          if (starEl) starEl.onclick = function (ev) { ev.stopPropagation(); goNext(); };
         }
+        return;
+      }
+
+      if (screenIndex === 41) {
+        var step3Bg41 = 'linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%)';
+        document.body.style.background = step3Bg41;
+        document.documentElement.style.background = step3Bg41;
+        if (header) { header.style.display = ''; header.className = 'app-header app-header--step3'; }
+        if (appEl) { appEl.style.background = step3Bg41; appEl.style.border = ''; appEl.style.boxShadow = 'none'; }
+        if (overlayEl) overlayEl.innerHTML = '';
+        var realtalkHtml41 = '<div class="screen-content screen-content--step3-colors-no-frame">' +
+          '<div class="realtalk-layout">' +
+            '<div class="realtalk-top"><div class="topic-box topic-box--step3">' + TOPIC_TEXT + '</div></div>' +
+            '<div class="realtalk-main">' +
+              '<img src="./girl.png" alt="" class="realtalk-main-image">' +
+            '</div>' +
+            '<div class="realtalk-bottom"><button type="button" class="realtalk-go-btn' + (turn41ShowBtn ? '' : ' realtalk-go-btn--hidden') + '" id="realtalk-go-41">SURE!</button></div>' +
+          '</div></div>';
+        el.innerHTML = realtalkHtml41;
+        var goBtn41 = document.getElementById('realtalk-go-41');
+        if (goBtn41) goBtn41.onclick = function () { screenIndex = 42; mount(); };
+        if (!turn41ShowBtn) {
+          try {
+            var audio41 = new Audio('./check.mp3');
+            var turn41Cleared = false;
+            var showBtn41 = function () { if (!turn41Cleared) { turn41ShowBtn = true; mount(); } };
+            var onTimeUpdate = function () {
+              if (turn41Cleared) return;
+              if (audio41.duration && !isNaN(audio41.duration) && audio41.currentTime >= audio41.duration - 0.1) {
+                audio41.removeEventListener('timeupdate', onTimeUpdate);
+                showBtn41();
+              }
+            };
+            var onEnded = function () {
+              if (turn41Cleared) return;
+              if (audio41.duration && !isNaN(audio41.duration) && audio41.currentTime >= audio41.duration - 0.1) {
+                showBtn41();
+                return;
+              }
+              setTimeout(function () {
+                if (!turn41Cleared && audio41.duration && audio41.currentTime >= audio41.duration - 0.1) showBtn41();
+              }, 200);
+            };
+            var onError = function () { setTimeout(showBtn41, 1500); };
+            audio41.addEventListener('timeupdate', onTimeUpdate);
+            audio41.addEventListener('ended', onEnded);
+            audio41.addEventListener('error', onError);
+            audio41.play().catch(onError);
+          } catch (e) { setTimeout(function () { turn41ShowBtn = true; mount(); }, 1500); }
+        }
+        return;
+      }
+
+      if (screenIndex === 42) {
+        var step3Bg42 = 'linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%)';
+        document.body.style.background = step3Bg42;
+        document.documentElement.style.background = step3Bg42;
+        if (header) { header.style.display = ''; header.className = 'app-header app-header--step3'; }
+        if (appEl) { appEl.style.background = step3Bg42; appEl.style.border = ''; appEl.style.boxShadow = 'none'; }
+        if (overlayEl) overlayEl.innerHTML = '';
+        var globeSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="10" ry="3"/><ellipse cx="12" cy="12" rx="3" ry="10"/></svg>';
+        var soundSvg = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
+        var bubbles42 = '';
+        for (var i = 0; i < turn42Script.length; i++) {
+          var it = turn42Script[i];
+          var isCathy = it.speaker === 'Cathy';
+          var rowCls = isCathy ? 'roleplay-bubble-row roleplay-bubble-row--character' : 'roleplay-bubble-row roleplay-bubble-row--student';
+          var avatarSrc = isCathy ? './girl.png' : './student.png';
+          var avatarCls = isCathy ? 'roleplay-avatar' : 'roleplay-avatar roleplay-avatar--student';
+          var bubbleCls = isCathy ? 'roleplay-bubble roleplay-bubble--character' : 'roleplay-bubble roleplay-bubble--student';
+          if (it.singleLine) bubbleCls += ' roleplay-bubble--single-line';
+          var text = turn42ShowKo[i] ? it.textKo : it.textEn;
+          var soundDisabled = it.audio ? '' : ' disabled';
+          bubbles42 += '<div class="' + rowCls + '">' +
+            '<img src="' + avatarSrc + '" alt="" class="' + avatarCls + '" aria-hidden="true">' +
+            '<div class="' + wrapCls + '">' +
+              '<span class="roleplay-name">' + it.speaker + '</span>' +
+              '<div class="' + bubbleCls + '">' + text + '</div>' +
+              '<div class="roleplay-bubble-actions">' +
+                '<button type="button" class="roleplay-k-btn" id="btn-42-ko-' + i + '" aria-label="' + (turn42ShowKo[i] ? '영어로 보기' : '한글로 보기') + '">' + globeSvg + '</button>' +
+                '<button type="button" class="roleplay-k-btn roleplay-sound-btn" id="btn-42-sound-' + i + '" aria-label="' + (it.audio ? '소리' : '소리 없음') + '"' + soundDisabled + '>' + soundSvg + '</button>' +
+              '</div></div></div>';
+        }
+        var checkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
+        var realtalkHtml42 = '<div class="screen-content screen-content--step3-colors-no-frame">' +
+          '<div class="realtalk2-layout realtalk-layout--reserve-go-space">' +
+            '<div class="realtalk-top"><div class="topic-box topic-box--step3">' + TOPIC_TEXT + '</div></div>' +
+            '<div class="realtalk-main realtalk2-main--roleplay-chat">' +
+              '<div class="roleplay-chat">' + bubbles42 +
+                '<div class="roleplay-chat-bottom">' +
+                  '<button type="button" class="roleplay-check-btn" id="btn-42-check" aria-label="다음으로">' + checkSvg + '</button>' +
+                '</div></div>' +
+            '</div>' +
+          '</div></div>';
+        el.innerHTML = realtalkHtml42;
+        var btn42Check = document.getElementById('btn-42-check');
+        if (btn42Check) btn42Check.onclick = goNext;
+        for (var j = 0; j < turn42Script.length; j++) {
+          (function (idx) {
+            var btnKo = document.getElementById('btn-42-ko-' + idx);
+            if (btnKo) btnKo.onclick = function () { turn42ShowKo[idx] = !turn42ShowKo[idx]; mount(); };
+            var btnSound = document.getElementById('btn-42-sound-' + idx);
+            if (btnSound && turn42Script[idx].audio) {
+              btnSound.onclick = function () {
+                try { var a = new Audio(turn42Script[idx].audio); a.play().catch(function () {}); } catch (e) {}
+              };
+            }
+          })(j);
+        }
+        return;
+      }
+
+      if (screenIndex === 43) {
+        var step3Bg43 = 'linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%)';
+        document.body.style.background = step3Bg43;
+        document.documentElement.style.background = step3Bg43;
+        if (header) { header.style.display = ''; header.className = 'app-header app-header--step3'; }
+        if (appEl) { appEl.style.background = step3Bg43; appEl.style.border = ''; appEl.style.boxShadow = 'none'; }
+        if (overlayEl) overlayEl.innerHTML = '';
+        el.innerHTML = '<div class="screen-content screen-content--step3-colors-no-frame" data-screen="43">' +
+          '<div class="realtalk2-layout">' +
+            '<div class="realtalk-top"><div class="topic-box topic-box--step3">' + TOPIC_TEXT + '</div></div>' +
+            '<div class="realtalk-main"><p style="text-align:center;color:#5c6bc0;">Screen 43</p></div>' +
+          '</div></div>';
         return;
       }
 

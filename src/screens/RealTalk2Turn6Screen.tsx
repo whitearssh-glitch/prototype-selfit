@@ -1,6 +1,7 @@
 /**
  * Real Talk 2 – Turn 6 (인덱스 40)
- * 마이크 음성인식 → real7.mp3 재생 완료 후 → 별 표시 팝업 + 딩동 효과음 (다른 화면과 동일).
+ * 마이크 음성인식 → real7.mp3 재생 완료 후 → 별 표시 팝업 + 딩동 효과음.
+ * 별 팝업·효과음 후 화면 클릭 시 인덱스 41로 이동.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -34,7 +35,11 @@ function playDingDong() {
   }
 }
 
-export function RealTalk2Turn6Screen() {
+type RealTalk2Turn6ScreenProps = {
+  onNext?: () => void;
+};
+
+export function RealTalk2Turn6Screen({ onNext }: RealTalk2Turn6ScreenProps) {
   const [showMic, setShowMic] = useState(true);
   const [showStarPopup, setShowStarPopup] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -99,7 +104,12 @@ export function RealTalk2Turn6Screen() {
   }, [showMic, startSTT]);
 
   return (
-    <div className="screen-content screen-content--step3-colors-no-frame" data-screen="40">
+    <div
+      className="screen-content screen-content--step3-colors-no-frame" data-screen="40"
+      onClick={showStarPopup ? () => onNext?.() : undefined}
+      role={showStarPopup ? 'button' : undefined}
+      tabIndex={showStarPopup ? 0 : undefined}
+    >
       <div className="realtalk2-layout realtalk-layout--reserve-go-space realtalk-layout--with-text-slots">
         <div className="realtalk-top">
           <div className="topic-box topic-box--step3">{TOPIC_TEXT}</div>
@@ -136,8 +146,8 @@ export function RealTalk2Turn6Screen() {
           role="button"
           tabIndex={0}
           aria-label="완료"
-          onClick={(e) => { e.stopPropagation(); setShowStarPopup(false); }}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowStarPopup(false); } }}
+          onClick={(e) => { e.stopPropagation(); onNext?.(); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNext?.(); } }}
         >
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />

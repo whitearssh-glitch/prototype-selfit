@@ -39,10 +39,11 @@ html.app-corner-select-margins {
   background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 25%, #e1bee7 50%, #b39ddb 75%, #fff9c4 100%);
 }
 
-/* 스텝3(26·27·28·30·31·36·37): 양옆·스크롤 여백도 동일한 청보라 그라데이션 */
+/* 스텝3(26·27·28·30·31·36·37·38·39·40·41·42·43): 양옆·스크롤 여백도 동일한 청보라 그라데이션 */
 body.app-step3-margins,
 html.app-step3-margins {
   background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%);
+  background-attachment: fixed;
 }
 
 /* 스텝1: 연한 분홍~분홍 그라데이션 */
@@ -1280,6 +1281,18 @@ html.app-step5-margins {
   padding-top: 0.25rem;
   padding-bottom: 0.75rem;
 }
+/* 인덱스 41: Role Play 말풍선 영역 – flex 방향·정렬 조정 */
+.realtalk2-main--roleplay-chat {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0.5rem 0.75rem;
+  overflow: hidden;
+}
+.realtalk2-main--roleplay-chat .roleplay-chat {
+  flex: 1;
+  min-height: 0;
+}
 .realtalk-main-image {
   width: 100%;
   max-width:  min(85vw, 22rem);
@@ -1359,6 +1372,42 @@ html.app-step5-margins {
 /* 인덱스 37: GO 버튼 영역만큼 하단 공간 확보해 이미지 위치를 36과 동일하게 고정 */
 .realtalk-layout--reserve-go-space .realtalk-bottom {
   min-height: 3.5rem;
+}
+
+/* 인덱스 42: 스크롤 영역 하단 체크 버튼 래퍼 */
+.roleplay-chat-bottom {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0 0.5rem;
+  flex-shrink: 0;
+}
+
+/* 인덱스 42: 하단 보라색 그라데이션 원형 버튼 + 흰색 체크마크 */
+.roleplay-check-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #5c6bc0 0%, #7986cb 40%, #9fa8da 100%);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(92, 107, 192, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.roleplay-check-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(92, 107, 192, 0.5);
+}
+.roleplay-check-btn:active {
+  transform: scale(0.98);
+}
+.roleplay-check-btn svg {
+  width: 28px;
+  height: 28px;
 }
 .realtalk-go-btn {
   padding: 0.75rem 2rem;
@@ -1809,6 +1858,7 @@ html.app-step5-margins {
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
   min-height: 0;
+  background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%);
 }
 
 .roleplay-chat--tap-to-listen {
@@ -1837,10 +1887,8 @@ html.app-step5-margins {
   justify-content: flex-end;
   flex-direction: row-reverse;
   align-self: flex-end;
-  width: calc(100% + 0.75rem);
-  max-width: none;
-  margin-left: auto;
-  margin-right: -0.75rem;
+  width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -1866,12 +1914,9 @@ html.app-step5-margins {
 .roleplay-bubble-row--student .roleplay-bubble-wrap {
   align-items: flex-end;
   text-align: right;
-  width: fit-content;
-  max-width: min(18rem, 85%);
-  max-width: min(18rem, 85%);
-  min-width: min(14rem, 50%);
-  flex-shrink: 0;
-  margin-left: auto;
+  flex: 1;
+  min-width: 0;
+  max-width: calc(100% - 3rem);
 }
 
 .roleplay-name {
@@ -1885,6 +1930,7 @@ html.app-step5-margins {
   padding: 0.5rem 0.75rem;
   border-radius: 1rem;
   font-size: 0.95rem;
+  white-space: pre-line;
   line-height: 1.35;
   word-break: break-word;
   overflow-wrap: break-word;
@@ -1902,7 +1948,7 @@ html.app-step5-margins {
   border-bottom-right-radius: 4px;
   min-height: 2rem;
   width: fit-content;
-  max-width: min(18rem, 85%);
+  max-width: 100%;
   white-space: pre-wrap;
   box-sizing: border-box;
 }
@@ -1911,8 +1957,23 @@ html.app-step5-margins {
   font-size: 0.85em;
   color: #b8bce0;
 }
+.roleplay-bubble--single-line {
+  white-space: nowrap;
+}
+.roleplay-bubble-row--student .roleplay-bubble-wrap--single-line {
+  min-width: 0;
+  max-width: calc(100% - 3rem);
+}
 
-/* 말풍선 아래 한글 해석 토글 버튼 (지구본 아이콘, 원형) */
+/* 말풍선 아래 지구본·소리 버튼 행 */
+.roleplay-bubble-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+}
+/* 말풍선 아래 한글 해석 토글·소리 버튼 (지구본/스피커 아이콘, 원형) */
 .roleplay-k-btn {
   margin-top: 0.25rem;
   width: 1.75rem;
@@ -1928,6 +1989,9 @@ html.app-step5-margins {
   cursor: pointer;
   flex-shrink: 0;
 }
+.roleplay-bubble-actions .roleplay-k-btn {
+  margin-top: 0;
+}
 .roleplay-k-btn svg {
   width: 1rem;
   height: 1rem;
@@ -1935,6 +1999,10 @@ html.app-step5-margins {
 .roleplay-k-btn:hover {
   background: rgba(92, 107, 192, 0.2);
   color: #3949ab;
+}
+.roleplay-k-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .roleplay-choices-wrap {

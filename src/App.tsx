@@ -24,13 +24,15 @@ import { RealTalk2Screen } from './screens/RealTalk2Screen';
 import { RealTalk2Turn3Screen } from './screens/RealTalk2Turn3Screen';
 import { RealTalk2Turn5Screen } from './screens/RealTalk2Turn5Screen';
 import { RealTalk2Turn6Screen } from './screens/RealTalk2Turn6Screen';
+import { RealTalkImageScreen } from './screens/RealTalkImageScreen';
+import { RealTalk2Screen42 } from './screens/RealTalk2Screen41';
 import { RealTalkLessonScreen } from './screens/RealTalkLessonScreen';
 import { RecapLessonScreen } from './screens/RecapLessonScreen';
 
 const HEADER_TITLE = 'Basic 01 Day 01';
 export const TOPIC_TEXT = 'TOPIC: Self-introduction';
 
-const MAX_SCREEN_INDEX = 40;
+const MAX_SCREEN_INDEX = 43;
 
 function getInitialScreenIndex(): number {
   if (typeof window === 'undefined') return 0;
@@ -57,7 +59,10 @@ export default function App() {
     screenIndex === 37 ||
     screenIndex === 38 ||
     screenIndex === 39 ||
-    screenIndex === 40
+    screenIndex === 40 ||
+    screenIndex === 41 ||
+    screenIndex === 42 ||
+    screenIndex === 43
       ? ' app--step3-colors-no-frame'
       : '';
   const isStep1OrStep2 = screenIndex >= 1 && screenIndex <= 24;
@@ -73,7 +78,10 @@ export default function App() {
     screenIndex === 37 ||
     screenIndex === 38 ||
     screenIndex === 39 ||
-    screenIndex === 40;
+    screenIndex === 40 ||
+    screenIndex === 41 ||
+    screenIndex === 42 ||
+    screenIndex === 43;
   const isStep5 = screenIndex === 32 || screenIndex === 33 || screenIndex === 34 || screenIndex === 35;
 
   /* 코너 선택(0): body·html 여백 분홍+청보라+노랑 / 스텝1·2: 연한 분홍 / 스텝3·4: 청보라 / 스텝5: 파스텔 보라-노랑 */
@@ -102,7 +110,7 @@ export default function App() {
   return (
     <div className={'app' + appCornerSelectClass + appStep1Class + appStep3Class + appStep5Class + realtalkFixedHeightClass}>
         {screenIndex > 0 && screenIndex !== 1 && screenIndex !== 9 && screenIndex !== 25 && screenIndex !== 29 && screenIndex !== 32 && (
-        <header className={'app-header' + (screenIndex >= 2 && screenIndex <= 24 ? ' app-header--step1' : '') + (screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 30 || screenIndex === 31 || screenIndex === 36 || screenIndex === 37 || screenIndex === 38 || screenIndex === 39 || screenIndex === 40 ? ' app-header--step3' : '') + (screenIndex === 33 || screenIndex === 34 || screenIndex === 35 ? ' app-header--step5' : '')}>
+        <header className={'app-header' + (screenIndex >= 2 && screenIndex <= 24 ? ' app-header--step1' : '') + (screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 30 || screenIndex === 31 || screenIndex === 36 || screenIndex === 37 || screenIndex === 38 || screenIndex === 39 || screenIndex === 40 || screenIndex === 41 || screenIndex === 42 || screenIndex === 43 ? ' app-header--step3' : '') + (screenIndex === 33 || screenIndex === 34 || screenIndex === 35 ? ' app-header--step5' : '')}>
           <span className="app-header-text">{HEADER_TITLE}</span>
         </header>
       )}
@@ -157,7 +165,21 @@ export default function App() {
         {screenIndex === 37 && <RealTalk2Screen onNext={() => setScreenIndex(38)} />}
         {screenIndex === 38 && <RealTalk2Turn3Screen onNext={() => setScreenIndex(39)} />}
         {screenIndex === 39 && <RealTalk2Turn5Screen onNext={goNext} />}
-        {screenIndex === 40 && <RealTalk2Turn6Screen />}
+        {screenIndex === 40 && <RealTalk2Turn6Screen onNext={() => setScreenIndex(41)} />}
+        {screenIndex === 41 && <RealTalkImageScreen onNext={() => setScreenIndex(42)} />}
+        {screenIndex === 42 && <RealTalk2Screen42 onNext={() => setScreenIndex(43)} />}
+        {screenIndex === 43 && (
+          <div className="screen-content screen-content--step3-colors-no-frame" data-screen="43">
+            <div className="realtalk2-layout">
+              <div className="realtalk-top">
+                <div className="topic-box topic-box--step3">{TOPIC_TEXT}</div>
+              </div>
+              <div className="realtalk-main">
+                <p style={{ textAlign: 'center', color: '#5c6bc0' }}>Screen 43</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
