@@ -21,11 +21,9 @@ type RealTalk2Turn3ScreenProps = {
 export function RealTalk2Turn3Screen({ onNext }: RealTalk2Turn3ScreenProps) {
   const [showMic, setShowMic] = useState(true);
   const [showModelText, setShowModelText] = useState(false);
-  const [showTapToNext, setShowTapToNext] = useState(false);
   const introAudioRef = useRef<HTMLAudioElement | null>(null);
   const modelAudioRef = useRef<HTMLAudioElement | null>(null);
   const real3TimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const tapToNextTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onNextRef = useRef(onNext);
   onNextRef.current = onNext;
 
@@ -88,12 +86,7 @@ export function RealTalk2Turn3Screen({ onNext }: RealTalk2Turn3ScreenProps) {
       real3TimeoutRef.current = null;
     }
     setShowMic(false);
-    setShowTapToNext(false);
-    if (tapToNextTimerRef.current) {
-      clearTimeout(tapToNextTimerRef.current);
-      tapToNextTimerRef.current = null;
-    }
-    tapToNextTimerRef.current = setTimeout(() => setShowTapToNext(true), 3000);
+    setShowModelText(false);
 
     const next = new Audio(TURN3_NEXT_AUDIO);
     introAudioRef.current = next;
@@ -101,10 +94,6 @@ export function RealTalk2Turn3Screen({ onNext }: RealTalk2Turn3ScreenProps) {
     const finish = () => {
       if (done) return;
       done = true;
-      if (tapToNextTimerRef.current) {
-        clearTimeout(tapToNextTimerRef.current);
-        tapToNextTimerRef.current = null;
-      }
       if (real3TimeoutRef.current) {
         clearTimeout(real3TimeoutRef.current);
         real3TimeoutRef.current = null;
@@ -136,10 +125,6 @@ export function RealTalk2Turn3Screen({ onNext }: RealTalk2Turn3ScreenProps) {
 
   useEffect(() => {
     return () => {
-      if (tapToNextTimerRef.current) {
-        clearTimeout(tapToNextTimerRef.current);
-        tapToNextTimerRef.current = null;
-      }
       if (real3TimeoutRef.current) {
         clearTimeout(real3TimeoutRef.current);
         real3TimeoutRef.current = null;
@@ -182,16 +167,6 @@ export function RealTalk2Turn3Screen({ onNext }: RealTalk2Turn3ScreenProps) {
         <div className="realtalk2-text-below realtalk2-slot-two-lines" aria-hidden="true">
           <span className="realtalk2-text-placeholder" />
         </div>
-        {showTapToNext && (
-          <button
-            type="button"
-            className="realtalk2-tap-to-next"
-            onClick={() => onNextRef.current?.()}
-            aria-label="다음으로"
-          >
-            탭하여 다음
-          </button>
-        )}
         <div className="realtalk-bottom realtalk2-bottom--fixed-height">
           <button
             type="button"
