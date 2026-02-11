@@ -9,12 +9,14 @@ export function CornerSelectScreen({
   onSelectStep3,
   onSelectStep4,
   onSelectStep5,
+  onSelectRealTalk2,
 }: {
   onSelectStep1: () => void;
   onSelectStep2: () => void;
   onSelectStep3: () => void;
   onSelectStep4: () => void;
   onSelectStep5: () => void;
+  onSelectRealTalk2: () => void;
 }) {
   return (
     <div className="corner-select-screen">
@@ -35,6 +37,9 @@ export function CornerSelectScreen({
           </button>
           <button type="button" className="corner-select-btn" onClick={onSelectStep4} aria-label="Real Talk">
             <span className="corner-select-btn-text">Real Talk</span>
+          </button>
+          <button type="button" className="corner-select-btn corner-select-btn--step3" onClick={onSelectRealTalk2} aria-label="Real Talk 2">
+            <span className="corner-select-btn-text">Real Talk 2</span>
           </button>
         </section>
         <section className="corner-select-group">

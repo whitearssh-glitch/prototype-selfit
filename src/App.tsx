@@ -20,13 +20,17 @@ import { LectureScreen17 } from './screens/LectureScreen17';
 import { LectureScreen18 } from './screens/LectureScreen18';
 import { RolePlayScreen } from './screens/RolePlayScreen';
 import { RealTalkScreen } from './screens/RealTalkScreen';
+import { RealTalk2Screen } from './screens/RealTalk2Screen';
+import { RealTalk2Turn3Screen } from './screens/RealTalk2Turn3Screen';
+import { RealTalk2Turn5Screen } from './screens/RealTalk2Turn5Screen';
+import { RealTalk2Turn6Screen } from './screens/RealTalk2Turn6Screen';
 import { RealTalkLessonScreen } from './screens/RealTalkLessonScreen';
 import { RecapLessonScreen } from './screens/RecapLessonScreen';
 
 const HEADER_TITLE = 'Basic 01 Day 01';
 export const TOPIC_TEXT = 'TOPIC: Self-introduction';
 
-const MAX_SCREEN_INDEX = 35;
+const MAX_SCREEN_INDEX = 40;
 
 function getInitialScreenIndex(): number {
   if (typeof window === 'undefined') return 0;
@@ -41,21 +45,53 @@ export default function App() {
   const [screenIndex, setScreenIndex] = useState(getInitialScreenIndex);
 
   const goNext = () => setScreenIndex((i) => (i < MAX_SCREEN_INDEX ? i + 1 : i));
-  const appStep3Class = screenIndex === 25 || screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 29 || screenIndex === 30 || screenIndex === 31 ? ' app--step3-colors-no-frame' : '';
+  const appStep3Class =
+    screenIndex === 25 ||
+    screenIndex === 26 ||
+    screenIndex === 27 ||
+    screenIndex === 28 ||
+    screenIndex === 29 ||
+    screenIndex === 30 ||
+    screenIndex === 31 ||
+    screenIndex === 36 ||
+    screenIndex === 37 ||
+    screenIndex === 38 ||
+    screenIndex === 39 ||
+    screenIndex === 40
+      ? ' app--step3-colors-no-frame'
+      : '';
   const isStep1OrStep2 = screenIndex >= 1 && screenIndex <= 24;
-  const isStep3 = screenIndex === 25 || screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 29 || screenIndex === 30 || screenIndex === 31;
+  const isStep3 =
+    screenIndex === 25 ||
+    screenIndex === 26 ||
+    screenIndex === 27 ||
+    screenIndex === 28 ||
+    screenIndex === 29 ||
+    screenIndex === 30 ||
+    screenIndex === 31 ||
+    screenIndex === 36 ||
+    screenIndex === 37 ||
+    screenIndex === 38 ||
+    screenIndex === 39 ||
+    screenIndex === 40;
   const isStep5 = screenIndex === 32 || screenIndex === 33 || screenIndex === 34 || screenIndex === 35;
 
-  /* 코너 선택(0): body 여백 분홍+청보라+노랑 / 스텝1·2: 연한 분홍 / 스텝3·4: 청보라 / 스텝5: 파스텔 보라-노랑 */
+  /* 코너 선택(0): body·html 여백 분홍+청보라+노랑 / 스텝1·2: 연한 분홍 / 스텝3·4: 청보라 / 스텝5: 파스텔 보라-노랑 */
   const isCornerSelect = screenIndex === 0;
   useEffect(() => {
     const body = document.body;
+    const html = document.documentElement;
     body.classList.toggle('app-corner-select-margins', isCornerSelect);
     body.classList.toggle('app-step1-margins', isStep1OrStep2);
     body.classList.toggle('app-step3-margins', isStep3);
     body.classList.toggle('app-step5-margins', isStep5);
+    html.classList.toggle('app-corner-select-margins', isCornerSelect);
+    html.classList.toggle('app-step1-margins', isStep1OrStep2);
+    html.classList.toggle('app-step3-margins', isStep3);
+    html.classList.toggle('app-step5-margins', isStep5);
     return () => {
       body.classList.remove('app-corner-select-margins', 'app-step1-margins', 'app-step3-margins', 'app-step5-margins');
+      html.classList.remove('app-corner-select-margins', 'app-step1-margins', 'app-step3-margins', 'app-step5-margins');
     };
   }, [isCornerSelect, isStep1OrStep2, isStep3, isStep5]);
 
@@ -66,7 +102,7 @@ export default function App() {
   return (
     <div className={'app' + appCornerSelectClass + appStep1Class + appStep3Class + appStep5Class + realtalkFixedHeightClass}>
         {screenIndex > 0 && screenIndex !== 1 && screenIndex !== 9 && screenIndex !== 25 && screenIndex !== 29 && screenIndex !== 32 && (
-        <header className={'app-header' + (screenIndex >= 2 && screenIndex <= 24 ? ' app-header--step1' : '') + (screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 30 || screenIndex === 31 ? ' app-header--step3' : '') + (screenIndex === 33 || screenIndex === 34 || screenIndex === 35 ? ' app-header--step5' : '')}>
+        <header className={'app-header' + (screenIndex >= 2 && screenIndex <= 24 ? ' app-header--step1' : '') + (screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 30 || screenIndex === 31 || screenIndex === 36 || screenIndex === 37 || screenIndex === 38 || screenIndex === 39 || screenIndex === 40 ? ' app-header--step3' : '') + (screenIndex === 33 || screenIndex === 34 || screenIndex === 35 ? ' app-header--step5' : '')}>
           <span className="app-header-text">{HEADER_TITLE}</span>
         </header>
       )}
@@ -79,6 +115,7 @@ export default function App() {
             onSelectStep3={() => setScreenIndex(25)}
             onSelectStep4={() => setScreenIndex(29)}
             onSelectStep5={() => setScreenIndex(32)}
+            onSelectRealTalk2={() => setScreenIndex(36)}
           />
         )}
         {screenIndex === 1 && <CornerIntroScreen step="STEP 1" title="Patterns" step1 onNext={goNext} />}
@@ -115,7 +152,12 @@ export default function App() {
         {screenIndex === 32 && <CornerIntroScreen step="STEP 5" title="Recap" step5 onNext={goNext} />}
         {screenIndex === 33 && <RecapLessonScreen onNext={goNext} />}
         {screenIndex === 34 && <RecapLessonScreen mainVariant="summary" onNext={goNext} />}
-        {screenIndex === 35 && <RecapLessonScreen mainVariant="tips" onNext={() => setScreenIndex(0)} />}
+        {screenIndex === 35 && <RecapLessonScreen mainVariant="tips" onNext={goNext} />}
+        {screenIndex === 36 && <RealTalkScreen onNext={() => setScreenIndex(37)} imageOnly />}
+        {screenIndex === 37 && <RealTalk2Screen onNext={() => setScreenIndex(38)} />}
+        {screenIndex === 38 && <RealTalk2Turn3Screen onNext={() => setScreenIndex(39)} />}
+        {screenIndex === 39 && <RealTalk2Turn5Screen onNext={goNext} />}
+        {screenIndex === 40 && <RealTalk2Turn6Screen />}
       </div>
     </div>
   );

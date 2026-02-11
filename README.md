@@ -13,7 +13,7 @@ npm run dev
 
 Chat·STT 모두 **Gemini API 무료 한도**로 사용할 수 있습니다. [Google AI Studio](https://aistudio.google.com/app/apikey)에서 API 키를 발급하면 됩니다.
 
-Role Play / Real Talk에서 Gemini STT(음성→텍스트)와 Cathy 대화를 쓰려면 **반드시 `npm run dev`로 개발 서버를 띄운 뒤**, 터미널에 출력된 주소로 접속하세요.
+Role Play 및 Real Talk Lesson(인덱스 31)에서 Gemini STT(음성→텍스트)와 Cathy 대화를 쓰려면 **반드시 `npm run dev`로 개발 서버를 띄운 뒤**, 터미널에 출력된 주소로 접속하세요.
 
 - `http://localhost:5173/` 같은 주소는 **개발 서버가 켜져 있을 때만** 동작합니다.
 - `npm run dev`를 하지 않고 빌드 결과(`dist`)나 `vite preview`로만 열면 `/api/transcribe`, `/api/chat`이 없어서 Gemini STT·Chat이 동작하지 않습니다.

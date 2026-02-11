@@ -17,6 +17,11 @@ html, body, #root {
   margin: 0;
 }
 
+/* 기본·스크롤 시 노출되는 배경을 테마와 맞추기 위해 html에도 동일 배경 적용 */
+html {
+  background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 40%, #ffe4ec 100%);
+}
+
 body {
   font-family: system-ui, -apple-system, sans-serif;
   background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 40%, #ffe4ec 100%);
@@ -28,24 +33,27 @@ body {
   overflow-x: auto;
 }
 
-/* 코너 선택(0): body 여백 분홍+청보라+노랑 그라데이션 */
-body.app-corner-select-margins {
+/* 코너 선택(0): body·html 여백 분홍+청보라+노랑 그라데이션 */
+body.app-corner-select-margins,
+html.app-corner-select-margins {
   background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 25%, #e1bee7 50%, #b39ddb 75%, #fff9c4 100%);
 }
 
-/* 스텝3(26·27·28): 양옆 여백도 화면 영역과 동일한 청보라 그라데이션 */
-/* 스텝1 코너 인트로: 양옆 여백도 연한 분홍~분홍 그라데이션 */
-/* 스텝1: 노랑 줄이고 분홍 강조 파스텔 그라데이션 */
-body.app-step1-margins {
-  background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 35%, #ffc0cb 65%, #f8bbd0 100%);
-}
-
-body.app-step3-margins {
+/* 스텝3(26·27·28·30·31·36·37): 양옆·스크롤 여백도 동일한 청보라 그라데이션 */
+body.app-step3-margins,
+html.app-step3-margins {
   background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%);
 }
 
-/* 스텝5 코너 인트로(32): 양옆 여백·앱 영역 파스텔 보라-노랑 */
-body.app-step5-margins {
+/* 스텝1: 연한 분홍~분홍 그라데이션 */
+body.app-step1-margins,
+html.app-step1-margins {
+  background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 35%, #ffc0cb 65%, #f8bbd0 100%);
+}
+
+/* 스텝5: 파스텔 보라-노랑 */
+body.app-step5-margins,
+html.app-step5-margins {
   background: linear-gradient(135deg, #e1bee7 0%, #d1c4e9 35%, #fff9c4 75%, #fff59d 100%);
 }
 
@@ -1000,6 +1008,191 @@ body.app-step5-margins {
   padding: 0.25rem 0.5rem 0.5rem;
   flex-shrink: 0;
 }
+/* 인덱스 37: 이미지 위/아래 텍스트 2줄씩 자리 확보 */
+.realtalk-text-slot {
+  flex-shrink: 0;
+  min-height: 2.8em;
+  line-height: 1.4;
+  font-size: 1rem;
+  padding: 0.25rem 0.75rem;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+.realtalk-text-slot--above { padding-bottom: 0.35rem; }
+.realtalk-text-slot--below { padding-top: 0.35rem; }
+
+/* Real Talk 2 (Index 37): 이미지 위/아래 2행 텍스트 슬롯, 세로 길이 유지 위해 이미지 축소 */
+.realtalk2-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+}
+.realtalk2-slot-two-lines {
+  flex-shrink: 0;
+  height: 3.2rem; /* 고정 높이 – 말풍선 전/후 동일 */
+  padding: 0.15rem 0.75rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+.realtalk2-text-above {
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+.realtalk2-text-below {
+  flex-shrink: 0;
+  padding: 0.2rem 0.75rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+.realtalk2-guidance-text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: #283593;
+  font-weight: 600;
+}
+.realtalk2-text-placeholder {
+  display: inline-block;
+  min-height: 1.4em;
+}
+.realtalk2-text-frame {
+  margin: 0;
+  padding: 0.45rem 1.1rem;
+  width: fit-content;
+  max-width: 100%;
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #ec407a 0%, #f48fb1 35%, #7986cb 100%);
+  border-radius: 1.1rem;
+  border: none;
+  box-shadow: 0 6px 16px rgba(121, 134, 203, 0.25);
+}
+.realtalk2-text-frame-line {
+  margin: 0 0 0.2em;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+.realtalk2-text-frame-line:last-child {
+  margin-bottom: 0;
+}
+.realtalk2-text-lines {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.8rem; /* 두 줄 높이 고정 (영어 기준) */
+  max-height: 2.8rem;
+}
+.realtalk2-text-frame-line--ghost {
+  visibility: hidden;
+}
+.realtalk2-text-lines-ko {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.realtalk2-text-frame-line--ko {
+  visibility: visible;
+}
+.realtalk2-model-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  font-weight: 600;
+  text-align: center;
+}
+.realtalk2-bubble-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.45rem;
+}
+.realtalk2-globe-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid rgba(236, 64, 122, 0.45); /* 테마 핑크 계열 라인 */
+  background: #f8bbd0;                         /* 연한 핑크 톤 단색 배경 */
+  color: #ec407a;                             /* 텍스트는 살짝 진한 핑크 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(236, 64, 122, 0.25);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.realtalk2-globe-btn svg {
+  width: 16px;
+  height: 16px;
+}
+.realtalk2-hints {
+  flex-shrink: 0;
+  padding: 0.35rem 0.75rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+.realtalk2-hint-line {
+  margin: 0 0 0.2rem;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  color: #5c6bc0;
+}
+.realtalk2-hint-line:last-child { margin-bottom: 0; }
+.realtalk2-ended-text {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #5c6bc0;
+}
+
+/* 인덱스 37: 마이크 등장해도 이미지 위치 고정 – 하단 높이 고정, 숨김 시에도 공간 유지 */
+.realtalk2-bottom--fixed-height {
+  min-height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.realtalk2-mic--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.realtalk2-tap-to-next {
+  flex-shrink: 0;
+  margin: 0.5rem auto;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: #5c6bc0;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid #7986cb;
+  border-radius: 1.5rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.realtalk2-tap-to-next:hover {
+  background: #fff;
+}
+
 .realtalk-main {
   flex: 1;
   min-height: 0;
@@ -1008,6 +1201,23 @@ body.app-step5-margins {
   align-items: center;
   justify-content: center;
   padding: 1rem;
+}
+.realtalk2-layout .realtalk-main {
+  padding-top: 0.25rem;
+  padding-bottom: 0.75rem;
+}
+.realtalk-main-image {
+  width: 100%;
+  max-width:  min(85vw, 22rem);
+  height: auto;
+  max-height: 60vh;
+  object-fit: contain;
+  display: block;
+}
+/* 인덱스 37: 텍스트 슬롯은 작게, 이미지는 크게 */
+.realtalk-layout--with-text-slots .realtalk-main-image {
+  max-width: min(78vw, 19rem);
+  max-height: 42vh;
 }
 .realtalk-guide {
   display: flex;
@@ -1072,6 +1282,10 @@ body.app-step5-margins {
   justify-content: center;
   align-items: center;
 }
+/* 인덱스 37: GO 버튼 영역만큼 하단 공간 확보해 이미지 위치를 36과 동일하게 고정 */
+.realtalk-layout--reserve-go-space .realtalk-bottom {
+  min-height: 3.5rem;
+}
 .realtalk-go-btn {
   padding: 0.75rem 2rem;
   font-size: 1.1rem;
@@ -1086,6 +1300,15 @@ body.app-step5-margins {
 .realtalk-go-btn:hover {
   background: linear-gradient(135deg, #7986cb 0%, #9fa8da 100%);
   box-shadow: 0 4px 12px rgba(92, 107, 192, 0.5);
+}
+/* 인덱스 36: 버튼을 처음부터 렌더하고 숨겨서 공간 고정, 등장 시 레이아웃 변화 없음 */
+.realtalk-go-btn--hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+.realtalk-mic37--hidden {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* Real Talk Lesson (index 31) – 메신저형, 롤플레이와 다른 디자인 */
