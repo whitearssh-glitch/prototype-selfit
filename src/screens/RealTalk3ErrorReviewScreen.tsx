@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { diffWords } from 'diff';
+import { diffWords, type Change } from 'diff';
 import { TOPIC_TEXT } from '../App';
 import { getCorrectionPracticeItems, selectErrorsForReview } from '../realTalk3Types';
 import type { ErrorLogItem } from '../realTalk3Types';
@@ -37,7 +37,7 @@ function ErrorDiffDisplay({
   const changes = useMemo(() => diffWords(original, corrected), [original, corrected]);
 
   const originalParts = useMemo(() => {
-    return changes.filter((c) => !c.added).map((c, i) => ({
+    return changes.filter((c: Change) => !c.added).map((c: Change, i: number) => ({
       key: `orig-${i}`,
       value: c.value,
       removed: c.removed ?? false,
@@ -45,7 +45,7 @@ function ErrorDiffDisplay({
   }, [changes]);
 
   const correctedParts = useMemo(() => {
-    return changes.filter((c) => !c.removed).map((c, i) => ({
+    return changes.filter((c: Change) => !c.removed).map((c: Change, i: number) => ({
       key: `corr-${i}`,
       value: c.value,
       added: c.added ?? false,
@@ -56,7 +56,7 @@ function ErrorDiffDisplay({
     <div className="recap-error-item">
       <p className="recap-tip-text recap-error-diff">
         <span className="recap-error-original">
-          {originalParts.map(({ key, value, removed }) =>
+          {originalParts.map(({ key, value, removed }: { key: string; value: string; removed: boolean }) =>
             removed ? (
               <span key={key} className="recap-error-strike">
                 {value}
@@ -69,7 +69,7 @@ function ErrorDiffDisplay({
         <br />
         <span className="recap-error-arrow">→</span>{' '}
         <span className="recap-error-corrected">
-          {correctedParts.map(({ key, value, added }) =>
+          {correctedParts.map(({ key, value, added }: { key: string; value: string; added: boolean }) =>
             added ? (
               <span key={key} className="recap-error-highlight">
                 {value}
