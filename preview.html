@@ -1354,8 +1354,7 @@
     };
 
     /* ===== Index 26 Role Play (React RolePlayScreen과 동기화) ===== */
-    /* VoiceRSS TTS API (무료 350회/일) – https://www.voicerss.org/ 에서 키 발급 후 아래에 붙여넣기. 비우면 브라우저 TTS 사용 */
-    var VOICERSS_API_KEY = '';
+    /* TTS: 서버 /api/tts 사용 (OPENAI_API_KEY 또는 VOICERSS_API_KEY). 없으면 브라우저 TTS */
 
     var ROLEPLAY_CHARACTER_NAMES = ['Emma', 'Sophie', 'Lisa', 'Anna', 'Mary'];
     var ROLEPLAY_STUDENT_NAME = 'Me';
@@ -1386,17 +1385,23 @@
       var voices = speechSynthesis.getVoices();
       return voices.filter(function (v) { return /female|woman|samantha|karen|victoria|google/i.test(v.name) || (v.lang.indexOf('en') === 0 && v.name.length > 0); })[0] || null;
     }
-    function speakRoleplayVoiceRSS(text, onEnd) {
-      if (!VOICERSS_API_KEY) { onEnd(); return; }
-      var url = 'https://api.voicerss.org/?key=' + encodeURIComponent(VOICERSS_API_KEY) + '&hl=en-us&v=Linda&c=MP3&src=' + encodeURIComponent(text);
-      fetch(url).then(function (res) { return res.blob(); }).then(function (blob) {
-        if (blob.size < 100 && blob.type === 'text/plain') { blob.text().then(function (t) { if (t.indexOf('ERROR') === 0) onEnd(); }); return; }
+    function speakRoleplayApiTTS(text, onEnd, onFail) {
+      fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text.trim(), voice: 'nova', speed: 0.77 })
+      }).then(function (res) {
+        if (!res.ok) { if (onFail) onFail(); else onEnd(); return null; }
+        return res.blob();
+      }).then(function (blob) {
+        if (!blob) return;
+        if (blob.size < 100 && blob.type === 'text/plain') { if (onFail) onFail(); else onEnd(); return; }
         var objectUrl = URL.createObjectURL(blob);
         var audio = new Audio(objectUrl);
         audio.onended = function () { URL.revokeObjectURL(objectUrl); onEnd(); };
-        audio.onerror = function () { URL.revokeObjectURL(objectUrl); onEnd(); };
-        audio.play().catch(function () { URL.revokeObjectURL(objectUrl); onEnd(); });
-      }).catch(function () { onEnd(); });
+        audio.onerror = function () { URL.revokeObjectURL(objectUrl); if (onFail) onFail(); else onEnd(); };
+        audio.play().catch(function () { URL.revokeObjectURL(objectUrl); if (onFail) onFail(); else onEnd(); });
+      }).catch(function () { if (onFail) onFail(); else onEnd(); });
     }
     function speakRoleplayBrowserTTS(text, onEnd) {
       if (!window.speechSynthesis) { onEnd(); return; }
@@ -1413,10 +1418,9 @@
       if (voice) u.voice = voice;
       speechSynthesis.speak(u);
     }
-    /* TTS: VOICERSS_API_KEY 있으면 VoiceRSS, 없으면 브라우저 Web Speech API */
+    /* TTS: /api/tts 시도 → 실패 시 브라우저 TTS (서버에 OPENAI_API_KEY 또는 VOICERSS_API_KEY 필요) */
     function speakRoleplayTTS(text, onEnd) {
-      if (VOICERSS_API_KEY) speakRoleplayVoiceRSS(text, onEnd);
-      else speakRoleplayBrowserTTS(text, onEnd);
+      speakRoleplayApiTTS(text, onEnd, function () { speakRoleplayBrowserTTS(text, onEnd); });
     }
 
     function renderRolePlayScreen(state) {
