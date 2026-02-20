@@ -1,6 +1,5 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
-import { whisperTranscribeMiddleware } from './server/whisper-proxy.js';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -11,7 +10,10 @@ export default defineConfig(({ mode }) => {
       {
         name: 'whisper-transcribe',
         configureServer(server) {
-          server.middlewares.use(whisperTranscribeMiddleware());
+          // 동적 import: build 시 서버 코드 로드 안 함 (Vercel 등에서 빌드 실패 방지)
+          import('./server/whisper-proxy.js').then(({ whisperTranscribeMiddleware }) => {
+            server.middlewares.use(whisperTranscribeMiddleware());
+          });
         },
       },
     ],
