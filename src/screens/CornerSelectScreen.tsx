@@ -1,6 +1,6 @@
 /**
  * Corner Select Screen – choose which corner to go to
- * ver.1: Get Ready / Talk Time / Review | ver.2: Real Talk 2
+ * ver.1: Get Ready / Talk Time / Review | ver.2: Real Talk 2 / Real Talk 3
  */
 
 export function CornerSelectScreen({
@@ -10,6 +10,7 @@ export function CornerSelectScreen({
   onSelectStep4,
   onSelectStep5,
   onSelectRealTalk2,
+  onSelectRealTalk3,
 }: {
   onSelectStep1: () => void;
   onSelectStep2: () => void;
@@ -17,6 +18,7 @@ export function CornerSelectScreen({
   onSelectStep4: () => void;
   onSelectStep5: () => void;
   onSelectRealTalk2: () => void;
+  onSelectRealTalk3: () => void;
 }) {
   return (
     <div className="corner-select-screen">
@@ -58,9 +60,14 @@ export function CornerSelectScreen({
         <div className="corner-select-version">
           <h2 className="corner-select-version-heading corner-select-version-heading--ver2">ver.2</h2>
           <section className="corner-select-group">
-            <button type="button" className="corner-select-btn corner-select-btn--step3" onClick={onSelectRealTalk2} aria-label="Real Talk 2">
-              <span className="corner-select-btn-text">Real Talk 2</span>
-            </button>
+            <div className="corner-select-row">
+              <button type="button" className="corner-select-btn corner-select-btn--step3" onClick={onSelectRealTalk2} aria-label="Real Talk 2">
+                <span className="corner-select-btn-text">Real Talk 2</span>
+              </button>
+              <button type="button" className="corner-select-btn corner-select-btn--step3" onClick={onSelectRealTalk3} aria-label="Real Talk 3">
+                <span className="corner-select-btn-text">Real Talk 3</span>
+              </button>
+            </div>
           </section>
         </div>
       </div>

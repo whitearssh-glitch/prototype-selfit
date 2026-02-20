@@ -776,6 +776,18 @@ html.app-step5-margins {
   }
 }
 
+/* 교정 연습 1차 오답: 문장 2번 깜빡거림 */
+.main-text--correction-blink {
+  animation: correction-blink 1s ease-in-out;
+}
+
+@keyframes correction-blink {
+  0%, 100% { opacity: 1; }
+  25% { opacity: 0.2; }
+  50% { opacity: 1; }
+  75% { opacity: 0.2; }
+}
+
 /* Teacher image – larger, sits just above bottom box */
 .teacher-image {
   max-width: 320px;
@@ -988,6 +1000,17 @@ html.app-step5-margins {
   color: #5e35b1;
   line-height: 1.4;
 }
+.recap-summary-feedback-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  text-align: center;
+}
+.recap-summary-feedback-wrap .recap-summary-feedback {
+  margin: 0;
+}
 
 /* Recap (index 35): Selena's Secret Tip – 턴2·턴4 피드백 요약 (헤드·라벨은 34와 동일) */
 .recap-tips {
@@ -1022,6 +1045,58 @@ html.app-step5-margins {
 }
 .recap-tip-bold {
   font-weight: 700;
+}
+
+/* Real Talk 3 Error Review – 원문/교정문 diff 스타일 */
+.recap-error-diff {
+  text-align: center;
+}
+.recap-error-original {
+  color: #424242;
+  font-weight: 600;
+}
+.recap-error-strike {
+  text-decoration: line-through;
+}
+.recap-error-arrow {
+  color: #5e35b1;
+  font-weight: 700;
+}
+.recap-error-corrected {
+  color: #5e35b1;
+  font-weight: 600;
+}
+.recap-error-highlight {
+  color: #c2185b;
+  font-weight: 700;
+}
+.recap-error-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+}
+.recap-error-explanation {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.9rem;
+  color: #5e35b1;
+  line-height: 1.4;
+  text-align: center;
+  max-width: 100%;
+}
+.recap-error-star {
+  flex-shrink: 0;
+  display: inline-flex;
+  color: #c2185b;
+}
+.recap-error-star-icon {
+  width: 0.9rem;
+  height: 0.9rem;
 }
 
 /* Microphone button */

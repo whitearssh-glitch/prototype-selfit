@@ -375,6 +375,15 @@
       from { background-size: 0% 100%; }
       to { background-size: 100% 100%; }
     }
+    .main-text--correction-blink {
+      animation: correction-blink 1s ease-in-out;
+    }
+    @keyframes correction-blink {
+      0%, 100% { opacity: 1; }
+      25% { opacity: 0.2; }
+      50% { opacity: 1; }
+      75% { opacity: 0.2; }
+    }
     .teacher-image {
       max-width: 320px;
       max-height: 400px;
@@ -788,6 +797,7 @@
             '<button type="button" class="corner-select-btn" id="btn-step2" aria-label="STEP 2 Speed Up">STEP 2</button>' +
             '<button type="button" class="corner-select-btn corner-select-btn--step3" id="btn-step3" aria-label="STEP 3 Role Play">STEP 3</button>' +
             '<button type="button" class="corner-select-btn corner-select-btn--step3" id="btn-realtalk2" aria-label="Real Talk 2">Real Talk 2</button>' +
+            '<button type="button" class="corner-select-btn corner-select-btn--step3" id="btn-realtalk3" aria-label="Real Talk 3">Real Talk 3</button>' +
           '</div>' +
         '</div>'
       );
@@ -1196,7 +1206,7 @@
     }
 
     var hash = window.location.hash.slice(1);
-    var screenIndex = (hash === 'speed-up') ? 9 : (function () { var n = parseInt(hash, 10); return (!Number.isNaN(n) && n >= 0 && n <= 42) ? n : 0; })();
+    var screenIndex = (hash === 'speed-up') ? 9 : (function () { var n = parseInt(hash, 10); return (!Number.isNaN(n) && n >= 0 && n <= 49) ? n : 0; })();
     // STT 디버그: 브라우저 Web Speech API 사용 (별도 서버 없음)
     window.__sttDebug = { api: 'Web Speech API (SpeechRecognition)', lastTranscript: '', lastScreenIndex: 0, onResultCount: 0, onEndFired: false };
     if (typeof console !== 'undefined' && console.log) console.log('SELFit preview 로드됨. STT 콘솔 로그 활성화 → 15·20번 화면에서 마이크 누르면 여기 찍힘');
@@ -3044,6 +3054,8 @@
         if (btnStep3) btnStep3.onclick = function () { screenIndex = 25; mount(); };
         var btnRealTalk2 = document.getElementById('btn-realtalk2');
         if (btnRealTalk2) btnRealTalk2.onclick = function () { screenIndex = 36; mount(); };
+        var btnRealTalk3 = document.getElementById('btn-realtalk3');
+        if (btnRealTalk3) btnRealTalk3.onclick = function () { screenIndex = 43; mount(); };
         return;
       }
 
@@ -3635,17 +3647,139 @@
       }
 
       if (screenIndex === 43) {
-        var step3Bg43 = 'linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%)';
-        document.body.style.background = step3Bg43;
-        document.documentElement.style.background = step3Bg43;
         if (header) { header.style.display = ''; header.className = 'app-header app-header--step3'; }
-        if (appEl) { appEl.style.background = step3Bg43; appEl.style.border = ''; appEl.style.boxShadow = 'none'; }
+        if (appEl) {
+          appEl.style.background = 'linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%)';
+          appEl.style.border = '';
+          appEl.style.boxShadow = 'none';
+        }
         if (overlayEl) overlayEl.innerHTML = '';
-        el.innerHTML = '<div class="screen-content screen-content--step3-colors-no-frame" data-screen="43">' +
-          '<div class="realtalk2-layout">' +
+        var realtalkHtml43 = '<div class="screen-content screen-content--step3-colors-no-frame">' +
+          '<div class="realtalk-layout">' +
             '<div class="realtalk-top"><div class="topic-box topic-box--step3">' + TOPIC_TEXT + '</div></div>' +
-            '<div class="realtalk-main"><p style="text-align:center;color:#5c6bc0;">Screen 43</p></div>' +
+            '<div class="realtalk-main">' +
+              '<img src="./girl.png" alt="" class="realtalk-main-image">' +
+            '</div>' +
+            '<div class="realtalk-bottom"><button type="button" class="realtalk-go-btn realtalk-go-btn--hidden" id="realtalk-go-43">GO!</button></div>' +
           '</div></div>';
+        el.innerHTML = realtalkHtml43;
+        var goBtn43 = document.getElementById('realtalk-go-43');
+        if (goBtn43) goBtn43.onclick = function () { screenIndex = 44; mount(); };
+        try {
+          var audio43 = new Audio('./realtalk0.mp3');
+          audio43.addEventListener('ended', function () {
+            var btn = document.getElementById('realtalk-go-43');
+            if (btn) btn.classList.remove('realtalk-go-btn--hidden');
+          });
+          audio43.play().catch(function () {
+            var btn = document.getElementById('realtalk-go-43');
+            if (btn) btn.classList.remove('realtalk-go-btn--hidden');
+          });
+        } catch (e) {
+          var btn = document.getElementById('realtalk-go-43');
+          if (btn) btn.classList.remove('realtalk-go-btn--hidden');
+        }
+        return;
+      }
+
+      if (screenIndex === 44) {
+        if (header) { header.style.display = ''; header.className = 'app-header app-header--step3'; }
+        if (appEl) {
+          appEl.style.background = 'linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%)';
+          appEl.style.border = '';
+          appEl.style.boxShadow = 'none';
+        }
+        if (overlayEl) overlayEl.innerHTML = '';
+        el.innerHTML = '<div class="screen-content screen-content--step3-colors-no-frame" data-screen="44">' +
+          '<div class="realtalk-layout">' +
+            '<div class="realtalk-top"><div class="topic-box topic-box--step3">' + TOPIC_TEXT + '</div></div>' +
+            '<div class="realtalk-main"><p style="text-align:center;color:#5c6bc0;">Real Talk 3 (preview placeholder)</p>' +
+            '<button type="button" class="realtalk-go-btn" id="btn-next-44" style="margin-top:1rem;">Next</button></div>' +
+          '</div></div>';
+        var btn44 = document.getElementById('btn-next-44');
+        if (btn44) btn44.onclick = function () { screenIndex = 45; mount(); };
+        return;
+      }
+
+      if (screenIndex === 45) {
+        if (header) { header.style.display = ''; header.className = 'app-header app-header--step3'; }
+        if (appEl) { appEl.style.background = 'linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%)'; appEl.style.border = ''; appEl.style.boxShadow = 'none'; }
+        if (overlayEl) overlayEl.innerHTML = '';
+        var html45 = '<div class="screen-content screen-content--step3-colors-no-frame" data-screen="45">' +
+          '<div class="realtalk-layout">' +
+            '<div class="realtalk-top"><div class="topic-box topic-box--step3">' + TOPIC_TEXT + '</div></div>' +
+            '<div class="realtalk-main"><img src="./girl.png" alt="" class="realtalk-main-image"></div>' +
+            '<div class="realtalk-bottom"><button type="button" class="realtalk-go-btn realtalk-go-btn--hidden" id="realtalk-go-45">SURE!</button></div>' +
+          '</div></div>';
+        el.innerHTML = html45;
+        var goBtn45 = document.getElementById('realtalk-go-45');
+        if (goBtn45) goBtn45.onclick = function () { screenIndex = 46; mount(); };
+        try {
+          var audio45 = new Audio('./check.mp3');
+          audio45.addEventListener('ended', function () {
+            var btn = document.getElementById('realtalk-go-45');
+            if (btn) btn.classList.remove('realtalk-go-btn--hidden');
+          });
+          audio45.play().catch(function () {
+            var btn = document.getElementById('realtalk-go-45');
+            if (btn) btn.classList.remove('realtalk-go-btn--hidden');
+          });
+        } catch (e) {
+          var btn = document.getElementById('realtalk-go-45');
+          if (btn) btn.classList.remove('realtalk-go-btn--hidden');
+        }
+        return;
+      }
+
+      if (screenIndex === 46) {
+        if (header) { header.style.display = ''; header.className = 'app-header app-header--step3'; }
+        if (appEl) { appEl.style.background = 'linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%)'; appEl.style.border = ''; appEl.style.boxShadow = 'none'; }
+        if (overlayEl) overlayEl.innerHTML = '';
+        el.innerHTML = '<div class="screen-content screen-content--step3-colors-no-frame" data-screen="46">' +
+          '<div class="screen-center"><div class="topic-box topic-box--step3">' + TOPIC_TEXT + '</div>' +
+          '<div class="screen-main"><p style="text-align:center;color:#5c6bc0;">Conversation Summary (preview)</p>' +
+          '<button type="button" class="realtalk-go-btn" id="btn-next-46" style="margin-top:1rem;">Next</button></div></div></div>';
+        var btn46 = document.getElementById('btn-next-46');
+        if (btn46) btn46.onclick = function () { screenIndex = 47; mount(); };
+        return;
+      }
+
+      if (screenIndex === 47) {
+        if (header) { header.style.display = ''; header.className = 'app-header app-header--step3'; }
+        if (appEl) { appEl.style.background = 'linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%)'; appEl.style.border = ''; appEl.style.boxShadow = 'none'; }
+        if (overlayEl) overlayEl.innerHTML = '';
+        el.innerHTML = '<div class="screen-content screen-content--step3-colors-no-frame" data-screen="47">' +
+          '<div class="screen-center"><div class="topic-box topic-box--step3">' + TOPIC_TEXT + '</div>' +
+          '<div class="screen-main"><p style="text-align:center;color:#5c6bc0;">Session Evaluation (preview)</p>' +
+          '<button type="button" class="realtalk-go-btn" id="btn-next-47" style="margin-top:1rem;">Next</button></div></div></div>';
+        var btn47 = document.getElementById('btn-next-47');
+        if (btn47) btn47.onclick = function () { screenIndex = 48; mount(); };
+        return;
+      }
+
+      if (screenIndex === 48) {
+        if (header) { header.style.display = ''; header.className = 'app-header app-header--step3'; }
+        if (appEl) { appEl.style.background = 'linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%)'; appEl.style.border = ''; appEl.style.boxShadow = 'none'; }
+        if (overlayEl) overlayEl.innerHTML = '';
+        el.innerHTML = '<div class="screen-content screen-content--step3-colors-no-frame" data-screen="48">' +
+          '<div class="screen-center"><div class="topic-box topic-box--step3">' + TOPIC_TEXT + '</div>' +
+          '<div class="screen-main"><p style="text-align:center;color:#5c6bc0;">Error Review (preview)</p>' +
+          '<button type="button" class="realtalk-go-btn" id="btn-next-48" style="margin-top:1rem;">Next</button></div></div></div>';
+        var btn48 = document.getElementById('btn-next-48');
+        if (btn48) btn48.onclick = function () { screenIndex = 49; mount(); };
+        return;
+      }
+
+      if (screenIndex === 49) {
+        if (header) { header.style.display = ''; header.className = 'app-header app-header--step3'; }
+        if (appEl) { appEl.style.background = 'linear-gradient(135deg, #f8bbd0 0%, #e1bee7 50%, #7986cb 100%)'; appEl.style.border = ''; appEl.style.boxShadow = 'none'; }
+        if (overlayEl) overlayEl.innerHTML = '';
+        el.innerHTML = '<div class="screen-content screen-content--step3-colors-no-frame" data-screen="49" id="screen-49">' +
+          '<div class="screen-center"><div class="topic-box topic-box--step3">' + TOPIC_TEXT + '</div>' +
+          '<div class="screen-main"><p style="text-align:center;color:#5c6bc0;">Correction Practice (preview)</p>' +
+          '<p style="text-align:center;font-size:0.9rem;margin-top:0.5rem;">Tap to return</p></div></div></div>';
+        var s49 = document.getElementById('screen-49');
+        if (s49) s49.onclick = function () { screenIndex = 0; mount(); };
         return;
       }
 

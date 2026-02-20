@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CornerSelectScreen } from './screens/CornerSelectScreen';
 import { CornerIntroScreen } from './screens/CornerIntroScreen';
 import { LectureScreen1 } from './screens/LectureScreen1';
@@ -28,11 +28,20 @@ import { RealTalkImageScreen } from './screens/RealTalkImageScreen';
 import { RealTalk2Screen42 } from './screens/RealTalk2Screen41';
 import { RealTalkLessonScreen } from './screens/RealTalkLessonScreen';
 import { RecapLessonScreen } from './screens/RecapLessonScreen';
+import { RealTalk3Screen } from './screens/RealTalk3Screen';
+import { RealTalk3SummaryScreen } from './screens/RealTalk3SummaryScreen';
+import { RealTalk3EvaluationScreen } from './screens/RealTalk3EvaluationScreen';
+import { RealTalk3ErrorReviewScreen } from './screens/RealTalk3ErrorReviewScreen';
+import { RealTalk3CorrectionPracticeScreen } from './screens/RealTalk3CorrectionPracticeScreen';
+import { evaluateSession, getCathyFirstPhrase } from './realTalk3Gemini';
+import { speak, stopSpeaking } from './realTalk3TTS';
+import { getCorrectionPracticeItems } from './realTalk3Types';
+import type { RealTalk3Data, SessionEvaluation } from './realTalk3Types';
 
 const HEADER_TITLE = 'Basic 01 Day 01';
 export const TOPIC_TEXT = 'TOPIC: Self-introduction';
 
-const MAX_SCREEN_INDEX = 43;
+const MAX_SCREEN_INDEX = 49;
 
 function getInitialScreenIndex(): number {
   if (typeof window === 'undefined') return 0;
@@ -45,6 +54,10 @@ function getInitialScreenIndex(): number {
 
 export default function App() {
   const [screenIndex, setScreenIndex] = useState(getInitialScreenIndex);
+  const [realTalk3Data, setRealTalk3Data] = useState<RealTalk3Data | null>(null);
+  const [realTalk3Evaluation, setRealTalk3Evaluation] = useState<SessionEvaluation | null>(null);
+  const [realTalk3FirstPhraseDone, setRealTalk3FirstPhraseDone] = useState(false);
+  const [realTalk3FirstPhraseInProgress, setRealTalk3FirstPhraseInProgress] = useState(false);
 
   const goNext = () => setScreenIndex((i) => (i < MAX_SCREEN_INDEX ? i + 1 : i));
   const appStep3Class =
@@ -62,7 +75,13 @@ export default function App() {
     screenIndex === 40 ||
     screenIndex === 41 ||
     screenIndex === 42 ||
-    screenIndex === 43
+    screenIndex === 43 ||
+    screenIndex === 44 ||
+    screenIndex === 45 ||
+    screenIndex === 46 ||
+    screenIndex === 47 ||
+    screenIndex === 48 ||
+    screenIndex === 49
       ? ' app--step3-colors-no-frame'
       : '';
   const isStep1OrStep2 = screenIndex >= 1 && screenIndex <= 24;
@@ -81,7 +100,13 @@ export default function App() {
     screenIndex === 40 ||
     screenIndex === 41 ||
     screenIndex === 42 ||
-    screenIndex === 43;
+    screenIndex === 43 ||
+    screenIndex === 44 ||
+    screenIndex === 45 ||
+    screenIndex === 46 ||
+    screenIndex === 47 ||
+    screenIndex === 48 ||
+    screenIndex === 49;
   const isStep5 = screenIndex === 32 || screenIndex === 33 || screenIndex === 34 || screenIndex === 35;
 
   /* 코너 선택(0): body·html 여백 분홍+청보라+노랑 / 스텝1·2: 연한 분홍 / 스텝3·4: 청보라 / 스텝5: 파스텔 보라-노랑 */
@@ -107,10 +132,36 @@ export default function App() {
   const appStep1Class = isStep1OrStep2 ? ' app--step1-colors' : '';
   const appStep5Class = isStep5 ? ' app--step5-colors' : '';
   const realtalkFixedHeightClass = screenIndex === 31 ? ' app--realtalk-fixed-height' : '';
+
+  useEffect(() => {
+    if (screenIndex === 43) {
+      setRealTalk3FirstPhraseDone(false);
+      setRealTalk3FirstPhraseInProgress(false);
+    }
+  }, [screenIndex]);
+
+  const prevScreenRef = useRef(screenIndex);
+  useEffect(() => {
+    if (prevScreenRef.current === 44 && screenIndex !== 44) {
+      stopSpeaking();
+    }
+    prevScreenRef.current = screenIndex;
+  }, [screenIndex]);
+
+  const handleRealTalk3Go = () => {
+    const first = getCathyFirstPhrase();
+    setRealTalk3FirstPhraseInProgress(true);
+    speak(first.en, () => {
+      setRealTalk3FirstPhraseDone(true);
+      setRealTalk3FirstPhraseInProgress(false);
+    });
+    setScreenIndex(44);
+  };
+
   return (
     <div className={'app' + appCornerSelectClass + appStep1Class + appStep3Class + appStep5Class + realtalkFixedHeightClass}>
         {screenIndex > 0 && screenIndex !== 1 && screenIndex !== 9 && screenIndex !== 25 && screenIndex !== 29 && screenIndex !== 32 && (
-        <header className={'app-header' + (screenIndex >= 2 && screenIndex <= 24 ? ' app-header--step1' : '') + (screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 30 || screenIndex === 31 || screenIndex === 36 || screenIndex === 37 || screenIndex === 38 || screenIndex === 39 || screenIndex === 40 || screenIndex === 41 || screenIndex === 42 || screenIndex === 43 ? ' app-header--step3' : '') + (screenIndex === 33 || screenIndex === 34 || screenIndex === 35 ? ' app-header--step5' : '')}>
+        <header className={'app-header' + (screenIndex >= 2 && screenIndex <= 24 ? ' app-header--step1' : '') + (screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 30 || screenIndex === 31 || screenIndex === 36 || screenIndex === 37 || screenIndex === 38 || screenIndex === 39 || screenIndex === 40 || screenIndex === 41 || screenIndex === 42 || screenIndex === 43 || screenIndex === 44 || screenIndex === 45 || screenIndex === 46 || screenIndex === 47 || screenIndex === 48 || screenIndex === 49 ? ' app-header--step3' : '') + (screenIndex === 33 || screenIndex === 34 || screenIndex === 35 ? ' app-header--step5' : '')}>
           <span className="app-header-text">{HEADER_TITLE}</span>
         </header>
       )}
@@ -124,6 +175,7 @@ export default function App() {
             onSelectStep4={() => setScreenIndex(29)}
             onSelectStep5={() => setScreenIndex(32)}
             onSelectRealTalk2={() => setScreenIndex(36)}
+            onSelectRealTalk3={() => setScreenIndex(43)}
           />
         )}
         {screenIndex === 1 && <CornerIntroScreen step="STEP 1" title="Patterns" step1 onNext={goNext} />}
@@ -168,17 +220,54 @@ export default function App() {
         {screenIndex === 40 && <RealTalk2Turn6Screen onNext={() => setScreenIndex(41)} />}
         {screenIndex === 41 && <RealTalkImageScreen onNext={() => setScreenIndex(42)} />}
         {screenIndex === 42 && <RealTalk2Screen42 onNext={() => setScreenIndex(43)} />}
-        {screenIndex === 43 && (
-          <div className="screen-content screen-content--step3-colors-no-frame" data-screen="43">
-            <div className="realtalk2-layout">
-              <div className="realtalk-top">
-                <div className="topic-box topic-box--step3">{TOPIC_TEXT}</div>
-              </div>
-              <div className="realtalk-main">
-                <p style={{ textAlign: 'center', color: '#5c6bc0' }}>Screen 43</p>
-              </div>
-            </div>
-          </div>
+        {screenIndex === 43 && <RealTalkScreen onNext={handleRealTalk3Go} imageOnly />}
+        {screenIndex === 44 && (
+          <RealTalk3Screen
+            firstPhraseDone={realTalk3FirstPhraseDone}
+            firstPhraseInProgress={realTalk3FirstPhraseInProgress}
+            onComplete={(data) => {
+              setRealTalk3Data(data);
+              setRealTalk3FirstPhraseDone(false);
+              setScreenIndex(45);
+            }}
+          />
+        )}
+        {screenIndex === 45 && <RealTalkImageScreen onNext={() => setScreenIndex(46)} />}
+        {screenIndex === 46 && realTalk3Data && (
+          <RealTalk3SummaryScreen
+            items={realTalk3Data.conversationSummary}
+            onNext={() => setScreenIndex(47)}
+          />
+        )}
+        {screenIndex === 47 && realTalk3Data && (
+          <RealTalk3EvaluationScreen
+            evaluation={realTalk3Evaluation}
+            onEvaluationLoaded={setRealTalk3Evaluation}
+            conversationSummary={realTalk3Data.conversationSummary}
+            errorLog={realTalk3Data.errorLog}
+            onNext={() => {
+              setRealTalk3Evaluation(null);
+              setScreenIndex(48);
+            }}
+          />
+        )}
+        {screenIndex === 48 && realTalk3Data && (
+          <RealTalk3ErrorReviewScreen
+            errorLog={realTalk3Data.errorLog}
+            onNext={() => {
+              const practiceItems = getCorrectionPracticeItems(realTalk3Data!.errorLog);
+              setScreenIndex(practiceItems.length > 0 ? 49 : 0);
+            }}
+          />
+        )}
+        {screenIndex === 49 && realTalk3Data && (
+          <RealTalk3CorrectionPracticeScreen
+            items={getCorrectionPracticeItems(realTalk3Data.errorLog)}
+            onComplete={() => {
+              setRealTalk3Data(null);
+              setScreenIndex(0);
+            }}
+          />
         )}
       </div>
     </div>
