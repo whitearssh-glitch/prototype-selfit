@@ -15,6 +15,8 @@ import type { ErrorLogItem } from '../realTalk3Types';
 
 const REALTALK_IMAGE_GIRL1 = '/girl1.png';
 const GOOD_STAMP_AUDIO = '/fb1.mp3';
+/** 연습 정답/완료 후 별 팝업 표시 전 대기 시간(ms) */
+const STAR_POPUP_DELAY_MS = 2000;
 
 function playDingDong() {
   try {
@@ -73,23 +75,25 @@ export function RealTalk3CorrectionPracticeScreen({ items, onComplete }: RealTal
       setIsEvaluating(false);
 
       if (isCorrect) {
-        setShowStar(true);
-        playDingDong();
         setTimeout(() => {
-          setShowStar(false);
-          if (isLast) {
-            setShowGoodStamp(true);
-            const audio = new Audio(GOOD_STAMP_AUDIO);
-            audioRef.current = audio;
-            audio.onerror = () => {};
-            audio.play().catch(() => {});
-          } else {
-            setIndex((i) => i + 1);
-            setAttemptCount(0);
-            setTextKey((k) => k + 1);
-            setShowText(true);
-          }
-        }, 1200);
+          setShowStar(true);
+          playDingDong();
+          setTimeout(() => {
+            setShowStar(false);
+            if (isLast) {
+              setShowGoodStamp(true);
+              const audio = new Audio(GOOD_STAMP_AUDIO);
+              audioRef.current = audio;
+              audio.onerror = () => {};
+              audio.play().catch(() => {});
+            } else {
+              setIndex((i) => i + 1);
+              setAttemptCount(0);
+              setTextKey((k) => k + 1);
+              setShowText(true);
+            }
+          }, 1200);
+        }, STAR_POPUP_DELAY_MS);
         return;
       }
 
@@ -111,23 +115,25 @@ export function RealTalk3CorrectionPracticeScreen({ items, onComplete }: RealTal
         setShowText(true);
         stopSpeaking();
         speak(current.corrected, () => {
-          setShowStar(true);
-          playDingDong();
           setTimeout(() => {
-            setShowStar(false);
-            setAttemptCount(0);
-            if (isLast) {
-              setShowGoodStamp(true);
-              const audio = new Audio(GOOD_STAMP_AUDIO);
-              audioRef.current = audio;
-              audio.onerror = () => {};
-              audio.play().catch(() => {});
-            } else {
-              setIndex((i) => i + 1);
-              setTextKey((k) => k + 1);
-              setShowText(true);
-            }
-          }, 1200);
+            setShowStar(true);
+            playDingDong();
+            setTimeout(() => {
+              setShowStar(false);
+              setAttemptCount(0);
+              if (isLast) {
+                setShowGoodStamp(true);
+                const audio = new Audio(GOOD_STAMP_AUDIO);
+                audioRef.current = audio;
+                audio.onerror = () => {};
+                audio.play().catch(() => {});
+              } else {
+                setIndex((i) => i + 1);
+                setTextKey((k) => k + 1);
+                setShowText(true);
+              }
+            }, 1200);
+          }, STAR_POPUP_DELAY_MS);
         });
       }
     },

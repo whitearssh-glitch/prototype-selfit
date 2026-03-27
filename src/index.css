@@ -438,6 +438,11 @@ html.app-step5-margins {
   background: linear-gradient(135deg, #9575cd 0%, #6a1b9a 100%);
   border-color: rgba(255, 255, 255, 0.3);
 }
+.corner-select-version-heading--test {
+  color: #fff;
+  background: linear-gradient(135deg, #78909c 0%, #546e7a 100%);
+  border-color: rgba(255, 255, 255, 0.3);
+}
 
 .corner-select-group {
   display: flex;
@@ -1448,6 +1453,10 @@ html.app-step5-margins {
 .realtalk-layout--reserve-go-space .realtalk-bottom {
   min-height: 3.5rem;
 }
+.realtalk-bottom--with-hint {
+  flex-direction: column;
+  gap: 0.25rem;
+}
 
 /* 인덱스 42: 스크롤 영역 하단 체크 버튼 래퍼 */
 .roleplay-chat-bottom {
@@ -1801,7 +1810,8 @@ html.app-step5-margins {
   align-items: center;
   gap: 0.5rem;
 }
-.realtalk-lesson-stt-hint {
+.realtalk-lesson-stt-hint,
+.realtalk-stt-hint {
   margin: 0;
   font-size: 0.75rem;
   color: #5c6bc0;

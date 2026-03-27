@@ -32,19 +32,19 @@ export function getCorrectionPracticeItems(errorLog: ErrorLogItem[]): ErrorLogIt
   return errorLog.filter((e) => e.errorType === 'grammar' || e.errorType === 'naturalness');
 }
 
-/** 에러 리뷰용 최대 5개, 유형별 다양하게 선별 */
+/** 에러 리뷰용 최대 5개, 유형별 다양하게 선별. grammar/naturalness만 (off-topic 제외) */
 export function selectErrorsForReview(errorLog: ErrorLogItem[], maxCount = 5): ErrorLogItem[] {
-  if (errorLog.length <= maxCount) return [...errorLog];
-  const byType: Record<ErrorLogItem['errorType'], ErrorLogItem[]> = {
-    grammar: errorLog.filter((e) => e.errorType === 'grammar'),
-    naturalness: errorLog.filter((e) => e.errorType === 'naturalness'),
-    'off-topic': errorLog.filter((e) => e.errorType === 'off-topic'),
+  const filtered = errorLog.filter((e) => e.errorType === 'grammar' || e.errorType === 'naturalness');
+  if (filtered.length <= maxCount) return [...filtered];
+  const byType: Record<'grammar' | 'naturalness', ErrorLogItem[]> = {
+    grammar: filtered.filter((e) => e.errorType === 'grammar'),
+    naturalness: filtered.filter((e) => e.errorType === 'naturalness'),
   };
   const result: ErrorLogItem[] = [];
   let round = 0;
   while (result.length < maxCount) {
     let added = 0;
-    for (const t of ['grammar', 'naturalness', 'off-topic'] as const) {
+    for (const t of ['grammar', 'naturalness'] as const) {
       const arr = byType[t];
       if (round < arr.length && result.length < maxCount) {
         result.push(arr[round]);

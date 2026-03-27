@@ -11,6 +11,10 @@ export function CornerSelectScreen({
   onSelectStep5,
   onSelectRealTalk2,
   onSelectRealTalk3,
+  onSelectRealTalk4,
+  onSelectRealTalk5,
+  onSelectRealTalk6,
+  onSelectRealTalk7,
 }: {
   onSelectStep1: () => void;
   onSelectStep2: () => void;
@@ -19,6 +23,10 @@ export function CornerSelectScreen({
   onSelectStep5: () => void;
   onSelectRealTalk2: () => void;
   onSelectRealTalk3: () => void;
+  onSelectRealTalk4: () => void;
+  onSelectRealTalk5: () => void;
+  onSelectRealTalk6: () => void;
+  onSelectRealTalk7: () => void;
 }) {
   return (
     <div className="corner-select-screen">
@@ -66,6 +74,26 @@ export function CornerSelectScreen({
               </button>
               <button type="button" className="corner-select-btn corner-select-btn--step3" onClick={onSelectRealTalk3} aria-label="Real Talk 3">
                 <span className="corner-select-btn-text">Real Talk 3</span>
+              </button>
+            </div>
+          </section>
+        </div>
+        <hr className="corner-select-divider" aria-hidden />
+        <div className="corner-select-version">
+          <h2 className="corner-select-version-heading corner-select-version-heading--test">test</h2>
+          <section className="corner-select-group">
+            <div className="corner-select-row">
+              <button type="button" className="corner-select-btn corner-select-btn--step3" onClick={onSelectRealTalk5} aria-label="Basic A">
+                <span className="corner-select-btn-text">Basic A</span>
+              </button>
+              <button type="button" className="corner-select-btn corner-select-btn--step3" onClick={onSelectRealTalk4} aria-label="Basic B">
+                <span className="corner-select-btn-text">Basic B</span>
+              </button>
+              <button type="button" className="corner-select-btn corner-select-btn--step3" onClick={onSelectRealTalk6} aria-label="Inter A">
+                <span className="corner-select-btn-text">Inter A</span>
+              </button>
+              <button type="button" className="corner-select-btn corner-select-btn--step3" onClick={onSelectRealTalk7} aria-label="Adv A">
+                <span className="corner-select-btn-text">Adv A</span>
               </button>
             </div>
           </section>

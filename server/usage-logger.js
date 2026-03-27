@@ -1,5 +1,5 @@
 /**
- * API 사용량 기록 (Gemini 토큰, TTS 문자/요청)
+ * API 사용량 기록 (Gemini 토큰, TTS 문자/요청, STT 요청/바이트)
  * 콘솔 로그 + usage.log 파일에 누적 기록
  */
 import { appendFileSync } from 'fs';
@@ -13,6 +13,7 @@ const usage = {
   gemini: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 },
   openai: { inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 },
   tts: { chars: 0, requests: 0 },
+  stt: { requests: 0, openaiRequests: 0, geminiRequests: 0, bytes: 0 },
 };
 
 function timestamp() {
@@ -51,6 +52,21 @@ export function logTtsUsage(text) {
   usage.tts.requests += 1;
 
   const msg = `[Usage] TTS | chars: ${chars} | 누적: ${usage.tts.chars} chars (${usage.tts.requests}회)`;
+  console.log(msg);
+  logToFile(`${timestamp()} ${msg}`);
+}
+
+/** STT (음성→텍스트) 사용량 기록 - 요청 수, 제공자, 오디오 바이트 */
+export function logSttUsage(provider, opts = {}) {
+  const bytes = opts.bytes ?? 0;
+  usage.stt.requests += 1;
+  usage.stt.bytes += bytes;
+  if (provider === 'openai') usage.stt.openaiRequests += 1;
+  else if (provider === 'gemini') usage.stt.geminiRequests += 1;
+
+  const durationSec = bytes > 0 ? Math.round((bytes / 8000) * 10) / 10 : null;
+  const durationStr = durationSec != null ? ` | 약 ${durationSec}초` : '';
+  const msg = `[Usage] STT ${provider} | 요청 ${usage.stt.requests}회 | ${bytes} bytes${durationStr} | 누적: ${usage.stt.openaiRequests} OpenAI, ${usage.stt.geminiRequests} Gemini`;
   console.log(msg);
   logToFile(`${timestamp()} ${msg}`);
 }

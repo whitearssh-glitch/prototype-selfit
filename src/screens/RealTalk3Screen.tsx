@@ -15,6 +15,8 @@ import {
 import type { ErrorLogItem, RealTalk3Data, SummaryItem } from '../realTalk3Types';
 
 const REALTALK_IMAGE_GIRL1 = '/girl1.png';
+/** 대화 종료 후 별 팝업 표시 전 대기 시간(ms) */
+const STAR_POPUP_DELAY_MS = 2000;
 
 function playDingDong() {
   try {
@@ -106,8 +108,10 @@ export function RealTalk3Screen({ firstPhraseDone = false, firstPhraseInProgress
       if (result.isLastTurn) {
         setShowMic(false);
         speak(result.cathyPhrase, () => {
-          setShowStarPopup(true);
-          playDingDong();
+          setTimeout(() => {
+            setShowStarPopup(true);
+            playDingDong();
+          }, STAR_POPUP_DELAY_MS);
         });
         return;
       }
@@ -148,9 +152,12 @@ export function RealTalk3Screen({ firstPhraseDone = false, firstPhraseInProgress
           errorLogRef.current = next;
           return next;
         });
-        // 교정 시: 1) 인트로 TTS → 2) 교정문 그라데이션 표시 + 교정문 TTS → 3) 마이크 (재시도, 턴 미포함)
+        // 교정 시: 1) 인트로 TTS (Nice try! / So close!) → 2) 교정문 그라데이션 표시 + 교정문 TTS → 3) 마이크
         setPhase('correction');
-        speak(result.cathyPhrase, () => {
+        const directionPhrase = result.correction.type === 'naturalness'
+          ? "So close! You can also say!"
+          : "Nice try! Say it like this.";
+        speak(directionPhrase, () => {
           setCorrectionText(result.correction!.sentence);
           setShowTextAbove(true);
           speak(result.correction!.sentence, () => setShowMic(true));

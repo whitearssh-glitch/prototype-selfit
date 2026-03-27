@@ -10,10 +10,10 @@ import { TOPIC_TEXT } from '../App';
 import { getCorrectionPracticeItems, selectErrorsForReview } from '../realTalk3Types';
 import type { ErrorLogItem } from '../realTalk3Types';
 
-const HEADER_BY_TYPE: Record<ErrorLogItem['errorType'], string> = {
+const HEADER_BY_TYPE: Record<'grammar' | 'naturalness' | 'off-topic', string> = {
   naturalness: 'More Natural',
   grammar: 'Say It Better',
-  'off-topic': 'Stay On Topic',
+  'off-topic': 'Stay on Topic',
 };
 
 /**
@@ -29,10 +29,12 @@ function ErrorDiffDisplay({
   original,
   corrected,
   explanation,
+  errorType,
 }: {
   original: string;
   corrected: string;
   explanation?: string;
+  errorType: 'grammar' | 'naturalness' | 'off-topic';
 }) {
   const changes = useMemo(() => diffWords(original, corrected), [original, corrected]);
 
@@ -52,17 +54,24 @@ function ErrorDiffDisplay({
     }));
   }, [changes]);
 
+  const hasRemoved = originalParts.some((p) => p.removed);
+  const showFullStrike = errorType === 'grammar' && !hasRemoved;
+
   return (
     <div className="recap-error-item">
       <p className="recap-tip-text recap-error-diff">
         <span className="recap-error-original">
-          {originalParts.map(({ key, value, removed }: { key: string; value: string; removed: boolean }) =>
-            removed ? (
-              <span key={key} className="recap-error-strike">
-                {value}
-              </span>
-            ) : (
-              <span key={key}>{value}</span>
+          {showFullStrike ? (
+            <span className="recap-error-strike">{original}</span>
+          ) : (
+            originalParts.map(({ key, value, removed }: { key: string; value: string; removed: boolean }) =>
+              removed ? (
+                <span key={key} className="recap-error-strike">
+                  {value}
+                </span>
+              ) : (
+                <span key={key}>{value}</span>
+              )
             )
           )}
         </span>
@@ -135,6 +144,7 @@ export function RealTalk3ErrorReviewScreen({ errorLog, onNext }: RealTalk3ErrorR
                       original={item.original}
                       corrected={item.corrected}
                       explanation={item.explanation}
+                      errorType={item.errorType}
                     />
                   ))}
                 </section>

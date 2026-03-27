@@ -34,6 +34,8 @@ export async function transcribeWithWhisper(blob: Blob): Promise<string> {
   return (data.text ?? '').trim();
 }
 
+const MIN_RECORDING_MS = 1200; // 1.2초 미만 녹음은 너무 짧음
+
 export type WhisperRecorder = {
   start: () => Promise<void>;
   stop: () => Promise<Blob | null>;
@@ -44,6 +46,7 @@ export function createWhisperRecorder(): WhisperRecorder {
   let stream: MediaStream | null = null;
   let recorder: MediaRecorder | null = null;
   let chunks: Blob[] = [];
+  let startTime = 0;
 
   return {
     async start() {
@@ -53,6 +56,7 @@ export function createWhisperRecorder(): WhisperRecorder {
         : 'audio/webm';
       recorder = new MediaRecorder(stream);
       chunks = [];
+      startTime = Date.now();
       recorder.ondataavailable = (e) => {
         if (e.data.size) chunks.push(e.data);
       };
@@ -60,14 +64,18 @@ export function createWhisperRecorder(): WhisperRecorder {
     },
     async stop(): Promise<Blob | null> {
       if (!recorder || recorder.state === 'inactive') return Promise.resolve(null);
+      const elapsed = Date.now() - startTime;
       const mimeType = recorder.mimeType || 'audio/webm';
       return new Promise((resolve) => {
         recorder!.onstop = () => {
           stream?.getTracks().forEach((t) => t.stop());
           stream = null;
           recorder = null;
-          if (chunks.length) resolve(new Blob(chunks, { type: mimeType }));
-          else resolve(null);
+          if (chunks.length && elapsed >= MIN_RECORDING_MS) {
+            resolve(new Blob(chunks, { type: mimeType }));
+          } else {
+            resolve(null);
+          }
         };
         recorder!.stop();
       });

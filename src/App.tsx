@@ -33,15 +33,57 @@ import { RealTalk3SummaryScreen } from './screens/RealTalk3SummaryScreen';
 import { RealTalk3EvaluationScreen } from './screens/RealTalk3EvaluationScreen';
 import { RealTalk3ErrorReviewScreen } from './screens/RealTalk3ErrorReviewScreen';
 import { RealTalk3CorrectionPracticeScreen } from './screens/RealTalk3CorrectionPracticeScreen';
-import { evaluateSession, getCathyFirstPhrase } from './realTalk3Gemini';
+import { RealTalk4IntroScreen } from './screens/RealTalk4IntroScreen';
+import { RealTalk4Screen } from './screens/RealTalk4Screen';
+import { RealTalk4ImageScreen } from './screens/RealTalk4ImageScreen';
+import { RealTalk4SummaryScreen } from './screens/RealTalk4SummaryScreen';
+import { RealTalk4EvaluationScreen } from './screens/RealTalk4EvaluationScreen';
+import { RealTalk4ErrorReviewScreen } from './screens/RealTalk4ErrorReviewScreen';
+import { RealTalk4CorrectionPracticeScreen } from './screens/RealTalk4CorrectionPracticeScreen';
+import { RealTalk5IntroScreen } from './screens/RealTalk5IntroScreen';
+import { RealTalk5Screen } from './screens/RealTalk5Screen';
+import { RealTalk5ImageScreen } from './screens/RealTalk5ImageScreen';
+import { RealTalk5SummaryScreen } from './screens/RealTalk5SummaryScreen';
+import { RealTalk5EvaluationScreen } from './screens/RealTalk5EvaluationScreen';
+import { RealTalk5ErrorReviewScreen } from './screens/RealTalk5ErrorReviewScreen';
+import { RealTalk5CorrectionPracticeScreen } from './screens/RealTalk5CorrectionPracticeScreen';
+import { RealTalk6IntroScreen } from './screens/RealTalk6IntroScreen';
+import { RealTalk6Screen } from './screens/RealTalk6Screen';
+import { RealTalk6ImageScreen } from './screens/RealTalk6ImageScreen';
+import { RealTalk6SummaryScreen } from './screens/RealTalk6SummaryScreen';
+import { RealTalk6EvaluationScreen } from './screens/RealTalk6EvaluationScreen';
+import { RealTalk6ErrorReviewScreen } from './screens/RealTalk6ErrorReviewScreen';
+import { RealTalk6CorrectionPracticeScreen } from './screens/RealTalk6CorrectionPracticeScreen';
+import { RealTalk7IntroScreen } from './screens/RealTalk7IntroScreen';
+import { RealTalk7Screen } from './screens/RealTalk7Screen';
+import { RealTalk7ImageScreen } from './screens/RealTalk7ImageScreen';
+import { RealTalk7SummaryScreen } from './screens/RealTalk7SummaryScreen';
+import { RealTalk7EvaluationScreen } from './screens/RealTalk7EvaluationScreen';
+import { RealTalk7ErrorReviewScreen } from './screens/RealTalk7ErrorReviewScreen';
+import { RealTalk7CorrectionPracticeScreen } from './screens/RealTalk7CorrectionPracticeScreen';
+import { getCathyFirstPhrase } from './realTalk3Gemini';
+import { getCathyFirstPhrase as getCathyFirstPhrase4 } from './realTalk4Gemini';
+import { getCathyFirstPhrase as getCathyFirstPhrase5 } from './realTalk5Gemini';
+import { getCathyFirstPhrase as getCathyFirstPhrase6 } from './realTalk6Gemini';
+import { getCathyFirstPhrase as getCathyFirstPhrase7 } from './realTalk7Gemini';
 import { speak, stopSpeaking } from './realTalk3TTS';
+import { speak as speak6, stopSpeaking as stopSpeaking6 } from './realTalk6TTS';
+import { speak as speak7, stopSpeaking as stopSpeaking7 } from './realTalk7TTS';
 import { getCorrectionPracticeItems } from './realTalk3Types';
+import { getCorrectionPracticeItems as getCorrectionPracticeItems4 } from './realTalk4Types';
+import { getCorrectionPracticeItems as getCorrectionPracticeItems5 } from './realTalk5Types';
+import { getCorrectionPracticeItems as getCorrectionPracticeItems6 } from './realTalk6Types';
+import { getCorrectionPracticeItems as getCorrectionPracticeItems7 } from './realTalk7Types';
 import type { RealTalk3Data, SessionEvaluation } from './realTalk3Types';
+import type { RealTalk4Data, SessionEvaluation as SessionEvaluation4 } from './realTalk4Types';
+import type { RealTalk5Data, SessionEvaluation as SessionEvaluation5 } from './realTalk5Types';
+import type { RealTalk6Data, SessionEvaluation as SessionEvaluation6 } from './realTalk6Types';
+import type { RealTalk7Data, SessionEvaluation as SessionEvaluation7 } from './realTalk7Types';
 
 const HEADER_TITLE = 'Basic 01 Day 01';
 export const TOPIC_TEXT = 'TOPIC: Self-introduction';
 
-const MAX_SCREEN_INDEX = 49;
+const MAX_SCREEN_INDEX = 77;
 
 function getInitialScreenIndex(): number {
   if (typeof window === 'undefined') return 0;
@@ -58,6 +100,22 @@ export default function App() {
   const [realTalk3Evaluation, setRealTalk3Evaluation] = useState<SessionEvaluation | null>(null);
   const [realTalk3FirstPhraseDone, setRealTalk3FirstPhraseDone] = useState(false);
   const [realTalk3FirstPhraseInProgress, setRealTalk3FirstPhraseInProgress] = useState(false);
+  const [realTalk4Data, setRealTalk4Data] = useState<RealTalk4Data | null>(null);
+  const [realTalk4Evaluation, setRealTalk4Evaluation] = useState<SessionEvaluation4 | null>(null);
+  const [realTalk4FirstPhraseDone, setRealTalk4FirstPhraseDone] = useState(false);
+  const [realTalk4FirstPhraseInProgress, setRealTalk4FirstPhraseInProgress] = useState(false);
+  const [realTalk5Data, setRealTalk5Data] = useState<RealTalk5Data | null>(null);
+  const [realTalk5Evaluation, setRealTalk5Evaluation] = useState<SessionEvaluation5 | null>(null);
+  const [realTalk5FirstPhraseDone, setRealTalk5FirstPhraseDone] = useState(false);
+  const [realTalk5FirstPhraseInProgress, setRealTalk5FirstPhraseInProgress] = useState(false);
+  const [realTalk6Data, setRealTalk6Data] = useState<RealTalk6Data | null>(null);
+  const [realTalk6Evaluation, setRealTalk6Evaluation] = useState<SessionEvaluation6 | null>(null);
+  const [realTalk6FirstPhraseDone, setRealTalk6FirstPhraseDone] = useState(false);
+  const [realTalk6FirstPhraseInProgress, setRealTalk6FirstPhraseInProgress] = useState(false);
+  const [realTalk7Data, setRealTalk7Data] = useState<RealTalk7Data | null>(null);
+  const [realTalk7Evaluation, setRealTalk7Evaluation] = useState<SessionEvaluation7 | null>(null);
+  const [realTalk7FirstPhraseDone, setRealTalk7FirstPhraseDone] = useState(false);
+  const [realTalk7FirstPhraseInProgress, setRealTalk7FirstPhraseInProgress] = useState(false);
 
   const goNext = () => setScreenIndex((i) => (i < MAX_SCREEN_INDEX ? i + 1 : i));
   const appStep3Class =
@@ -81,7 +139,35 @@ export default function App() {
     screenIndex === 46 ||
     screenIndex === 47 ||
     screenIndex === 48 ||
-    screenIndex === 49
+    screenIndex === 49 ||
+    screenIndex === 50 ||
+    screenIndex === 51 ||
+    screenIndex === 52 ||
+    screenIndex === 53 ||
+    screenIndex === 54 ||
+    screenIndex === 55 ||
+    screenIndex === 56 ||
+    screenIndex === 57 ||
+    screenIndex === 58 ||
+    screenIndex === 59 ||
+    screenIndex === 60 ||
+    screenIndex === 61 ||
+    screenIndex === 62 ||
+    screenIndex === 63 ||
+    screenIndex === 64 ||
+    screenIndex === 65 ||
+    screenIndex === 66 ||
+    screenIndex === 67 ||
+    screenIndex === 68 ||
+    screenIndex === 69 ||
+    screenIndex === 70 ||
+    screenIndex === 71 ||
+    screenIndex === 72 ||
+    screenIndex === 73 ||
+    screenIndex === 74 ||
+    screenIndex === 75 ||
+    screenIndex === 76 ||
+    screenIndex === 77
       ? ' app--step3-colors-no-frame'
       : '';
   const isStep1OrStep2 = screenIndex >= 1 && screenIndex <= 24;
@@ -106,7 +192,35 @@ export default function App() {
     screenIndex === 46 ||
     screenIndex === 47 ||
     screenIndex === 48 ||
-    screenIndex === 49;
+    screenIndex === 49 ||
+    screenIndex === 50 ||
+    screenIndex === 51 ||
+    screenIndex === 52 ||
+    screenIndex === 53 ||
+    screenIndex === 54 ||
+    screenIndex === 55 ||
+    screenIndex === 56 ||
+    screenIndex === 57 ||
+    screenIndex === 58 ||
+    screenIndex === 59 ||
+    screenIndex === 60 ||
+    screenIndex === 61 ||
+    screenIndex === 62 ||
+    screenIndex === 63 ||
+    screenIndex === 64 ||
+    screenIndex === 65 ||
+    screenIndex === 66 ||
+    screenIndex === 67 ||
+    screenIndex === 68 ||
+    screenIndex === 69 ||
+    screenIndex === 70 ||
+    screenIndex === 71 ||
+    screenIndex === 72 ||
+    screenIndex === 73 ||
+    screenIndex === 74 ||
+    screenIndex === 75 ||
+    screenIndex === 76 ||
+    screenIndex === 77;
   const isStep5 = screenIndex === 32 || screenIndex === 33 || screenIndex === 34 || screenIndex === 35;
 
   /* 코너 선택(0): body·html 여백 분홍+청보라+노랑 / 스텝1·2: 연한 분홍 / 스텝3·4: 청보라 / 스텝5: 파스텔 보라-노랑 */
@@ -138,13 +252,27 @@ export default function App() {
       setRealTalk3FirstPhraseDone(false);
       setRealTalk3FirstPhraseInProgress(false);
     }
+    if (screenIndex === 50) {
+      setRealTalk4FirstPhraseDone(false);
+      setRealTalk4FirstPhraseInProgress(false);
+    }
+    if (screenIndex === 57) {
+      setRealTalk5FirstPhraseDone(false);
+      setRealTalk5FirstPhraseInProgress(false);
+    }
+    if (screenIndex === 64) {
+      setRealTalk6FirstPhraseDone(false);
+      setRealTalk6FirstPhraseInProgress(false);
+    }
   }, [screenIndex]);
 
   const prevScreenRef = useRef(screenIndex);
   useEffect(() => {
-    if (prevScreenRef.current === 44 && screenIndex !== 44) {
-      stopSpeaking();
-    }
+    if (prevScreenRef.current === 44 && screenIndex !== 44) stopSpeaking();
+    if (prevScreenRef.current === 51 && screenIndex !== 51) stopSpeaking();
+    if (prevScreenRef.current === 58 && screenIndex !== 58) stopSpeaking();
+    if (prevScreenRef.current === 65 && screenIndex !== 65) stopSpeaking6();
+    if (prevScreenRef.current === 72 && screenIndex !== 72) stopSpeaking7();
     prevScreenRef.current = screenIndex;
   }, [screenIndex]);
 
@@ -158,11 +286,51 @@ export default function App() {
     setScreenIndex(44);
   };
 
+  const handleRealTalk4Go = () => {
+    const first = getCathyFirstPhrase4();
+    setRealTalk4FirstPhraseInProgress(true);
+    speak(first.en, () => {
+      setRealTalk4FirstPhraseDone(true);
+      setRealTalk4FirstPhraseInProgress(false);
+    });
+    setScreenIndex(51);
+  };
+
+  const handleRealTalk5Go = () => {
+    const first = getCathyFirstPhrase5();
+    setRealTalk5FirstPhraseInProgress(true);
+    speak(first.en, () => {
+      setRealTalk5FirstPhraseDone(true);
+      setRealTalk5FirstPhraseInProgress(false);
+    });
+    setScreenIndex(58);
+  };
+
+  const handleRealTalk6Go = () => {
+    const first = getCathyFirstPhrase6();
+    setRealTalk6FirstPhraseInProgress(true);
+    speak6(first.en, () => {
+      setRealTalk6FirstPhraseDone(true);
+      setRealTalk6FirstPhraseInProgress(false);
+    });
+    setScreenIndex(65);
+  };
+
+  const handleRealTalk7Go = () => {
+    const first = getCathyFirstPhrase7();
+    setRealTalk7FirstPhraseInProgress(true);
+    speak7(first.en, () => {
+      setRealTalk7FirstPhraseDone(true);
+      setRealTalk7FirstPhraseInProgress(false);
+    });
+    setScreenIndex(72);
+  };
+
   return (
     <div className={'app' + appCornerSelectClass + appStep1Class + appStep3Class + appStep5Class + realtalkFixedHeightClass}>
         {screenIndex > 0 && screenIndex !== 1 && screenIndex !== 9 && screenIndex !== 25 && screenIndex !== 29 && screenIndex !== 32 && (
-        <header className={'app-header' + (screenIndex >= 2 && screenIndex <= 24 ? ' app-header--step1' : '') + (screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 30 || screenIndex === 31 || screenIndex === 36 || screenIndex === 37 || screenIndex === 38 || screenIndex === 39 || screenIndex === 40 || screenIndex === 41 || screenIndex === 42 || screenIndex === 43 || screenIndex === 44 || screenIndex === 45 || screenIndex === 46 || screenIndex === 47 || screenIndex === 48 || screenIndex === 49 ? ' app-header--step3' : '') + (screenIndex === 33 || screenIndex === 34 || screenIndex === 35 ? ' app-header--step5' : '')}>
-          <span className="app-header-text">{HEADER_TITLE}</span>
+        <header className={'app-header' + (screenIndex >= 2 && screenIndex <= 24 ? ' app-header--step1' : '') + (screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 30 || screenIndex === 31 || screenIndex === 36 || screenIndex === 37 || screenIndex === 38 || screenIndex === 39 || screenIndex === 40 || screenIndex === 41 || screenIndex === 42 || screenIndex === 43 || screenIndex === 44 || screenIndex === 45 || screenIndex === 46 || screenIndex === 47 || screenIndex === 48 || screenIndex === 49 || screenIndex === 50 || screenIndex === 51 || screenIndex === 52 || screenIndex === 53 || screenIndex === 54 || screenIndex === 55 || screenIndex === 56 || screenIndex === 57 || screenIndex === 58 || screenIndex === 59 || screenIndex === 60 || screenIndex === 61 || screenIndex === 62 || screenIndex === 63 || screenIndex === 64 || screenIndex === 65 || screenIndex === 66 || screenIndex === 67 || screenIndex === 68 || screenIndex === 69 || screenIndex === 70 || screenIndex === 71 || screenIndex === 72 || screenIndex === 73 || screenIndex === 74 || screenIndex === 75 || screenIndex === 76 || screenIndex === 77 ? ' app-header--step3' : '') + (screenIndex === 33 || screenIndex === 34 || screenIndex === 35 ? ' app-header--step5' : '')}>
+          <span className="app-header-text">{screenIndex >= 71 && screenIndex <= 77 ? 'Advanced 01 Day 01' : screenIndex >= 64 && screenIndex <= 70 ? 'Inter 01 Day 01' : screenIndex >= 50 && screenIndex <= 56 ? 'Basic 05 Day 01' : HEADER_TITLE}</span>
         </header>
       )}
 
@@ -176,6 +344,10 @@ export default function App() {
             onSelectStep5={() => setScreenIndex(32)}
             onSelectRealTalk2={() => setScreenIndex(36)}
             onSelectRealTalk3={() => setScreenIndex(43)}
+            onSelectRealTalk4={() => setScreenIndex(50)}
+            onSelectRealTalk5={() => setScreenIndex(57)}
+            onSelectRealTalk6={() => setScreenIndex(64)}
+            onSelectRealTalk7={() => setScreenIndex(71)}
           />
         )}
         {screenIndex === 1 && <CornerIntroScreen step="STEP 1" title="Patterns" step1 onNext={goNext} />}
@@ -265,6 +437,202 @@ export default function App() {
             items={getCorrectionPracticeItems(realTalk3Data.errorLog)}
             onComplete={() => {
               setRealTalk3Data(null);
+              setScreenIndex(0);
+            }}
+          />
+        )}
+        {screenIndex === 50 && <RealTalk4IntroScreen onNext={handleRealTalk4Go} />}
+        {screenIndex === 51 && (
+          <RealTalk4Screen
+            firstPhraseDone={realTalk4FirstPhraseDone}
+            firstPhraseInProgress={realTalk4FirstPhraseInProgress}
+            onComplete={(data) => {
+              setRealTalk4Data(data);
+              setRealTalk4FirstPhraseDone(false);
+              setScreenIndex(52);
+            }}
+          />
+        )}
+        {screenIndex === 52 && <RealTalk4ImageScreen onNext={() => setScreenIndex(53)} />}
+        {screenIndex === 53 && realTalk4Data && (
+          <RealTalk4SummaryScreen
+            items={realTalk4Data.conversationSummary}
+            onNext={() => setScreenIndex(54)}
+          />
+        )}
+        {screenIndex === 54 && realTalk4Data && (
+          <RealTalk4EvaluationScreen
+            evaluation={realTalk4Evaluation}
+            onEvaluationLoaded={setRealTalk4Evaluation}
+            conversationSummary={realTalk4Data.conversationSummary}
+            errorLog={realTalk4Data.errorLog}
+            onNext={() => {
+              setRealTalk4Evaluation(null);
+              setScreenIndex(55);
+            }}
+          />
+        )}
+        {screenIndex === 55 && realTalk4Data && (
+          <RealTalk4ErrorReviewScreen
+            errorLog={realTalk4Data.errorLog}
+            onNext={() => {
+              const practiceItems = getCorrectionPracticeItems4(realTalk4Data!.errorLog);
+              setScreenIndex(practiceItems.length > 0 ? 56 : 0);
+            }}
+          />
+        )}
+        {screenIndex === 56 && realTalk4Data && (
+          <RealTalk4CorrectionPracticeScreen
+            items={getCorrectionPracticeItems4(realTalk4Data.errorLog)}
+            onComplete={() => {
+              setRealTalk4Data(null);
+              setScreenIndex(0);
+            }}
+          />
+        )}
+        {screenIndex === 57 && <RealTalk5IntroScreen onNext={handleRealTalk5Go} />}
+        {screenIndex === 58 && (
+          <RealTalk5Screen
+            firstPhraseDone={realTalk5FirstPhraseDone}
+            firstPhraseInProgress={realTalk5FirstPhraseInProgress}
+            onComplete={(data) => {
+              setRealTalk5Data(data);
+              setRealTalk5FirstPhraseDone(false);
+              setScreenIndex(59);
+            }}
+          />
+        )}
+        {screenIndex === 59 && <RealTalk5ImageScreen onNext={() => setScreenIndex(60)} />}
+        {screenIndex === 60 && realTalk5Data && (
+          <RealTalk5SummaryScreen
+            items={realTalk5Data.conversationSummary}
+            onNext={() => setScreenIndex(61)}
+          />
+        )}
+        {screenIndex === 61 && realTalk5Data && (
+          <RealTalk5EvaluationScreen
+            evaluation={realTalk5Evaluation}
+            onEvaluationLoaded={setRealTalk5Evaluation}
+            conversationSummary={realTalk5Data.conversationSummary}
+            errorLog={realTalk5Data.errorLog}
+            onNext={() => {
+              setRealTalk5Evaluation(null);
+              setScreenIndex(62);
+            }}
+          />
+        )}
+        {screenIndex === 62 && realTalk5Data && (
+          <RealTalk5ErrorReviewScreen
+            errorLog={realTalk5Data.errorLog}
+            onNext={() => {
+              const practiceItems = getCorrectionPracticeItems5(realTalk5Data!.errorLog);
+              setScreenIndex(practiceItems.length > 0 ? 63 : 0);
+            }}
+          />
+        )}
+        {screenIndex === 63 && realTalk5Data && (
+          <RealTalk5CorrectionPracticeScreen
+            items={getCorrectionPracticeItems5(realTalk5Data.errorLog)}
+            onComplete={() => {
+              setRealTalk5Data(null);
+              setScreenIndex(0);
+            }}
+          />
+        )}
+        {screenIndex === 64 && <RealTalk6IntroScreen onNext={handleRealTalk6Go} />}
+        {screenIndex === 65 && (
+          <RealTalk6Screen
+            firstPhraseDone={realTalk6FirstPhraseDone}
+            firstPhraseInProgress={realTalk6FirstPhraseInProgress}
+            onComplete={(data) => {
+              setRealTalk6Data(data);
+              setRealTalk6FirstPhraseDone(false);
+              setScreenIndex(66);
+            }}
+          />
+        )}
+        {screenIndex === 66 && <RealTalk6ImageScreen onNext={() => setScreenIndex(67)} />}
+        {screenIndex === 67 && realTalk6Data && (
+          <RealTalk6SummaryScreen
+            items={realTalk6Data.conversationSummary}
+            onNext={() => setScreenIndex(68)}
+          />
+        )}
+        {screenIndex === 68 && realTalk6Data && (
+          <RealTalk6EvaluationScreen
+            evaluation={realTalk6Evaluation}
+            onEvaluationLoaded={setRealTalk6Evaluation}
+            conversationSummary={realTalk6Data.conversationSummary}
+            errorLog={realTalk6Data.errorLog}
+            onNext={() => {
+              setRealTalk6Evaluation(null);
+              setScreenIndex(69);
+            }}
+          />
+        )}
+        {screenIndex === 69 && realTalk6Data && (
+          <RealTalk6ErrorReviewScreen
+            errorLog={realTalk6Data.errorLog}
+            onNext={() => {
+              const practiceItems = getCorrectionPracticeItems6(realTalk6Data!.errorLog);
+              setScreenIndex(practiceItems.length > 0 ? 70 : 0);
+            }}
+          />
+        )}
+        {screenIndex === 70 && realTalk6Data && (
+          <RealTalk6CorrectionPracticeScreen
+            items={getCorrectionPracticeItems6(realTalk6Data.errorLog)}
+            onComplete={() => {
+              setRealTalk6Data(null);
+              setScreenIndex(0);
+            }}
+          />
+        )}
+        {screenIndex === 71 && <RealTalk7IntroScreen onNext={handleRealTalk7Go} />}
+        {screenIndex === 72 && (
+          <RealTalk7Screen
+            firstPhraseDone={realTalk7FirstPhraseDone}
+            firstPhraseInProgress={realTalk7FirstPhraseInProgress}
+            onComplete={(data) => {
+              setRealTalk7Data(data);
+              setRealTalk7FirstPhraseDone(false);
+              setScreenIndex(73);
+            }}
+          />
+        )}
+        {screenIndex === 73 && <RealTalk7ImageScreen onNext={() => setScreenIndex(74)} />}
+        {screenIndex === 74 && realTalk7Data && (
+          <RealTalk7SummaryScreen
+            items={realTalk7Data.conversationSummary}
+            onNext={() => setScreenIndex(75)}
+          />
+        )}
+        {screenIndex === 75 && realTalk7Data && (
+          <RealTalk7EvaluationScreen
+            evaluation={realTalk7Evaluation}
+            onEvaluationLoaded={setRealTalk7Evaluation}
+            conversationSummary={realTalk7Data.conversationSummary}
+            errorLog={realTalk7Data.errorLog}
+            onNext={() => {
+              setRealTalk7Evaluation(null);
+              setScreenIndex(76);
+            }}
+          />
+        )}
+        {screenIndex === 76 && realTalk7Data && (
+          <RealTalk7ErrorReviewScreen
+            errorLog={realTalk7Data.errorLog}
+            onNext={() => {
+              const practiceItems = getCorrectionPracticeItems7(realTalk7Data!.errorLog);
+              setScreenIndex(practiceItems.length > 0 ? 77 : 0);
+            }}
+          />
+        )}
+        {screenIndex === 77 && realTalk7Data && (
+          <RealTalk7CorrectionPracticeScreen
+            items={getCorrectionPracticeItems7(realTalk7Data.errorLog)}
+            onComplete={() => {
+              setRealTalk7Data(null);
               setScreenIndex(0);
             }}
           />
