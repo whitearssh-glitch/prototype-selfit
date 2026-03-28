@@ -52,6 +52,66 @@ function readBody(req) {
   });
 }
 
+/** 마지막 AI 턴: 의문문(?)으로 끝내지 않고 마무리 멘트만. correction 분기는 그대로 둠 */
+function enforceClosingPhraseNoQuestion(result, fallbackEn, fallbackKo) {
+  if (!result?.isLastTurn || result.correction) return;
+  const en = String(result.cathyPhrase ?? '').trim();
+  if (!en || !en.endsWith('?')) return;
+  result.cathyPhrase = fallbackEn;
+  result.cathyPhraseKo = fallbackKo;
+}
+
+function enforceRealTalk6ClosingNoQuestion(result, userText) {
+  if (!result?.isLastTurn || result.correction) return;
+  const en = String(result.cathyPhrase ?? '').trim();
+  if (!en || !en.endsWith('?')) return;
+  const u = String(userText ?? '').trim().toLowerCase();
+  const negative = ['no', 'nope', "don't", 'dont', "can't", 'cant', 'sorry', 'busy', 'maybe', 'later', 'next time'].some((w) => u.includes(w));
+  if (negative) {
+    result.cathyPhrase = "That's okay. Let's go next time. Bye!";
+    result.cathyPhraseKo = '괜찮아. 다음에 가자. 잘 가!';
+  } else {
+    result.cathyPhrase = 'See you then! Bye!';
+    result.cathyPhraseKo = '그때 보자! 잘 가!';
+  }
+}
+
+const RT5_AGE_WORD_RE = /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen)\b/i;
+
+function extractRt5AgeToken(userText) {
+  const t = String(userText ?? '').trim().toLowerCase();
+  const mNum = t.match(/\b(1[0-9]|[1-9])\b/);
+  if (mNum) return mNum[1];
+  const mWord = t.match(RT5_AGE_WORD_RE);
+  if (mWord) return mWord[1].toLowerCase();
+  return null;
+}
+
+function formatRt5AgeForPhrase(ageToken) {
+  if (/^\d+$/.test(ageToken)) return ageToken;
+  return ageToken.charAt(0).toUpperCase() + ageToken.slice(1);
+}
+
+function buildRealTalk5ClosingPhrase(userText) {
+  const age = extractRt5AgeToken(userText);
+  if (!age) {
+    return { en: "Me, too! Let's be good friends!", ko: '나도! 좋은 친구 되자!' };
+  }
+  const shown = formatRt5AgeForPhrase(age);
+  return {
+    en: `${shown}! Me, too! Let's be good friends!`,
+    ko: `${shown}! 나도! 좋은 친구 되자!`,
+  };
+}
+
+/** RT5 마지막 턴: 사용자가 말한 나이로 반응 후 마무리. "Nice to meet you"는 이 턴에 쓰지 않음 */
+function applyRealTalk5LastTurnClosing(result, userText) {
+  if (!result?.isLastTurn || result.correction) return;
+  const { en, ko } = buildRealTalk5ClosingPhrase(userText);
+  result.cathyPhrase = en;
+  result.cathyPhraseKo = ko;
+}
+
 export async function handleWhisperProxy(req, res, next) {
     if (req.url === '/api/whisper-available' && req.method === 'GET') {
       const openaiAvailable = Boolean(OPENAI_KEY);
@@ -746,7 +806,7 @@ User (turn ${userTurnIndex} of 5) said: "${userText}"
 
 Evaluate and respond with JSON only:
 {
-  "cathyPhrase": "Shopkeeper's next line in English (short). First acknowledge what user said, then ask next question.",
+  "cathyPhrase": "Shopkeeper's next line in English (short). If not last turn: acknowledge then ask next. If isLastTurn=true: thank you + goodbye only, no question.",
   "cathyPhraseKo": "한글 번역 (반말)",
   "isMainDialogue": true or false,
   "correction": null or { "type": "grammar"|"naturalness", "sentence": "correct form", "explanation": "한글 설명 (해요체)" },
@@ -754,6 +814,7 @@ Evaluate and respond with JSON only:
   "isLastTurn": ${isLastUserTurn}
 }
 
+When isLastTurn is true: cathyPhrase must NOT be a question. End with . or ! only. Use thank you / goodbye / take care only.
 CORRECTION (grammar | naturalness): Return correction when user has errors. Apply to ALL turns 0-4.
 CRITICAL: In correction.sentence, ALWAYS use the actual item/words from the user's utterance. NEVER use placeholders like [item]. Example: user said "Juice" → correction.sentence must be "I want juice." (not "I want [item].")
 - Turn 0: Missing I want/I need → grammar "I want X." where X = the item user said (juice, apples, milk, etc.)
@@ -961,6 +1022,7 @@ OFF-TOPIC: User asked unrelated question → isOffTopic=true, Shopkeeper redirec
             ? '거의 다 왔어! 이렇게도 말해볼 수 있어!'
             : '좋은 시도야! 이렇게 말해볼까?';
         }
+        enforceClosingPhraseNoQuestion(result, 'Thank you! Have a nice day!', '고마워! 좋은 하루 보내!');
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(result));
@@ -1102,8 +1164,11 @@ Evaluate this English speaking session. Output ONLY valid JSON:
         const isLastUserTurn = userTurnIndex === 2;
 
         const systemPrompt = `You are Cathy, meeting a new friend for the first time. Topic: Meet New Friends.
-Cathy speaks exactly 4 times: Turn 0=greeting+ask name, Turn 1=acknowledge name+ask age, Turn 2=acknowledge age+say "Let's be good friends!".
-Key expressions: Hi / Hello / Nice to meet you / I'm 이름 / My name is 이름 / I'm 나이 years old.
+Cathy speaks exactly 4 times: Turn 0=greeting+ask name, Turn 1=acknowledge name+ask age, Turn 2=react to user's age + "Me, too! Let's be good friends!".
+Key expressions: Hi / Hello / Nice to meet you (Turns 0-1 only, NOT on last turn) / I'm 이름 / My name is 이름 / I'm 나이 years old.
+
+Turn 2 (LAST): Repeat or echo the user's age first (e.g. "Eight!" or "8!"), then "Me, too! Let's be good friends!". Do NOT say "Nice to meet you", "Nice to meet you too", or "good to meet you" on Turn 2—the user already met you earlier.
+When isLastTurn is true: closing only, no question (?). Never end with ?.
 
 IMPORTANT: Keep responses short. Max 10 words per sentence. Present tense. Never say "wrong" or "incorrect".
 For cathyPhraseKo: use 반말. For correction.explanation: use 해요체.
@@ -1116,7 +1181,7 @@ User (turn ${userTurnIndex} of 3) said: "${userText}"
 
 Evaluate and respond with JSON only:
 {
-  "cathyPhrase": "Cathy's next line in English (short). Acknowledge what user said, then ask next question or say goodbye.",
+  "cathyPhrase": "Cathy's next line in English (short). If not last turn: acknowledge then ask next. If isLastTurn=true: closing statement only, no question.",
   "cathyPhraseKo": "한글 번역 (반말)",
   "isMainDialogue": true or false,
   "correction": null or { "type": "grammar"|"naturalness", "sentence": "correct form", "explanation": "한글 설명 (해요체)" },
@@ -1126,7 +1191,7 @@ Evaluate and respond with JSON only:
 
 Turn 0: User greets (Hi/Hello/Nice to meet you) → Cathy asks name.
 Turn 1: User says name (My name is X / I'm X) → Cathy asks age.
-Turn 2: User says age (I'm eight / I'm 8 years old) → Cathy says "Let's be good friends!" and isLastTurn=true.
+Turn 2: User says age (I'm eight / I'm 8 years old) → Cathy says "Let's be good friends!" and isLastTurn=true. cathyPhrase must NOT end with ?.
 CORRECTION: grammar errors (e.g. "I have eight years" → "I'm eight years old"). Use My name is / I'm for name, I'm X years old for age.`;
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -1166,6 +1231,7 @@ CORRECTION: grammar errors (e.g. "I have eight years" → "I'm eight years old")
             ? '거의 다 왔어! 이렇게도 말해볼 수 있어!'
             : '좋은 시도야! 이렇게 말해볼까?';
         }
+        applyRealTalk5LastTurnClosing(result, userText);
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(result));
@@ -1358,6 +1424,7 @@ Reply JSON only. If error: { "hasError": true, "correction": { "type": "grammar"
 
         const systemPrompt = `You are Kevin, a friend talking about favorite movies. Topic: Favorite Movies.
 Kevin speaks 6 times: Turn 0=long time since movie + do you like movies?, Turn 1=react + what's your favorite movie?, Turn 2=react + do you like movie theater?, Turn 3=react + how about we go this weekend?, Turn 4=if yes: what time? / if no: come on let's go together, when? Turn 5=if yes: see you then bye / if no: that's okay, next time bye. (Turn 5 is Kevin's LAST response - after user turn 4.)
+When isLastTurn is true: cathyPhrase MUST be a closing statement only (e.g. "See you then! Bye!" or "That's okay. Let's go next time. Bye!"). MUST NOT end with ?. Do NOT ask a new question.
 Key expressions: I like / I don't like / Let's / How about.
 
 CRITICAL for Turn 0: If user says they DON'T like movies, Kevin MUST ask: "Oh, I see. So what movie did you watch recently?" - NEVER end the conversation in Turn 0.
@@ -1374,7 +1441,7 @@ User (turn ${userTurnIndex} of 5) said: "${userText}"
 
 Evaluate and respond with JSON only:
 {
-  "cathyPhrase": "Kevin's next line in English (short). React to user, then ask next or say goodbye.",
+  "cathyPhrase": "Kevin's next line in English (short). If not last turn: react then ask next. If isLastTurn=true: closing only, no question.",
   "cathyPhraseKo": "한글 번역 (반말)",
   "isMainDialogue": true or false,
   "correction": null or { "type": "grammar"|"naturalness", "sentence": "correct form", "explanation": "한글 설명 (해요체)" },
@@ -1386,7 +1453,7 @@ Turn 0: User says like movies → Kevin: "Cool! What's your favorite movie?". Us
 Turn 1: User says favorite movie (e.g. "I like Toy Story", "I like Frozen" - need movie name or 3+ words) → Kevin asks if they like going to the movie theater.
 Turn 2: User says yes/no → Kevin suggests going this weekend.
 Turn 3: User says yes → Kevin: "Great! What time works for you?". User says no → Kevin: "Come on, let's go together! When would be good for you?"
-Turn 4 (LAST user turn): User says time/date (positive, e.g. "Saturday", "next week", "next weekend") → Kevin: acknowledge (e.g. "Saturday! " or "Next week! ") + "See you then! Bye!". User says no/negative (e.g. "no", "next time", "maybe") → Kevin: "That's okay. Let's go next time. Bye!" (NEVER repeat "Come on, let's go together!"). MUST set isLastTurn=true.
+Turn 4 (LAST user turn): User says time/date (positive, e.g. "Saturday", "next week", "next weekend") → Kevin: acknowledge (e.g. "Saturday! " or "Next week! ") + "See you then! Bye!". User says no/negative (e.g. "no", "next time", "maybe") → Kevin: "That's okay. Let's go next time. Bye!" (NEVER repeat "Come on, let's go together!"). MUST set isLastTurn=true. On isLastTurn, cathyPhrase must NOT end with ?.
 
 CORRECTION (MANDATORY for ALL turns 0-4): If user has ANY grammar or spelling error, ALWAYS return correction. NEVER accept and move on. Apply to every turn: Turn 0 (like/movies), Turn 1 (movie name), Turn 2 (like it), Turn 3 (yes/no, let's, can't), Turn 4 (time/date). Examples: "moives"→"movies", "I no like"→"I don't like", "lets"→"let's", "cant"→"can't", "saterday"→"Saturday". correction: { "type": "grammar", "sentence": "correct form", "explanation": "한글 설명" }.`;
 
@@ -1427,6 +1494,7 @@ CORRECTION (MANDATORY for ALL turns 0-4): If user has ANY grammar or spelling er
             ? '거의 다 왔어! 이렇게도 말해볼 수 있어!'
             : '좋은 시도야! 이렇게 말해볼까?';
         }
+        enforceRealTalk6ClosingNoQuestion(result, userText);
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(result));
@@ -1689,6 +1757,7 @@ CONTEXT ERROR: Check if the user's answer MATCHES your previous question. Turn 0
               ? '질문에 맞게 답해볼까요?'
               : '좋은 시도야! 이렇게 말해볼까?';
         }
+        enforceClosingPhraseNoQuestion(result, 'Thank you! Enjoy your meal!', '감사합니다! 맛있게 드세요!');
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(result));
