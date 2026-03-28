@@ -1,0 +1,15 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/handler?__p=$1"
+    }
+  ],
+  "functions": {
+    "api/handler.js": {
+      "maxDuration": 60
+    }
+  }
+}

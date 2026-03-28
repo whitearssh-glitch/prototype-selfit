@@ -14,7 +14,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const envPath = resolve(__dirname, '..', '.env');
 const loaded = config({ path: envPath });
 const parsed = loaded?.parsed || {};
-const VOICERSS_KEY = (parsed.VOICERSS_API_KEY || parsed.VITE_VOICERSS_API_KEY || '').trim();
+const VOICERSS_KEY = (
+  parsed.VOICERSS_API_KEY ||
+  parsed.VITE_VOICERSS_API_KEY ||
+  process.env.VOICERSS_API_KEY ||
+  process.env.VITE_VOICERSS_API_KEY ||
+  ''
+).trim();
 const GEMINI_KEY = (parsed.GEMINI_API_KEY || process.env.GEMINI_API_KEY || '').trim();
 const OPENAI_KEY = (parsed.OPENAI_API_KEY || process.env.OPENAI_API_KEY || '').trim();
 if (OPENAI_KEY) {
@@ -46,8 +52,7 @@ function readBody(req) {
   });
 }
 
-export function whisperTranscribeMiddleware() {
-  return async (req, res, next) => {
+export async function handleWhisperProxy(req, res, next) {
     if (req.url === '/api/whisper-available' && req.method === 'GET') {
       const openaiAvailable = Boolean(OPENAI_KEY);
       const geminiAvailable = Boolean(GEMINI_KEY);
@@ -1995,5 +2000,8 @@ Evaluate this English speaking session. Output ONLY valid JSON:
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({ error: msg }));
     }
-  };
+}
+
+export function whisperTranscribeMiddleware() {
+  return handleWhisperProxy;
 }
