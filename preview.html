@@ -164,6 +164,24 @@
     .corner-select-btn--step3 {
       background: linear-gradient(135deg, #f8bbd0 0%, #e1bee7 35%, #9fa8da 65%, #5c6bc0 100%);
     }
+    .corner-select-row--tts-test { width: 100%; justify-content: center; margin-top: 0.35rem; }
+    .openai-voice-test-screen { position: absolute; inset: 0; display: flex; flex-direction: column; min-height: 0; overflow: hidden; border-radius: inherit; }
+    .openai-voice-test-inner { flex: 1; min-height: 0; overflow: auto; padding: 0.75rem 1rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .openai-voice-test-back { align-self: flex-start; border: none; background: rgba(255, 255, 255, 0.55); color: #880e4f; font-size: 0.9rem; font-weight: 600; padding: 0.35rem 0.65rem; border-radius: 999px; cursor: pointer; }
+    .openai-voice-test-back:hover { background: rgba(255, 255, 255, 0.85); }
+    .openai-voice-test-title { margin: 0; font-size: 1.15rem; font-weight: 800; background: linear-gradient(135deg, #880e4f 0%, #ad1457 50%, #d81b60 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .openai-voice-test-hint { margin: 0; font-size: 0.68rem; line-height: 1.35; color: #666; word-break: break-word; }
+    .openai-voice-test-label { font-size: 0.75rem; font-weight: 600; color: #880e4f; }
+    .openai-voice-test-textarea { width: 100%; resize: vertical; min-height: 3.2rem; padding: 0.5rem 0.65rem; border-radius: 0.65rem; border: 1px solid rgba(173, 20, 87, 0.35); font-size: 0.95rem; font-family: inherit; box-sizing: border-box; }
+    .openai-voice-test-actions { display: flex; gap: 0.5rem; }
+    .openai-voice-test-stop { border: none; padding: 0.4rem 0.9rem; border-radius: 999px; font-weight: 600; font-size: 0.85rem; cursor: pointer; background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%); color: #880e4f; }
+    .openai-voice-test-stop:disabled { opacity: 0.45; cursor: default; }
+    .openai-voice-test-error { margin: 0; font-size: 0.8rem; color: #c62828; }
+    .openai-voice-test-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+    .openai-voice-test-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.45rem 0.6rem; border-radius: 0.55rem; background: rgba(255, 255, 255, 0.45); border: 1px solid rgba(173, 20, 87, 0.12); }
+    .openai-voice-test-name { font-size: 0.9rem; font-weight: 600; color: #333; font-family: ui-monospace, monospace; }
+    .openai-voice-test-play { flex-shrink: 0; border: none; padding: 0.35rem 0.75rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; cursor: pointer; background: linear-gradient(135deg, #f48fb1 0%, #ec407a 100%); color: #fff; }
+    .openai-voice-test-play:hover { filter: brightness(1.05); }
     .corner-intro-screen {
       position: absolute;
       inset: 0;
@@ -852,6 +870,9 @@
                   '<button type="button" class="corner-select-btn corner-select-btn--step3" id="btn-realtalk6" aria-label="Inter A">Inter A</button>' +
                   '<button type="button" class="corner-select-btn corner-select-btn--step3" id="btn-realtalk7" aria-label="Adv A">Adv A</button>' +
                 '</div>' +
+                '<div class="corner-select-row corner-select-row--tts-test">' +
+                  '<button type="button" class="corner-select-btn corner-select-btn--step3" id="btn-openai-tts-test" aria-label="OpenAI TTS 미리듣기">OpenAI TTS 미리듣기</button>' +
+                '</div>' +
               '</section>' +
             '</div>' +
           '</div>' +
@@ -1261,8 +1282,92 @@
       );
     }
 
+    var TTS_VOICE_TEST_SCREEN_INDEX = 78;
     var hash = window.location.hash.slice(1);
-    var screenIndex = (hash === 'speed-up') ? 9 : (function () { var n = parseInt(hash, 10); return (!Number.isNaN(n) && n >= 0 && n <= 70) ? n : 0; })();
+    var screenIndex = (hash === 'speed-up') ? 9 : (hash === 'tts-voices' || hash === 'openai-tts') ? TTS_VOICE_TEST_SCREEN_INDEX : (function () { var n = parseInt(hash, 10); return (!Number.isNaN(n) && n >= 0 && n <= TTS_VOICE_TEST_SCREEN_INDEX) ? n : 0; })();
+    var _openAiTtsPrevScreenIndex = -1;
+    var openAiTtsTestAudio = null;
+    var openAiTtsBlobUrl = null;
+    function stopOpenAiTtsTestAudio() {
+      if (openAiTtsBlobUrl) {
+        try { URL.revokeObjectURL(openAiTtsBlobUrl); } catch (eRev) {}
+        openAiTtsBlobUrl = null;
+      }
+      if (openAiTtsTestAudio) {
+        try { openAiTtsTestAudio.pause(); } catch (eA) {}
+        openAiTtsTestAudio = null;
+      }
+    }
+    function renderOpenAiVoiceTestScreen() {
+      var V = window.__TTS_VOICES_BY_LEVEL__ || {};
+      var hint = '앱 설정: RT3 ' + (V.basicRealTalk3 || V.basic || '—') + ' · RT4 ' + (V.basicRealTalk4 || V.basic || '—') + ' · RT5 ' + (V.basicRealTalk5 || V.basic || '—') + ' · Inter ' + (V.intermediate || '—') + ' · Adv ' + (V.advanced || '—');
+      var voices = ['alloy', 'ash', 'coral', 'echo', 'fable', 'onyx', 'nova', 'sage', 'shimmer'];
+      var lis = voices.map(function (id) {
+        return '<li class="openai-voice-test-row" data-openai-voice="' + id + '"><span class="openai-voice-test-name">' + id + '</span><button type="button" class="openai-voice-test-play">재생</button></li>';
+      }).join('');
+      return (
+        '<div class="openai-voice-test-screen">' +
+          '<div class="openai-voice-test-inner">' +
+            '<button type="button" class="openai-voice-test-back" id="openai-tts-back-preview">← 홈</button>' +
+            '<h1 class="openai-voice-test-title">OpenAI TTS 음성</h1>' +
+            '<p class="openai-voice-test-hint">' + hint + '</p>' +
+            '<label class="openai-voice-test-label" for="openai-tts-sample-preview">샘플 문장 (영어)</label>' +
+            '<textarea id="openai-tts-sample-preview" class="openai-voice-test-textarea" rows="3" autocomplete="off">Hello, I am happy today.</textarea>' +
+            '<div class="openai-voice-test-actions">' +
+              '<button type="button" class="openai-voice-test-stop" id="openai-tts-stop-preview">정지</button>' +
+            '</div>' +
+            '<p class="openai-voice-test-error" id="openai-tts-err-preview" style="display:none;"></p>' +
+            '<ul class="openai-voice-test-list" aria-label="OpenAI 음성 목록">' + lis + '</ul>' +
+          '</div>' +
+        '</div>'
+      );
+    }
+    function playOpenAiTtsPreview(voice) {
+      var ta = document.getElementById('openai-tts-sample-preview');
+      var errEl = document.getElementById('openai-tts-err-preview');
+      var text = (ta && ta.value) ? ta.value.trim() : '';
+      if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+      if (!text) {
+        if (errEl) { errEl.textContent = '문장을 입력해 주세요.'; errEl.style.display = ''; }
+        return;
+      }
+      stopOpenAiTtsTestAudio();
+      var speed = (window.__VOICE_SPEED__ && window.__VOICE_SPEED__.ttsSpeed) || 1;
+      fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: text, voice: voice, speed: speed }) })
+        .then(function (res) {
+          if (!res.ok) return res.json().then(function (j) { throw new Error((j && j.error) || 'TTS'); });
+          return res.blob();
+        })
+        .then(function (blob) {
+          var url = URL.createObjectURL(blob);
+          openAiTtsBlobUrl = url;
+          var audio = new Audio(url);
+          openAiTtsTestAudio = audio;
+          audio.onended = function () {
+            if (openAiTtsBlobUrl) { try { URL.revokeObjectURL(openAiTtsBlobUrl); } catch (e1) {} openAiTtsBlobUrl = null; }
+            openAiTtsTestAudio = null;
+          };
+          return audio.play();
+        })
+        .catch(function () {
+          stopOpenAiTtsTestAudio();
+          if (errEl) { errEl.textContent = 'TTS 요청 또는 재생에 실패했습니다.'; errEl.style.display = ''; }
+        });
+    }
+    function bindOpenAiVoiceTestPreview() {
+      var back = document.getElementById('openai-tts-back-preview');
+      if (back) back.onclick = function () { stopOpenAiTtsTestAudio(); screenIndex = 0; mount(); };
+      var st = document.getElementById('openai-tts-stop-preview');
+      if (st) st.onclick = function () { stopOpenAiTtsTestAudio(); };
+      var rows = document.querySelectorAll('.openai-voice-test-list .openai-voice-test-row');
+      for (var ri = 0; ri < rows.length; ri++) {
+        (function (row) {
+          var v = row.getAttribute('data-openai-voice');
+          var btn = row.querySelector('.openai-voice-test-play');
+          if (btn && v) btn.onclick = function () { playOpenAiTtsPreview(v); };
+        })(rows[ri]);
+      }
+    }
     // STT 디버그: 브라우저 Web Speech API 사용 (별도 서버 없음)
     window.__sttDebug = { api: 'Web Speech API (SpeechRecognition)', lastTranscript: '', lastScreenIndex: 0, onResultCount: 0, onEndFired: false };
     if (typeof console !== 'undefined' && console.log) console.log('SELFit preview 로드됨. STT 콘솔 로그 활성화 → 15·20번 화면에서 마이크 누르면 여기 찍힘');
@@ -3118,6 +3223,16 @@
       }
       if (overlayEl && screenIndex !== 14 && screenIndex !== 19) overlayEl.innerHTML = '';
 
+      if (_openAiTtsPrevScreenIndex === 78 && screenIndex !== 78) stopOpenAiTtsTestAudio();
+      _openAiTtsPrevScreenIndex = screenIndex;
+
+      if (screenIndex === 78) {
+        if (header) header.style.display = 'none';
+        el.innerHTML = renderOpenAiVoiceTestScreen();
+        bindOpenAiVoiceTestPreview();
+        return;
+      }
+
       if (screenIndex === 0) {
         if (header) header.style.display = 'none';
         el.innerHTML = renderCornerSelect();
@@ -3139,6 +3254,8 @@
         if (btnRealTalk6) btnRealTalk6.onclick = function () { screenIndex = 64; mount(); };
         var btnRealTalk7 = document.getElementById('btn-realtalk7');
         if (btnRealTalk7) btnRealTalk7.onclick = function () { screenIndex = 71; mount(); };
+        var btnOpenAiTts = document.getElementById('btn-openai-tts-test');
+        if (btnOpenAiTts) btnOpenAiTts.onclick = function () { screenIndex = TTS_VOICE_TEST_SCREEN_INDEX; mount(); };
         return;
       }
 

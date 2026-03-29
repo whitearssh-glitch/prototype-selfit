@@ -15,6 +15,7 @@ export function CornerSelectScreen({
   onSelectRealTalk5,
   onSelectRealTalk6,
   onSelectRealTalk7,
+  onOpenOpenAiVoiceTest,
 }: {
   onSelectStep1: () => void;
   onSelectStep2: () => void;
@@ -27,6 +28,7 @@ export function CornerSelectScreen({
   onSelectRealTalk5: () => void;
   onSelectRealTalk6: () => void;
   onSelectRealTalk7: () => void;
+  onOpenOpenAiVoiceTest: () => void;
 }) {
   return (
     <div className="corner-select-screen">
@@ -94,6 +96,16 @@ export function CornerSelectScreen({
               </button>
               <button type="button" className="corner-select-btn corner-select-btn--step3" onClick={onSelectRealTalk7} aria-label="Adv A">
                 <span className="corner-select-btn-text">Adv A</span>
+              </button>
+            </div>
+            <div className="corner-select-row corner-select-row--tts-test">
+              <button
+                type="button"
+                className="corner-select-btn corner-select-btn--step3"
+                onClick={onOpenOpenAiVoiceTest}
+                aria-label="OpenAI TTS 미리듣기"
+              >
+                <span className="corner-select-btn-text">OpenAI TTS 미리듣기</span>
               </button>
             </div>
           </section>

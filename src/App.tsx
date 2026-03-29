@@ -62,6 +62,7 @@ import { RealTalk7SummaryScreen } from './screens/RealTalk7SummaryScreen';
 import { RealTalk7EvaluationScreen } from './screens/RealTalk7EvaluationScreen';
 import { RealTalk7ErrorReviewScreen } from './screens/RealTalk7ErrorReviewScreen';
 import { RealTalk7CorrectionPracticeScreen } from './screens/RealTalk7CorrectionPracticeScreen';
+import { OpenAiVoiceTestScreen } from './screens/OpenAiVoiceTestScreen';
 import { getCathyFirstPhrase } from './realTalk3Gemini';
 import { getCathyFirstPhrase as getCathyFirstPhrase4 } from './realTalk4Gemini';
 import { getCathyFirstPhrase as getCathyFirstPhrase5 } from './realTalk5Gemini';
@@ -84,14 +85,18 @@ import type { RealTalk7Data, SessionEvaluation as SessionEvaluation7 } from './r
 const HEADER_TITLE = 'Basic 01 Day 01';
 export const TOPIC_TEXT = 'TOPIC: Self-introduction';
 
-const MAX_SCREEN_INDEX = 77;
+/** Next 버튼으로 이어지는 마지막 화면 인덱스 */
+const LAST_SEQUENTIAL_SCREEN_INDEX = 77;
+/** 홈에서만 진입하는 OpenAI TTS 미리듣기 (해시: tts-voices, openai-tts, #78) */
+const TTS_VOICE_TEST_SCREEN_INDEX = 78;
 
 function getInitialScreenIndex(): number {
   if (typeof window === 'undefined') return 0;
   const hash = window.location.hash.slice(1); // '#' 제거
   if (hash === 'speed-up') return 9;
+  if (hash === 'tts-voices' || hash === 'openai-tts') return TTS_VOICE_TEST_SCREEN_INDEX;
   const n = parseInt(hash, 10);
-  if (!Number.isNaN(n) && n >= 0 && n <= MAX_SCREEN_INDEX) return n;
+  if (!Number.isNaN(n) && n >= 0 && n <= TTS_VOICE_TEST_SCREEN_INDEX) return n;
   return 0;
 }
 
@@ -118,7 +123,8 @@ export default function App() {
   const [realTalk7FirstPhraseDone, setRealTalk7FirstPhraseDone] = useState(false);
   const [realTalk7FirstPhraseInProgress, setRealTalk7FirstPhraseInProgress] = useState(false);
 
-  const goNext = () => setScreenIndex((i) => (i < MAX_SCREEN_INDEX ? i + 1 : i));
+  const goNext = () =>
+    setScreenIndex((i) => (i < LAST_SEQUENTIAL_SCREEN_INDEX ? i + 1 : i));
   const appStep3Class =
     screenIndex === 25 ||
     screenIndex === 26 ||
@@ -224,16 +230,17 @@ export default function App() {
     screenIndex === 77;
   const isStep5 = screenIndex === 32 || screenIndex === 33 || screenIndex === 34 || screenIndex === 35;
 
-  /* 코너 선택(0): body·html 여백 분홍+청보라+노랑 / 스텝1·2: 연한 분홍 / 스텝3·4: 청보라 / 스텝5: 파스텔 보라-노랑 */
+  /* 코너 선택(0)·TTS 테스트(78): body·html 여백 분홍+청보라+노랑 / 스텝1·2: 연한 분홍 / 스텝3·4: 청보라 / 스텝5: 파스텔 보라-노랑 */
   const isCornerSelect = screenIndex === 0;
+  const isTtsVoiceTest = screenIndex === TTS_VOICE_TEST_SCREEN_INDEX;
   useEffect(() => {
     const body = document.body;
     const html = document.documentElement;
-    body.classList.toggle('app-corner-select-margins', isCornerSelect);
+    body.classList.toggle('app-corner-select-margins', isCornerSelect || isTtsVoiceTest);
     body.classList.toggle('app-step1-margins', isStep1OrStep2);
     body.classList.toggle('app-step3-margins', isStep3);
     body.classList.toggle('app-step5-margins', isStep5);
-    html.classList.toggle('app-corner-select-margins', isCornerSelect);
+    html.classList.toggle('app-corner-select-margins', isCornerSelect || isTtsVoiceTest);
     html.classList.toggle('app-step1-margins', isStep1OrStep2);
     html.classList.toggle('app-step3-margins', isStep3);
     html.classList.toggle('app-step5-margins', isStep5);
@@ -241,9 +248,10 @@ export default function App() {
       body.classList.remove('app-corner-select-margins', 'app-step1-margins', 'app-step3-margins', 'app-step5-margins');
       html.classList.remove('app-corner-select-margins', 'app-step1-margins', 'app-step3-margins', 'app-step5-margins');
     };
-  }, [isCornerSelect, isStep1OrStep2, isStep3, isStep5]);
+  }, [isCornerSelect, isTtsVoiceTest, isStep1OrStep2, isStep3, isStep5]);
 
-  const appCornerSelectClass = isCornerSelect ? ' app--corner-select-colors' : '';
+  const appCornerSelectClass =
+    isCornerSelect || isTtsVoiceTest ? ' app--corner-select-colors' : '';
   const appStep1Class = isStep1OrStep2 ? ' app--step1-colors' : '';
   const appStep5Class = isStep5 ? ' app--step5-colors' : '';
   const realtalkFixedHeightClass = screenIndex === 31 ? ' app--realtalk-fixed-height' : '';
@@ -329,7 +337,13 @@ export default function App() {
 
   return (
     <div className={'app' + appCornerSelectClass + appStep1Class + appStep3Class + appStep5Class + realtalkFixedHeightClass}>
-        {screenIndex > 0 && screenIndex !== 1 && screenIndex !== 9 && screenIndex !== 25 && screenIndex !== 29 && screenIndex !== 32 && (
+        {screenIndex > 0 &&
+        screenIndex !== 1 &&
+        screenIndex !== 9 &&
+        screenIndex !== 25 &&
+        screenIndex !== 29 &&
+        screenIndex !== 32 &&
+        screenIndex !== TTS_VOICE_TEST_SCREEN_INDEX && (
         <header className={'app-header' + (screenIndex >= 2 && screenIndex <= 24 ? ' app-header--step1' : '') + (screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 30 || screenIndex === 31 || screenIndex === 36 || screenIndex === 37 || screenIndex === 38 || screenIndex === 39 || screenIndex === 40 || screenIndex === 41 || screenIndex === 42 || screenIndex === 43 || screenIndex === 44 || screenIndex === 45 || screenIndex === 46 || screenIndex === 47 || screenIndex === 48 || screenIndex === 49 || screenIndex === 50 || screenIndex === 51 || screenIndex === 52 || screenIndex === 53 || screenIndex === 54 || screenIndex === 55 || screenIndex === 56 || screenIndex === 57 || screenIndex === 58 || screenIndex === 59 || screenIndex === 60 || screenIndex === 61 || screenIndex === 62 || screenIndex === 63 || screenIndex === 64 || screenIndex === 65 || screenIndex === 66 || screenIndex === 67 || screenIndex === 68 || screenIndex === 69 || screenIndex === 70 || screenIndex === 71 || screenIndex === 72 || screenIndex === 73 || screenIndex === 74 || screenIndex === 75 || screenIndex === 76 || screenIndex === 77 ? ' app-header--step3' : '') + (screenIndex === 33 || screenIndex === 34 || screenIndex === 35 ? ' app-header--step5' : '')}>
           <span className="app-header-text">{screenIndex >= 71 && screenIndex <= 77 ? 'Advanced 01 Day 01' : screenIndex >= 64 && screenIndex <= 70 ? 'Inter 01 Day 01' : screenIndex >= 50 && screenIndex <= 56 ? 'Basic 05 Day 01' : HEADER_TITLE}</span>
         </header>
@@ -349,7 +363,11 @@ export default function App() {
             onSelectRealTalk5={() => setScreenIndex(57)}
             onSelectRealTalk6={() => setScreenIndex(64)}
             onSelectRealTalk7={() => setScreenIndex(71)}
+            onOpenOpenAiVoiceTest={() => setScreenIndex(TTS_VOICE_TEST_SCREEN_INDEX)}
           />
+        )}
+        {screenIndex === TTS_VOICE_TEST_SCREEN_INDEX && (
+          <OpenAiVoiceTestScreen onBack={() => setScreenIndex(0)} />
         )}
         {screenIndex === 1 && <CornerIntroScreen step="STEP 1" title="Patterns" step1 onNext={goNext} />}
         {screenIndex === 2 && <LectureScreen1 onNext={goNext} />}

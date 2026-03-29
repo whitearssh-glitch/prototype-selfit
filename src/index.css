@@ -537,6 +537,160 @@ html.app-step5-margins {
   color: transparent;
 }
 
+.corner-select-row--tts-test {
+  width: 100%;
+  justify-content: center;
+  margin-top: 0.35rem;
+}
+
+/* OpenAI TTS 미리듣기 (개발용) */
+.openai-voice-test-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.openai-voice-test-inner {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.75rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.openai-voice-test-back {
+  align-self: flex-start;
+  border: none;
+  background: rgba(255, 255, 255, 0.55);
+  color: #880e4f;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.openai-voice-test-back:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.openai-voice-test-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #880e4f 0%, #ad1457 50%, #d81b60 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.openai-voice-test-hint {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: #666;
+  word-break: break-word;
+}
+
+.openai-voice-test-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #880e4f;
+}
+
+.openai-voice-test-textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 3.2rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(173, 20, 87, 0.35);
+  font-size: 0.95rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.openai-voice-test-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.openai-voice-test-stop {
+  border: none;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+  color: #880e4f;
+}
+
+.openai-voice-test-stop:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.openai-voice-test-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #c62828;
+}
+
+.openai-voice-test-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.openai-voice-test-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(173, 20, 87, 0.12);
+}
+
+.openai-voice-test-row--playing {
+  border-color: rgba(173, 20, 87, 0.45);
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.openai-voice-test-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+  font-family: ui-monospace, monospace;
+}
+
+.openai-voice-test-play {
+  flex-shrink: 0;
+  border: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #f48fb1 0%, #ec407a 100%);
+  color: #fff;
+}
+
+.openai-voice-test-play:hover {
+  filter: brightness(1.05);
+}
+
 /* Corner Intro Screen – full-screen corner title card */
 .corner-intro-screen {
   position: absolute;

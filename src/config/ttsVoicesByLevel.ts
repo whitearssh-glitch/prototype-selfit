@@ -6,8 +6,8 @@
  */
 import raw from './tts-voices-by-level.json';
 
-/** OpenAI `tts-1` / `tts-1-hd` 가 실제로 받는 voice enum (API 버전별로 verse·ballad 등은 없을 수 있음) */
-const OPENAI_VOICES = new Set([
+/** OpenAI `tts-1` / `tts-1-hd` 가 실제로 받는 voice id (미리듣기·프록시와 동일 목록 유지) */
+export const OPENAI_TTS_VOICE_IDS = [
   'alloy',
   'ash',
   'coral',
@@ -17,7 +17,9 @@ const OPENAI_VOICES = new Set([
   'nova',
   'sage',
   'shimmer',
-]);
+] as const;
+
+const OPENAI_VOICES = new Set<string>(OPENAI_TTS_VOICE_IDS);
 
 function pick(v: unknown, fallback: string): string {
   const s = String(v ?? '')
