@@ -1,9 +1,9 @@
 /**
- * 개발용: OpenAI TTS 음성 선택 후 /api/tts 로 미리듣기
+ * 개발용: 음성 힌트(OpenAI 스타일 id)별로 /api/tts 텍스트 확인 후 브라우저 SpeechSynthesis 재생
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { VOICE_SPEED } from '../config/voiceSpeed';
+import { useCallback, useEffect, useState } from 'react';
+import { speakBrowserTTS, stopBrowserTTS } from '../browserSpeechTTS';
 import { OPENAI_TTS_VOICE_IDS, TTS_VOICES_BY_LEVEL } from '../config/ttsVoicesByLevel';
 
 const DEFAULT_SAMPLE = 'Hello, I am happy today.';
@@ -12,78 +12,26 @@ export function OpenAiVoiceTestScreen({ onBack }: { onBack: () => void }) {
   const [sampleText, setSampleText] = useState(DEFAULT_SAMPLE);
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const blobUrlRef = useRef<string | null>(null);
-  const seqRef = useRef(0);
 
   const stopPlayback = useCallback(() => {
-    seqRef.current += 1;
-    if (blobUrlRef.current) {
-      URL.revokeObjectURL(blobUrlRef.current);
-      blobUrlRef.current = null;
-    }
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
+    stopBrowserTTS();
     setPlayingVoice(null);
   }, []);
 
-  useEffect(() => () => stopPlayback(), [stopPlayback]);
+  useEffect(() => () => stopBrowserTTS(), []);
 
   const playVoice = useCallback(
-    async (voice: string) => {
+    (voice: string) => {
       const text = sampleText.trim();
       if (!text) {
         setError('문장을 입력해 주세요.');
         return;
       }
       setError(null);
-      stopPlayback();
-      const mySeq = ++seqRef.current;
       setPlayingVoice(voice);
-      try {
-        const res = await fetch('/api/tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text, voice, speed: VOICE_SPEED.ttsSpeed }),
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({ error: res.statusText }));
-          if (mySeq === seqRef.current) {
-            setError((err as { error?: string }).error || 'TTS 요청 실패');
-            setPlayingVoice(null);
-          }
-          return;
-        }
-        const blob = await res.blob();
-        if (mySeq !== seqRef.current) return;
-        const url = URL.createObjectURL(blob);
-        blobUrlRef.current = url;
-        const audio = new Audio(url);
-        audioRef.current = audio;
-        audio.onended = () => {
-          URL.revokeObjectURL(url);
-          blobUrlRef.current = null;
-          audioRef.current = null;
-          setPlayingVoice(null);
-        };
-        audio.onerror = () => {
-          if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
-          blobUrlRef.current = null;
-          audioRef.current = null;
-          setPlayingVoice(null);
-          setError('재생에 실패했습니다.');
-        };
-        await audio.play();
-      } catch {
-        if (mySeq === seqRef.current) {
-          setPlayingVoice(null);
-          setError('네트워크 오류');
-        }
-      }
+      void speakBrowserTTS(voice, text, () => setPlayingVoice(null));
     },
-    [sampleText, stopPlayback],
+    [sampleText],
   );
 
   return (
@@ -92,9 +40,10 @@ export function OpenAiVoiceTestScreen({ onBack }: { onBack: () => void }) {
         <button type="button" className="openai-voice-test-back" onClick={onBack}>
           ← 홈
         </button>
-        <h1 className="openai-voice-test-title">OpenAI TTS 음성</h1>
+        <h1 className="openai-voice-test-title">TTS 음성 (브라우저)</h1>
         <p className="openai-voice-test-hint">
-          앱 설정: RT3 {TTS_VOICES_BY_LEVEL.basicRealTalk3} · RT4 {TTS_VOICES_BY_LEVEL.basicRealTalk4} · RT5{' '}
+          서버는 발화할 텍스트만 JSON으로 돌려주고, 실제 소리는 기기 Web Speech API입니다. 앱 설정: RT3{' '}
+          {TTS_VOICES_BY_LEVEL.basicRealTalk3} · RT4 {TTS_VOICES_BY_LEVEL.basicRealTalk4} · RT5{' '}
           {TTS_VOICES_BY_LEVEL.basicRealTalk5} · Inter {TTS_VOICES_BY_LEVEL.intermediate} · Adv{' '}
           {TTS_VOICES_BY_LEVEL.advanced}
         </p>
@@ -115,7 +64,7 @@ export function OpenAiVoiceTestScreen({ onBack }: { onBack: () => void }) {
           </button>
         </div>
         {error && <p className="openai-voice-test-error">{error}</p>}
-        <ul className="openai-voice-test-list" aria-label="OpenAI 음성 목록">
+        <ul className="openai-voice-test-list" aria-label="음성 힌트 목록">
           {OPENAI_TTS_VOICE_IDS.map((id) => (
             <li key={id} className={'openai-voice-test-row' + (playingVoice === id ? ' openai-voice-test-row--playing' : '')}>
               <span className="openai-voice-test-name">{id}</span>

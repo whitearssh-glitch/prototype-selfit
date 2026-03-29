@@ -3,29 +3,15 @@
  * - GET /api/whisper-available, GET /api/chat-available, GET /api/tts-available
  * - POST /api/transcribe (OpenAI Whisper 우선, OPENAI_API_KEY; 없으면 Gemini, GEMINI_API_KEY)
  * - POST /api/chat (Gemini Chat, GEMINI_API_KEY)
- * - POST /api/tts (OpenAI TTS 우선, OPENAI_API_KEY; 없으면 VoiceRSS, VOICERSS_API_KEY)
+ * - POST /api/tts (JSON { text, voice } 에코 — 클라이언트 Web Speech API로 발화, 오디오 미생성)
  */
 import { config } from 'dotenv';
-import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 import { logGeminiUsage, logOpenAIUsage, logTtsUsage, logSttUsage } from './usage-logger.js';
 import { rt4ItemWordToCanonical, rt4PhraseEnForItem, rt4PhraseKoForItem } from './rt4GroceryItems.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-/** OpenAI TTS 기본 speed — `src/config/voice-speed.json` 의 ttsSpeed (클라이언트가 speed 생략 시) */
-function loadDefaultTtsSpeedFromConfig() {
-  try {
-    const p = resolve(__dirname, '..', 'src', 'config', 'voice-speed.json');
-    const j = JSON.parse(readFileSync(p, 'utf8'));
-    const s = Number(j.ttsSpeed);
-    if (Number.isFinite(s)) return Math.max(0.25, Math.min(4, s));
-  } catch (_) {
-    /* 파일 없음·JSON 오류 시 폴백 */
-  }
-  return 1;
-}
-const DEFAULT_TTS_SPEED = loadDefaultTtsSpeedFromConfig();
 const envPath = resolve(__dirname, '..', '.env');
 const loaded = config({ path: envPath });
 const parsed = loaded?.parsed || {};
@@ -38,12 +24,9 @@ const VOICERSS_KEY = (
 ).trim();
 const GEMINI_KEY = (parsed.GEMINI_API_KEY || process.env.GEMINI_API_KEY || '').trim();
 const OPENAI_KEY = (parsed.OPENAI_API_KEY || process.env.OPENAI_API_KEY || '').trim();
-if (OPENAI_KEY) {
-  console.log('[TTS] OpenAI TTS 사용 (OPENAI_API_KEY) ✓');
-} else if (VOICERSS_KEY) {
-  console.log('[TTS] VoiceRSS API key loaded ✓');
-} else {
-  console.log('[TTS] TTS API key NOT found. OPENAI_API_KEY 또는 VOICERSS_API_KEY 필요');
+console.log('[TTS] POST /api/tts → JSON text echo; playback = browser SpeechSynthesis (no server audio)');
+if (VOICERSS_KEY && !OPENAI_KEY) {
+  console.log('[TTS] VOICERSS_API_KEY present (unused for /api/tts audio path)');
 }
 if (GEMINI_KEY) {
   console.log('[Gemini] API key loaded ✓ (chat, transcribe fallback)');
@@ -1898,21 +1881,12 @@ Evaluate this English speaking session. Output ONLY valid JSON:
       return;
     }
     if (req.url === '/api/tts-available' && req.method === 'GET') {
-      const hasKey = Boolean(OPENAI_KEY || VOICERSS_KEY);
-      if (!hasKey) console.log('[TTS] tts-available=false → OPENAI_API_KEY 또는 VOICERSS_API_KEY 필요');
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ available: hasKey, provider: OPENAI_KEY ? 'openai' : 'voicerss' }));
+      res.end(JSON.stringify({ available: true, mode: 'browser-speech', provider: 'speech-synthesis' }));
       return;
     }
     if (req.url === '/api/tts' && req.method === 'POST') {
-      const useOpenAI = Boolean(OPENAI_KEY);
-      if (!useOpenAI && !VOICERSS_KEY) {
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ error: 'OPENAI_API_KEY or VOICERSS_API_KEY not set in .env' }));
-        return;
-      }
       try {
         const raw = await readBody(req);
         const body = JSON.parse(raw.toString('utf8'));
@@ -1923,90 +1897,16 @@ Evaluate this English speaking session. Output ONLY valid JSON:
           res.end(JSON.stringify({ error: 'text required' }));
           return;
         }
+        const rawVoice = String(body.voice ?? 'shimmer').trim() || 'shimmer';
+        const openaiVoices = new Set(['alloy', 'ash', 'coral', 'echo', 'fable', 'onyx', 'nova', 'sage', 'shimmer']);
+        const legacyToOpenai = { verse: 'onyx', ballad: 'fable' };
+        let v = rawVoice.toLowerCase();
+        if (legacyToOpenai[v]) v = legacyToOpenai[v];
+        const voice = openaiVoices.has(v) ? v : 'shimmer';
         logTtsUsage(text);
-
-        if (useOpenAI) {
-          // OpenAI TTS (클라이언트가 voice 전달; 없으면 basic 기본 shimmer)
-          const rawVoice = String(body.voice ?? 'shimmer').trim() || 'shimmer';
-          const voiceRssToOpenAI = { Linda: 'shimmer', Amy: 'shimmer', Mary: 'shimmer', Zoe: 'shimmer', Alice: 'shimmer' };
-          /** OpenAI audio/speech 현재 enum (verse·ballad 등은 거부될 수 있음 → 치환) */
-          const openaiVoices = new Set(['alloy', 'ash', 'coral', 'echo', 'fable', 'onyx', 'nova', 'sage', 'shimmer']);
-          const legacyToOpenai = { verse: 'onyx', ballad: 'fable' };
-          let v = rawVoice.toLowerCase();
-          if (legacyToOpenai[v]) v = legacyToOpenai[v];
-          const voiceId = voiceRssToOpenAI[rawVoice] || (openaiVoices.has(v) ? v : 'shimmer');
-          const speed = Math.max(0.25, Math.min(4, Number(body.speed) || DEFAULT_TTS_SPEED));
-          const ttsRes = await fetch('https://api.openai.com/v1/audio/speech', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${OPENAI_KEY}`,
-            },
-            body: JSON.stringify({
-              model: 'tts-1',
-              voice: voiceId,
-              input: text,
-              response_format: 'mp3',
-              speed,
-            }),
-          });
-          if (!ttsRes.ok) {
-            const errText = await ttsRes.text();
-            console.error('[TTS] OpenAI TTS HTTP', ttsRes.status, errText?.slice(0, 120));
-            res.statusCode = ttsRes.status;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: errText || 'OpenAI TTS error' }));
-            return;
-          }
-          const audioBuf = await ttsRes.arrayBuffer();
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'audio/mpeg');
-          res.end(Buffer.from(audioBuf));
-        } else {
-          // VoiceRSS fallback (클라이언트가 OpenAI 음성명 coral/echo 등을내면 VoiceRSS 이름으로 매핑)
-          const voiceToLang = { Linda: 'en-us', Amy: 'en-us', Mary: 'en-us', Alice: 'en-gb', Nancy: 'en-gb', Lily: 'en-gb', Zoe: 'en-au', Isla: 'en-au', Evie: 'en-au' };
-          const openAiNameToVoiceRss = {
-            alloy: 'Amy',
-            ash: 'Amy',
-            ballad: 'Amy',
-            coral: 'Amy',
-            echo: 'Alice',
-            fable: 'Alice',
-            nova: 'Amy',
-            onyx: 'Amy',
-            sage: 'Amy',
-            shimmer: 'Mary',
-            verse: 'Lily',
-          };
-          let voice = String(body.voice ?? 'Zoe').trim() || 'Zoe';
-          if (!voiceToLang[voice]) {
-            const rss = openAiNameToVoiceRss[voice.toLowerCase()];
-            if (rss) voice = rss;
-            else voice = 'Amy';
-          }
-          const hl = voiceToLang[voice] || 'en-au';
-          const params = new URLSearchParams({ key: VOICERSS_KEY, src: text, hl, v: voice, c: 'mp3', f: '44khz_16bit_stereo' });
-          const ttsRes = await fetch(`https://api.voicerss.org/?${params}`);
-          const audioBuf = await ttsRes.arrayBuffer();
-          const errStr = new TextDecoder().decode(audioBuf.slice(0, 100));
-          if (errStr.startsWith('ERROR:')) {
-            console.error('[TTS] VoiceRSS API error:', errStr);
-            res.statusCode = 500;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: errStr }));
-            return;
-          }
-          if (!ttsRes.ok) {
-            console.error('[TTS] VoiceRSS HTTP', ttsRes.status, errStr.slice(0, 80));
-            res.statusCode = ttsRes.status;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: errStr || 'VoiceRSS error' }));
-            return;
-          }
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'audio/mpeg');
-          res.end(Buffer.from(audioBuf));
-        }
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+        res.end(JSON.stringify({ text, voice }));
       } catch (e) {
         const msg = String(e.message || e);
         console.error('[TTS] exception', msg);

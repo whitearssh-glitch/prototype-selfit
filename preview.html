@@ -1286,17 +1286,48 @@
     var hash = window.location.hash.slice(1);
     var screenIndex = (hash === 'speed-up') ? 9 : (hash === 'tts-voices' || hash === 'openai-tts') ? TTS_VOICE_TEST_SCREEN_INDEX : (function () { var n = parseInt(hash, 10); return (!Number.isNaN(n) && n >= 0 && n <= TTS_VOICE_TEST_SCREEN_INDEX) ? n : 0; })();
     var _openAiTtsPrevScreenIndex = -1;
-    var openAiTtsTestAudio = null;
-    var openAiTtsBlobUrl = null;
     function stopOpenAiTtsTestAudio() {
-      if (openAiTtsBlobUrl) {
-        try { URL.revokeObjectURL(openAiTtsBlobUrl); } catch (eRev) {}
-        openAiTtsBlobUrl = null;
+      try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (eC) {}
+    }
+    function previewTtsEnsureVoices() {
+      return new Promise(function (resolve) {
+        if (!window.speechSynthesis) { resolve(); return; }
+        if (speechSynthesis.getVoices().length > 0) { resolve(); return; }
+        speechSynthesis.onvoiceschanged = function () { speechSynthesis.onvoiceschanged = null; resolve(); };
+        setTimeout(function () { speechSynthesis.onvoiceschanged = null; resolve(); }, 400);
+      });
+    }
+    function previewTtsPickVoice(openAiHint) {
+      var hint = String(openAiHint || '').toLowerCase();
+      var femaleOpenai = { alloy: 1, shimmer: 1, coral: 1, nova: 1 };
+      var maleOpenai = { echo: 1, onyx: 1, fable: 1, ash: 1, sage: 1 };
+      var wantFemale = femaleOpenai[hint] || !maleOpenai[hint];
+      var voices = speechSynthesis.getVoices().filter(function (x) { return x.lang.toLowerCase().indexOf('en') === 0; });
+      if (voices.length === 0) return null;
+      var femaleRe = /female|samantha|karen|victoria|zira|susan|hazel|sarah|google uk english female/i;
+      var maleRe = /male|daniel|fred|david|mark|tom|google uk english male/i;
+      var i, f = [], m = [];
+      if (wantFemale) {
+        for (i = 0; i < voices.length; i++) if (femaleRe.test(voices[i].name)) f.push(voices[i]);
+        if (f.length) return f[0];
+        return voices[0];
       }
-      if (openAiTtsTestAudio) {
-        try { openAiTtsTestAudio.pause(); } catch (eA) {}
-        openAiTtsTestAudio = null;
-      }
+      for (i = 0; i < voices.length; i++) if (maleRe.test(voices[i].name)) m.push(voices[i]);
+      if (m.length) return m[0];
+      return voices[0];
+    }
+    function previewSpeakBrowserLine(text, voiceHint, onEnd) {
+      if (!window.speechSynthesis) { if (onEnd) onEnd(); return; }
+      try { if (speechSynthesis.resume) speechSynthesis.resume(); } catch (er) {}
+      var rate = (window.__VOICE_SPEED__ && window.__VOICE_SPEED__.browserUtteranceRate) || 1;
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      u.rate = rate;
+      var pv = previewTtsPickVoice(voiceHint);
+      if (pv) u.voice = pv;
+      u.onend = function () { if (onEnd) onEnd(); };
+      u.onerror = function () { if (onEnd) onEnd(); };
+      speechSynthesis.speak(u);
     }
     function renderOpenAiVoiceTestScreen() {
       var V = window.__TTS_VOICES_BY_LEVEL__ || {};
@@ -1309,15 +1340,15 @@
         '<div class="openai-voice-test-screen">' +
           '<div class="openai-voice-test-inner">' +
             '<button type="button" class="openai-voice-test-back" id="openai-tts-back-preview">← 홈</button>' +
-            '<h1 class="openai-voice-test-title">OpenAI TTS 음성</h1>' +
-            '<p class="openai-voice-test-hint">' + hint + '</p>' +
+            '<h1 class="openai-voice-test-title">TTS 음성 (브라우저)</h1>' +
+            '<p class="openai-voice-test-hint">서버는 텍스트 JSON만 돌려줍니다. ' + hint + '</p>' +
             '<label class="openai-voice-test-label" for="openai-tts-sample-preview">샘플 문장 (영어)</label>' +
             '<textarea id="openai-tts-sample-preview" class="openai-voice-test-textarea" rows="3" autocomplete="off">Hello, I am happy today.</textarea>' +
             '<div class="openai-voice-test-actions">' +
               '<button type="button" class="openai-voice-test-stop" id="openai-tts-stop-preview">정지</button>' +
             '</div>' +
             '<p class="openai-voice-test-error" id="openai-tts-err-preview" style="display:none;"></p>' +
-            '<ul class="openai-voice-test-list" aria-label="OpenAI 음성 목록">' + lis + '</ul>' +
+            '<ul class="openai-voice-test-list" aria-label="음성 힌트 목록">' + lis + '</ul>' +
           '</div>' +
         '</div>'
       );
@@ -1334,23 +1365,16 @@
       stopOpenAiTtsTestAudio();
       var speed = (window.__VOICE_SPEED__ && window.__VOICE_SPEED__.ttsSpeed) || 1;
       fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: text, voice: voice, speed: speed }) })
-        .then(function (res) {
-          if (!res.ok) return res.json().then(function (j) { throw new Error((j && j.error) || 'TTS'); });
-          return res.blob();
+        .then(function (res) { return res.json().catch(function () { return null; }).then(function (j) { return { ok: res.ok, j: j }; }); })
+        .then(function (o) {
+          if (!o.ok || !o.j || !o.j.text) throw new Error('bad');
+          return previewTtsEnsureVoices().then(function () { return o.j; });
         })
-        .then(function (blob) {
-          var url = URL.createObjectURL(blob);
-          openAiTtsBlobUrl = url;
-          var audio = new Audio(url);
-          openAiTtsTestAudio = audio;
-          audio.onended = function () {
-            if (openAiTtsBlobUrl) { try { URL.revokeObjectURL(openAiTtsBlobUrl); } catch (e1) {} openAiTtsBlobUrl = null; }
-            openAiTtsTestAudio = null;
-          };
-          return audio.play();
+        .then(function (j) {
+          speechSynthesis.cancel();
+          previewSpeakBrowserLine(String(j.text).trim(), j.voice || voice, function () {});
         })
         .catch(function () {
-          stopOpenAiTtsTestAudio();
           if (errEl) { errEl.textContent = 'TTS 요청 또는 재생에 실패했습니다.'; errEl.style.display = ''; }
         });
     }
@@ -1515,7 +1539,7 @@
     };
 
     /* ===== Index 26 Role Play (React RolePlayScreen과 동기화) ===== */
-    /* TTS: 서버 /api/tts 사용 (OPENAI_API_KEY 또는 VOICERSS_API_KEY). 없으면 브라우저 TTS */
+    /* TTS: POST /api/tts → JSON text, 브라우저 SpeechSynthesis 발화 */
 
     var ROLEPLAY_CHARACTER_NAMES = ['Emma', 'Sophie', 'Lisa', 'Anna', 'Mary'];
     var ROLEPLAY_STUDENT_NAME = 'Me';
@@ -1558,22 +1582,22 @@
       return V.basicRealTalk3 || V.basic || 'shimmer';
     }
     function speakRoleplayApiTTS(text, onEnd, onFail) {
+      var vFlow = previewTtsVoiceForCurrentFlow();
       fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text.trim(), voice: previewTtsVoiceForCurrentFlow(), speed: VOICE_SPEED_CFG.ttsSpeed })
-      }).then(function (res) {
-        if (!res.ok) { if (onFail) onFail(); else onEnd(); return null; }
-        return res.blob();
-      }).then(function (blob) {
-        if (!blob) return;
-        if (blob.size < 100 && blob.type === 'text/plain') { if (onFail) onFail(); else onEnd(); return; }
-        var objectUrl = URL.createObjectURL(blob);
-        var audio = new Audio(objectUrl);
-        audio.onended = function () { URL.revokeObjectURL(objectUrl); onEnd(); };
-        audio.onerror = function () { URL.revokeObjectURL(objectUrl); if (onFail) onFail(); else onEnd(); };
-        audio.play().catch(function () { URL.revokeObjectURL(objectUrl); if (onFail) onFail(); else onEnd(); });
-      }).catch(function () { if (onFail) onFail(); else onEnd(); });
+        body: JSON.stringify({ text: text.trim(), voice: vFlow, speed: VOICE_SPEED_CFG.ttsSpeed })
+      }).then(function (res) { return res.json().catch(function () { return null; }).then(function (j) { return { ok: res.ok, j: j }; }); })
+        .then(function (o) {
+          if (!o.ok || !o.j || !o.j.text) { if (onFail) onFail(); else onEnd(); return; }
+          return previewTtsEnsureVoices().then(function () { return o.j; });
+        })
+        .then(function (j) {
+          if (!j) return;
+          speechSynthesis.cancel();
+          previewSpeakBrowserLine(String(j.text).trim(), j.voice || vFlow, onEnd);
+        })
+        .catch(function () { if (onFail) onFail(); else onEnd(); });
     }
     function speakRoleplayBrowserTTS(text, onEnd) {
       if (!window.speechSynthesis) { onEnd(); return; }
@@ -1590,7 +1614,7 @@
       if (voice) u.voice = voice;
       speechSynthesis.speak(u);
     }
-    /* TTS: /api/tts 시도 → 실패 시 브라우저 TTS (서버에 OPENAI_API_KEY 또는 VOICERSS_API_KEY 필요) */
+    /* TTS: /api/tts JSON 실패 시 순수 브라우저 TTS 폴백 */
     function speakRoleplayTTS(text, onEnd) {
       speakRoleplayApiTTS(text, onEnd, function () { speakRoleplayBrowserTTS(text, onEnd); });
     }

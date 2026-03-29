@@ -1,7 +1,7 @@
 /**
- * 학습 단계별 OpenAI TTS 음성
- * Basic(Real Talk 3·4·5) → 여성, 화면마다 다른 음성 / Inter·Adv → 남성
- * 수정: `tts-voices-by-level.json`만 편집 (OpenAI 허용 voice 이름만)
+ * 학습 단계별 음성 힌트 (서버 /api/tts JSON에 포함 → 브라우저 SpeechSynthesis 보이스 선택)
+ * Basic(Real Talk 3·4·5) → 여성 쪽 / Inter·Adv → 남성 쪽
+ * 수정: `tts-voices-by-level.json`만 편집 (alloy·shimmer 등 허용 id)
  * 이전 단일 키 `basic`만 있으면 세 Basic 모두 그 값으로 폴백
  */
 import raw from './tts-voices-by-level.json';
