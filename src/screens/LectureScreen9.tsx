@@ -7,6 +7,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { TOPIC_TEXT } from '../App';
+import { VOICE_SPEED } from '../config/voiceSpeed';
 import { useSTT } from '../useSTT';
 
 const CENTER_TEXT_LINE1 = 'Nice to meet you!';
@@ -39,11 +40,15 @@ export interface LectureScreen9Props {
   onNext: () => void;
   /** 'fast' = Slow 흰배경+컬러, Fast 컬러+흰글씨 (인덱스 20용) */
   speedDisplayVariant?: 'slow' | 'fast';
-  /** 음원 재생 속도 (기본 0.6, 인덱스 20은 1) */
+  /** 음원 재생 속도 (기본값: src/config/voice-speed.json → lecturePlaybackRate) */
   playbackRate?: number;
 }
 
-export function LectureScreen9({ onNext, speedDisplayVariant = 'slow', playbackRate = 0.6 }: LectureScreen9Props) {
+export function LectureScreen9({
+  onNext,
+  speedDisplayVariant = 'slow',
+  playbackRate = VOICE_SPEED.lecturePlaybackRate,
+}: LectureScreen9Props) {
   const [audioPlayed, setAudioPlayed] = useState(false);
   const [recognitionDone, setRecognitionDone] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);

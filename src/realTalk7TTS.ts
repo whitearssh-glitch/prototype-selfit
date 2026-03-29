@@ -3,11 +3,12 @@
  * Real Talk 6과 동일. voice='onyx' (남성) 사용.
  */
 
+import { VOICE_SPEED } from './config/voiceSpeed';
+
 let currentAudio: HTMLAudioElement | null = null;
 let speakSeq = 0;
 
 const VOICE = 'onyx'; // 미국식 남성 음성 (American male)
-const SPEED = 0.77;
 
 async function speakVoiceRSS(text: string, onEnd?: () => void): Promise<void> {
   const mySeq = ++speakSeq;
@@ -15,7 +16,7 @@ async function speakVoiceRSS(text: string, onEnd?: () => void): Promise<void> {
     const res = await fetch('/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: text.trim(), voice: VOICE, speed: SPEED }),
+      body: JSON.stringify({ text: text.trim(), voice: VOICE, speed: VOICE_SPEED.ttsSpeed }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: res.statusText }));

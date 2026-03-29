@@ -6,11 +6,26 @@
  * - POST /api/tts (OpenAI TTS 우선, OPENAI_API_KEY; 없으면 VoiceRSS, VOICERSS_API_KEY)
  */
 import { config } from 'dotenv';
+import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 import { logGeminiUsage, logOpenAIUsage, logTtsUsage, logSttUsage } from './usage-logger.js';
 import { rt4ItemWordToCanonical, rt4PhraseEnForItem, rt4PhraseKoForItem } from './rt4GroceryItems.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+/** OpenAI TTS 기본 speed — `src/config/voice-speed.json` 의 ttsSpeed (클라이언트가 speed 생략 시) */
+function loadDefaultTtsSpeedFromConfig() {
+  try {
+    const p = resolve(__dirname, '..', 'src', 'config', 'voice-speed.json');
+    const j = JSON.parse(readFileSync(p, 'utf8'));
+    const s = Number(j.ttsSpeed);
+    if (Number.isFinite(s)) return Math.max(0.25, Math.min(4, s));
+  } catch (_) {
+    /* 파일 없음·JSON 오류 시 폴백 */
+  }
+  return 1;
+}
+const DEFAULT_TTS_SPEED = loadDefaultTtsSpeedFromConfig();
 const envPath = resolve(__dirname, '..', '.env');
 const loaded = config({ path: envPath });
 const parsed = loaded?.parsed || {};
@@ -1916,7 +1931,7 @@ Evaluate this English speaking session. Output ONLY valid JSON:
           const voiceRssToOpenAI = { Linda: 'nova', Amy: 'nova', Mary: 'shimmer', Zoe: 'nova', Alice: 'shimmer' };
           const openaiVoices = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'fable', 'onyx', 'nova', 'sage', 'shimmer', 'verse'];
           const voiceId = voiceRssToOpenAI[voice] || (openaiVoices.includes(voice.toLowerCase()) ? voice.toLowerCase() : 'nova');
-          const speed = Math.max(0.25, Math.min(4, Number(body.speed) || 0.77)); // 기본 0.77 (1/1.3, 조금 느리게)
+          const speed = Math.max(0.25, Math.min(4, Number(body.speed) || DEFAULT_TTS_SPEED));
           const ttsRes = await fetch('https://api.openai.com/v1/audio/speech', {
             method: 'POST',
             headers: {

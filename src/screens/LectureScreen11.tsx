@@ -6,6 +6,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { TOPIC_TEXT } from '../App';
+import { VOICE_SPEED } from '../config/voiceSpeed';
 import { useSTT } from '../useSTT';
 
 const CENTER_TEXT_LINE1 = 'I am';
@@ -40,7 +41,11 @@ export interface LectureScreen11Props {
   playbackRate?: number;
 }
 
-export function LectureScreen11({ onNext, speedDisplayVariant = 'slow', playbackRate = 0.6 }: LectureScreen11Props) {
+export function LectureScreen11({
+  onNext,
+  speedDisplayVariant = 'slow',
+  playbackRate = VOICE_SPEED.lecturePlaybackRate,
+}: LectureScreen11Props) {
   const [audioPlayed, setAudioPlayed] = useState(false);
   const [recognitionDone, setRecognitionDone] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);

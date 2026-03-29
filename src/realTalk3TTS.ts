@@ -4,12 +4,13 @@
  * API 키는 .env에만 (클라이언트 노출 없음)
  */
 
+import { VOICE_SPEED } from './config/voiceSpeed';
+
 let currentAudio: HTMLAudioElement | null = null;
 /** 요청 순서: 동시에 여러 speak()가 완료될 때 최신만 재생 (겹침 방지) */
 let speakSeq = 0;
 
 const VOICE = 'nova'; // 미국식 여성 음성 (American female)
-const SPEED = 0.77; // 1/1.3, 초등 저학년에 맞게 조금 느리게
 
 async function speakVoiceRSS(text: string, onEnd?: () => void): Promise<void> {
   const mySeq = ++speakSeq;
@@ -17,7 +18,7 @@ async function speakVoiceRSS(text: string, onEnd?: () => void): Promise<void> {
     const res = await fetch('/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: text.trim(), voice: VOICE, speed: SPEED }),
+      body: JSON.stringify({ text: text.trim(), voice: VOICE, speed: VOICE_SPEED.ttsSpeed }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: res.statusText }));

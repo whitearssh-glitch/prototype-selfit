@@ -6,6 +6,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { TOPIC_TEXT } from '../App';
+import { VOICE_SPEED } from '../config/voiceSpeed';
 import { useSTT } from '../useSTT';
 /** 마이크 누를 때 표시할 영어 (인덱스 21) */
 const DISPLAY_TEXT_WHEN_MIC = 'She is';
@@ -48,7 +49,7 @@ function playDingDong() {
 function playWrongAudio(onEnd: () => void) {
   try {
     const audio = new Audio(WRONG_AUDIO);
-    audio.playbackRate = 1.0;
+    audio.playbackRate = VOICE_SPEED.lecturePlaybackRate;
     audio.onended = onEnd;
     audio.play().catch(onEnd);
   } catch {

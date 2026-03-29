@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { VOICE_SPEED } from './config/voiceSpeed';
 import { CornerSelectScreen } from './screens/CornerSelectScreen';
 import { CornerIntroScreen } from './screens/CornerIntroScreen';
 import { LectureScreen1 } from './screens/LectureScreen1';
@@ -364,11 +365,26 @@ export default function App() {
         {screenIndex === 12 && <LectureScreen13 onNext={goNext} />}
         {screenIndex === 13 && <LectureScreen15 onNext={goNext} />}
         {screenIndex === 14 && <LectureScreen16 onNext={goNext} />}
-        {screenIndex === 15 && <LectureScreen9 onNext={goNext} speedDisplayVariant="fast" playbackRate={1} />}
-        {screenIndex === 16 && <LectureScreen11 onNext={goNext} speedDisplayVariant="fast" playbackRate={1} />}
-        {screenIndex === 17 && <LectureScreen13 onNext={goNext} speedDisplayVariant="fast" playbackRate={1} />}
-        {screenIndex === 18 && <LectureScreen15 onNext={goNext} speedDisplayVariant="fast" playbackRate={1} />}
-        {screenIndex === 19 && <LectureScreen16 onNext={goNext} speedDisplayVariant="fast" playbackRate={1} afterCheckPopupText="Your turn!" />}
+        {screenIndex === 15 && (
+          <LectureScreen9 onNext={goNext} speedDisplayVariant="fast" playbackRate={VOICE_SPEED.lecturePlaybackRate} />
+        )}
+        {screenIndex === 16 && (
+          <LectureScreen11 onNext={goNext} speedDisplayVariant="fast" playbackRate={VOICE_SPEED.lecturePlaybackRate} />
+        )}
+        {screenIndex === 17 && (
+          <LectureScreen13 onNext={goNext} speedDisplayVariant="fast" playbackRate={VOICE_SPEED.lecturePlaybackRate} />
+        )}
+        {screenIndex === 18 && (
+          <LectureScreen15 onNext={goNext} speedDisplayVariant="fast" playbackRate={VOICE_SPEED.lecturePlaybackRate} />
+        )}
+        {screenIndex === 19 && (
+          <LectureScreen16
+            onNext={goNext}
+            speedDisplayVariant="fast"
+            playbackRate={VOICE_SPEED.lecturePlaybackRate}
+            afterCheckPopupText="Your turn!"
+          />
+        )}
         {screenIndex === 20 && <LectureScreen10 onNext={goNext} hideSpeedDisplay forceWrong />}
         {screenIndex === 21 && <LectureScreen12 onNext={goNext} hideSpeedDisplay forceWrong />}
         {screenIndex === 22 && <LectureScreen18 onNext={goNext} hideSpeedDisplay forceCorrect />}

@@ -6,6 +6,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { TOPIC_TEXT } from '../App';
+import { VOICE_SPEED } from '../config/voiceSpeed';
 import { useSTT } from '../useSTT';
 const CENTER_TEXT_LINE1_PREFIX = 'I am ';
 const CENTER_TEXT_FILL = 'a student';
@@ -47,7 +48,7 @@ function playDingDong() {
 function playWrongAudio(onEnd: () => void) {
   try {
     const audio = new Audio(WRONG_AUDIO);
-    audio.playbackRate = 1.0;
+    audio.playbackRate = VOICE_SPEED.lecturePlaybackRate;
     audio.onended = onEnd;
     audio.play().catch(onEnd);
   } catch {
