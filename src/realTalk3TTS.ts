@@ -10,7 +10,7 @@ let currentAudio: HTMLAudioElement | null = null;
 /** 요청 순서: 동시에 여러 speak()가 완료될 때 최신만 재생 (겹침 방지) */
 let speakSeq = 0;
 
-const VOICE = 'nova'; // 미국식 여성 음성 (American female)
+const VOICE = 'coral'; // 따뜻·밝은 여성 톤 (아동 학습용, OpenAI TTS)
 
 async function speakVoiceRSS(text: string, onEnd?: () => void): Promise<void> {
   const mySeq = ++speakSeq;

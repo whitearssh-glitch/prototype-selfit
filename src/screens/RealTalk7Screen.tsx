@@ -1,7 +1,7 @@
 /**
  * Real Talk 7 – Ordering Hamburgers 대화 화면
- * 11턴 대화 (5 user turns). Mock AI + TTS(남성) + STT.
- * man1.png, realTalk7TTS (Real Talk 6과 동일)
+ * 11턴 대화 (5 user turns). Mock AI + TTS(echo 남성) + STT.
+ * man3.png, realTalk7TTS (echo — Real Talk 6과 동일 톤)
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';

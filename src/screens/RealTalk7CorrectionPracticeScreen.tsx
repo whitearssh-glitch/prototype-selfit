@@ -1,6 +1,6 @@
 /**
  * Real Talk 7 – 교정 연습 (Ordering Hamburgers)
- * TTS: realTalk7TTS (남성 음성, Real Talk 6과 동일)
+ * TTS: realTalk7TTS (echo, 아동용 맑은 남성)
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';

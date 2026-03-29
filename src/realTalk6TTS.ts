@@ -1,6 +1,6 @@
 /**
  * Real Talk 6 – TTS (남자 음성)
- * realTalk3TTS와 동일하나 voice='onyx' (남성) 사용.
+ * realTalk3TTS와 동일하나 voice='echo' (맑은 남성, 아동 학습용) 사용.
  * Real Talk 6에서만 사용.
  */
 
@@ -9,7 +9,7 @@ import { VOICE_SPEED } from './config/voiceSpeed';
 let currentAudio: HTMLAudioElement | null = null;
 let speakSeq = 0;
 
-const VOICE = 'onyx'; // 미국식 남성 음성 (American male)
+const VOICE = 'echo'; // onyx보다 밝고 맑은 남성 (아동 학습용, OpenAI TTS)
 
 async function speakVoiceRSS(text: string, onEnd?: () => void): Promise<void> {
   const mySeq = ++speakSeq;

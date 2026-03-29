@@ -1444,7 +1444,7 @@
       fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text.trim(), voice: 'nova', speed: VOICE_SPEED_CFG.ttsSpeed })
+        body: JSON.stringify({ text: text.trim(), voice: 'coral', speed: VOICE_SPEED_CFG.ttsSpeed })
       }).then(function (res) {
         if (!res.ok) { if (onFail) onFail(); else onEnd(); return null; }
         return res.blob();

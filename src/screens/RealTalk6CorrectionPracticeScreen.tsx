@@ -1,6 +1,6 @@
 /**
  * Real Talk 6 – 교정 연습 (Favorite Movies)
- * TTS: realTalk6TTS (남성 음성)
+ * TTS: realTalk6TTS (echo, 아동용 맑은 남성)
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';

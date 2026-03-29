@@ -1926,11 +1926,11 @@ Evaluate this English speaking session. Output ONLY valid JSON:
         logTtsUsage(text);
 
         if (useOpenAI) {
-          // OpenAI TTS: https://api.openai.com/v1/audio/speech (tts-1, nova)
-          const voice = String(body.voice ?? 'nova').trim() || 'nova';
-          const voiceRssToOpenAI = { Linda: 'nova', Amy: 'nova', Mary: 'shimmer', Zoe: 'nova', Alice: 'shimmer' };
+          // OpenAI TTS: https://api.openai.com/v1/audio/speech (tts-1; 기본 여성 coral — 아동 학습용 밝은 톤)
+          const voice = String(body.voice ?? 'coral').trim() || 'coral';
+          const voiceRssToOpenAI = { Linda: 'coral', Amy: 'coral', Mary: 'shimmer', Zoe: 'coral', Alice: 'shimmer' };
           const openaiVoices = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'fable', 'onyx', 'nova', 'sage', 'shimmer', 'verse'];
-          const voiceId = voiceRssToOpenAI[voice] || (openaiVoices.includes(voice.toLowerCase()) ? voice.toLowerCase() : 'nova');
+          const voiceId = voiceRssToOpenAI[voice] || (openaiVoices.includes(voice.toLowerCase()) ? voice.toLowerCase() : 'coral');
           const speed = Math.max(0.25, Math.min(4, Number(body.speed) || DEFAULT_TTS_SPEED));
           const ttsRes = await fetch('https://api.openai.com/v1/audio/speech', {
             method: 'POST',
@@ -1959,9 +1959,27 @@ Evaluate this English speaking session. Output ONLY valid JSON:
           res.setHeader('Content-Type', 'audio/mpeg');
           res.end(Buffer.from(audioBuf));
         } else {
-          // VoiceRSS fallback
-          const voice = String(body.voice ?? 'Zoe').trim() || 'Zoe';
+          // VoiceRSS fallback (클라이언트가 OpenAI 음성명 coral/echo 등을내면 VoiceRSS 이름으로 매핑)
           const voiceToLang = { Linda: 'en-us', Amy: 'en-us', Mary: 'en-us', Alice: 'en-gb', Nancy: 'en-gb', Lily: 'en-gb', Zoe: 'en-au', Isla: 'en-au', Evie: 'en-au' };
+          const openAiNameToVoiceRss = {
+            alloy: 'Amy',
+            ash: 'Amy',
+            ballad: 'Amy',
+            coral: 'Amy',
+            echo: 'Amy',
+            fable: 'Alice',
+            nova: 'Amy',
+            onyx: 'Amy',
+            sage: 'Mary',
+            shimmer: 'Mary',
+            verse: 'Amy',
+          };
+          let voice = String(body.voice ?? 'Zoe').trim() || 'Zoe';
+          if (!voiceToLang[voice]) {
+            const rss = openAiNameToVoiceRss[voice.toLowerCase()];
+            if (rss) voice = rss;
+            else voice = 'Amy';
+          }
           const hl = voiceToLang[voice] || 'en-au';
           const params = new URLSearchParams({ key: VOICERSS_KEY, src: text, hl, v: voice, c: 'mp3', f: '44khz_16bit_stereo' });
           const ttsRes = await fetch(`https://api.voicerss.org/?${params}`);
