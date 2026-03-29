@@ -67,6 +67,8 @@ export function RealTalkScreen({ onNext, imageOnly, imageOnlyNoGo }: RealTalkScr
       audio.play().catch(() => setShowGo(true));
       return () => {
         audio.removeEventListener('ended', onEnded);
+        audio.pause();
+        audio.currentTime = 0;
       };
     }
   }, [imageOnly]);
@@ -79,6 +81,8 @@ export function RealTalkScreen({ onNext, imageOnly, imageOnlyNoGo }: RealTalkScr
       audio.play().catch(() => setShowMic37(true));
       return () => {
         audio.removeEventListener('ended', onEnded);
+        audio.pause();
+        audio.currentTime = 0;
       };
     }
   }, [imageOnlyNoGo]);

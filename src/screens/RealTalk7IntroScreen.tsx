@@ -23,7 +23,11 @@ export function RealTalk7IntroScreen({ onNext }: RealTalk7IntroScreenProps) {
     const onEnded = () => setShowGo(true);
     audio.addEventListener('ended', onEnded);
     audio.play().catch(() => setShowGo(true));
-    return () => audio.removeEventListener('ended', onEnded);
+    return () => {
+      audio.removeEventListener('ended', onEnded);
+      audio.pause();
+      audio.currentTime = 0;
+    };
   }, []);
 
   return (
