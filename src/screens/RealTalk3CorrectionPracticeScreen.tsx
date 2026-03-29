@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TOPIC_TEXT } from '../App';
 import { useSTT } from '../useSTT';
-import { speak, stopSpeaking } from '../realTalk3TTS';
+import { speakRealTalk3, stopSpeaking } from '../realTalk3TTS';
 import { evaluateCorrectionPractice } from '../realTalk3Gemini';
 import { getCorrectionPracticeItems } from '../realTalk3Types';
 import type { ErrorLogItem } from '../realTalk3Types';
@@ -107,14 +107,14 @@ export function RealTalk3CorrectionPracticeScreen({ items, onComplete }: RealTal
         setTimeout(() => {
           setIsBlinking(false);
           stopSpeaking();
-          speak(current.corrected, () => setShowMic(true));
+          speakRealTalk3(current.corrected, () => setShowMic(true));
         }, 1000);
       } else {
         // 2차 오답: 그라데이션 효과로 다시 나타남 + TTS + 별+효과음 → 다음
         setTextKey((k) => k + 1);
         setShowText(true);
         stopSpeaking();
-        speak(current.corrected, () => {
+        speakRealTalk3(current.corrected, () => {
           setTimeout(() => {
             setShowStar(true);
             playDingDong();
@@ -151,7 +151,7 @@ export function RealTalk3CorrectionPracticeScreen({ items, onComplete }: RealTal
     }
     setShowText(true);
     setShowMic(false);
-    speak(items[0].corrected, () => setShowMic(true));
+    speakRealTalk3(items[0].corrected, () => setShowMic(true));
     return () => stopSpeaking();
   }, []);
 
@@ -161,7 +161,7 @@ export function RealTalk3CorrectionPracticeScreen({ items, onComplete }: RealTal
     if (!item) return;
     stopSpeaking();
     setShowMic(false);
-    speak(item.corrected, () => setShowMic(true));
+    speakRealTalk3(item.corrected, () => setShowMic(true));
     return () => stopSpeaking();
   }, [index]);
 

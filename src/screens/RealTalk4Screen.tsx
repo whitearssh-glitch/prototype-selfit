@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSTT } from '../useSTT';
-import { speak, stopSpeaking } from '../realTalk3TTS';
+import { speakRealTalk4, stopSpeaking } from '../realTalk3TTS';
 import {
   evaluateUserUtterance,
   getCathyFirstPhrase,
@@ -84,7 +84,7 @@ export function RealTalk4Screen({ firstPhraseDone = false, firstPhraseInProgress
     cathyPhraseKoRef.current = phraseKo;
     setCurrentCathyPhrase(phrase);
     setCurrentCathyPhraseKo(phraseKo);
-    speak(phrase, () => {
+    speakRealTalk4(phrase, () => {
       micPromptReplayRef.current = phrase;
       setShowMic(true);
     });
@@ -109,7 +109,7 @@ export function RealTalk4Screen({ firstPhraseDone = false, firstPhraseInProgress
 
       if (result.isLastTurn) {
         setShowMic(false);
-        speak(result.cathyPhrase, () => {
+        speakRealTalk4(result.cathyPhrase, () => {
           setTimeout(() => {
             setShowStarPopup(true);
             playDingDong();
@@ -134,7 +134,7 @@ export function RealTalk4Screen({ firstPhraseDone = false, firstPhraseInProgress
         setPhase('no-speech');
         stopSpeaking();
         const replay = micPromptReplayRef.current || cathyPhraseRef.current;
-        speak(replay, () => setShowMic(true));
+        speakRealTalk4(replay, () => setShowMic(true));
         return;
       }
 
@@ -161,11 +161,11 @@ export function RealTalk4Screen({ firstPhraseDone = false, firstPhraseInProgress
         const directionPhrase = result.correction.type === 'naturalness'
           ? "So close! You can also say!"
           : "Nice try! Say it like this.";
-        speak(directionPhrase, () => {
+        speakRealTalk4(directionPhrase, () => {
           setCorrectionText(result.correction!.sentence);
           setShowTextAbove(true);
           const corrSentence = result.correction!.sentence;
-          speak(corrSentence, () => {
+          speakRealTalk4(corrSentence, () => {
             micPromptReplayRef.current = corrSentence;
             setShowMic(true);
           });
@@ -184,7 +184,7 @@ export function RealTalk4Screen({ firstPhraseDone = false, firstPhraseInProgress
           errorLogRef.current = next;
           return next;
         });
-        speak(result.cathyPhrase, () => {
+        speakRealTalk4(result.cathyPhrase, () => {
           micPromptReplayRef.current = result.cathyPhrase;
           setShowMic(true);
         });
@@ -227,7 +227,7 @@ export function RealTalk4Screen({ firstPhraseDone = false, firstPhraseInProgress
 
   const onListenClick = useCallback(() => {
     const first = getCathyFirstPhrase();
-    speak(first.en, () => {
+    speakRealTalk4(first.en, () => {
       micPromptReplayRef.current = first.en;
       setShowMic(true);
     });

@@ -1,0 +1,39 @@
+/**
+ * 학습 단계별 OpenAI TTS 음성
+ * Basic(Real Talk 3·4·5) → 여성, 화면마다 다른 음성 / Inter·Adv → 남성
+ * 수정: `tts-voices-by-level.json`만 편집 (OpenAI 허용 voice 이름만)
+ * 이전 단일 키 `basic`만 있으면 세 Basic 모두 그 값으로 폴백
+ */
+import raw from './tts-voices-by-level.json';
+
+/** OpenAI `tts-1` / `tts-1-hd` 가 실제로 받는 voice enum (API 버전별로 verse·ballad 등은 없을 수 있음) */
+const OPENAI_VOICES = new Set([
+  'alloy',
+  'ash',
+  'coral',
+  'echo',
+  'fable',
+  'onyx',
+  'nova',
+  'sage',
+  'shimmer',
+]);
+
+function pick(v: unknown, fallback: string): string {
+  const s = String(v ?? '')
+    .trim()
+    .toLowerCase();
+  return OPENAI_VOICES.has(s) ? s : fallback;
+}
+
+const r = raw as Record<string, string>;
+
+export const TTS_VOICES_BY_LEVEL = {
+  basicRealTalk3: pick(r.basicRealTalk3 ?? r.basic, 'shimmer'),
+  basicRealTalk4: pick(r.basicRealTalk4 ?? r.basic, 'coral'),
+  basicRealTalk5: pick(r.basicRealTalk5 ?? r.basic, 'nova'),
+  intermediate: pick(r.intermediate, 'echo'),
+  advanced: pick(r.advanced, 'onyx'),
+} as const;
+
+export type TtsVoiceConfigKey = keyof typeof TTS_VOICES_BY_LEVEL;

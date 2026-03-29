@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSTT } from '../useSTT';
-import { speak, stopSpeaking } from '../realTalk3TTS';
+import { speakRealTalk5, stopSpeaking } from '../realTalk3TTS';
 import {
   evaluateUserUtterance,
   getCathyFirstPhrase,
@@ -82,7 +82,7 @@ export function RealTalk5Screen({ firstPhraseDone = false, firstPhraseInProgress
     cathyPhraseKoRef.current = phraseKo;
     setCurrentCathyPhrase(phrase);
     setCurrentCathyPhraseKo(phraseKo);
-    speak(phrase, () => setShowMic(true));
+    speakRealTalk5(phrase, () => setShowMic(true));
   }, []);
 
   const doComplete = useCallback(() => {
@@ -104,7 +104,7 @@ export function RealTalk5Screen({ firstPhraseDone = false, firstPhraseInProgress
 
       if (result.isLastTurn) {
         setShowMic(false);
-        speak(result.cathyPhrase, () => {
+        speakRealTalk5(result.cathyPhrase, () => {
           setTimeout(() => {
             setShowStarPopup(true);
             playDingDong();
@@ -128,7 +128,7 @@ export function RealTalk5Screen({ firstPhraseDone = false, firstPhraseInProgress
         setShowTextAbove(true);
         setPhase('no-speech');
         stopSpeaking();
-        speak(cathyPhraseRef.current, () => setShowMic(true));
+        speakRealTalk5(cathyPhraseRef.current, () => setShowMic(true));
         return;
       }
 
@@ -153,10 +153,10 @@ export function RealTalk5Screen({ firstPhraseDone = false, firstPhraseInProgress
         const directionPhrase = result.correction.type === 'naturalness'
           ? "So close! You can also say!"
           : "Nice try! Say it like this.";
-        speak(directionPhrase, () => {
+        speakRealTalk5(directionPhrase, () => {
           setCorrectionText(result.correction!.sentence);
           setShowTextAbove(true);
-          speak(result.correction!.sentence, () => setShowMic(true));
+          speakRealTalk5(result.correction!.sentence, () => setShowMic(true));
         });
         return;
       }
@@ -172,7 +172,7 @@ export function RealTalk5Screen({ firstPhraseDone = false, firstPhraseInProgress
           errorLogRef.current = next;
           return next;
         });
-        speak(result.cathyPhrase, () => setShowMic(true));
+        speakRealTalk5(result.cathyPhrase, () => setShowMic(true));
         return;
       }
 
@@ -211,7 +211,7 @@ export function RealTalk5Screen({ firstPhraseDone = false, firstPhraseInProgress
 
   const onListenClick = useCallback(() => {
     const first = getCathyFirstPhrase();
-    speak(first.en, () => setShowMic(true));
+    speakRealTalk5(first.en, () => setShowMic(true));
   }, []);
 
   const showListenBtn = !showMic && !firstPhraseDone && !firstPhraseInProgress && userTurnIndex === 0;

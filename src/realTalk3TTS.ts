@@ -1,24 +1,22 @@
 /**
- * Real Talk 3 – TTS (OpenAI TTS 또는 VoiceRSS)
- * 서버 프록시 /api/tts 사용 → OPENAI_API_KEY 있으면 OpenAI TTS, 없으면 VoiceRSS
- * API 키는 .env에만 (클라이언트 노출 없음)
+ * Real Talk 3·4·5 – TTS (OpenAI TTS 또는 VoiceRSS)
+ * Basic 구간: 화면별 여성 음성 (`tts-voices-by-level.json` basicRealTalk3/4/5)
  */
 
 import { VOICE_SPEED } from './config/voiceSpeed';
+import { TTS_VOICES_BY_LEVEL } from './config/ttsVoicesByLevel';
 
 let currentAudio: HTMLAudioElement | null = null;
 /** 요청 순서: 동시에 여러 speak()가 완료될 때 최신만 재생 (겹침 방지) */
 let speakSeq = 0;
 
-const VOICE = 'coral'; // 따뜻·밝은 여성 톤 (아동 학습용, OpenAI TTS)
-
-async function speakVoiceRSS(text: string, onEnd?: () => void): Promise<void> {
+async function speakVoiceRSS(voice: string, text: string, onEnd?: () => void): Promise<void> {
   const mySeq = ++speakSeq;
   try {
     const res = await fetch('/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: text.trim(), voice: VOICE, speed: VOICE_SPEED.ttsSpeed }),
+      body: JSON.stringify({ text: text.trim(), voice, speed: VOICE_SPEED.ttsSpeed }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: res.statusText }));
@@ -27,7 +25,7 @@ async function speakVoiceRSS(text: string, onEnd?: () => void): Promise<void> {
       return;
     }
     const blob = await res.blob();
-    if (mySeq !== speakSeq) return; // 새 요청이 들어왔으면 재생하지 않음
+    if (mySeq !== speakSeq) return;
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
     currentAudio = audio;
@@ -50,13 +48,25 @@ async function speakVoiceRSS(text: string, onEnd?: () => void): Promise<void> {
   }
 }
 
-export function speak(text: string, onEnd?: () => void): void {
+function speakWithVoice(voice: string, text: string, onEnd?: () => void): void {
   if (!text.trim()) {
     onEnd?.();
     return;
   }
   stopSpeaking();
-  speakVoiceRSS(text, onEnd);
+  speakVoiceRSS(voice, text, onEnd);
+}
+
+export function speakRealTalk3(text: string, onEnd?: () => void): void {
+  speakWithVoice(TTS_VOICES_BY_LEVEL.basicRealTalk3, text, onEnd);
+}
+
+export function speakRealTalk4(text: string, onEnd?: () => void): void {
+  speakWithVoice(TTS_VOICES_BY_LEVEL.basicRealTalk4, text, onEnd);
+}
+
+export function speakRealTalk5(text: string, onEnd?: () => void): void {
+  speakWithVoice(TTS_VOICES_BY_LEVEL.basicRealTalk5, text, onEnd);
 }
 
 export function stopSpeaking(): void {

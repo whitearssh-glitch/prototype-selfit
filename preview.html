@@ -782,8 +782,9 @@
   <div id="app-overlay" class="app-overlay"></div>
 
   <script>
-    /* Vite가 preview.html 응답 시 head에 window.__VOICE_SPEED__ 주입 (src/config/voice-speed.json) */
+    /* Vite가 preview.html 응답 시 head에 주입: __VOICE_SPEED__(voice-speed.json), __TTS_VOICES_BY_LEVEL__(tts-voices-by-level.json) */
     var VOICE_SPEED_CFG = window.__VOICE_SPEED__ || { ttsSpeed: 1, browserUtteranceRate: 1, lecturePlaybackRate: 1 };
+    var TTS_VOICES_BY_LEVEL = window.__TTS_VOICES_BY_LEVEL__ || { basicRealTalk3: 'shimmer', basicRealTalk4: 'coral', basicRealTalk5: 'nova', intermediate: 'echo', advanced: 'onyx' };
     var CORNER_TITLE = 'Patterns';
     var CORNER_STEP_2 = 'STEP 2';
     var CORNER_TITLE_2 = 'Speed Up';
@@ -1440,11 +1441,22 @@
       var voices = speechSynthesis.getVoices();
       return voices.filter(function (v) { return /female|woman|samantha|karen|victoria|google/i.test(v.name) || (v.lang.indexOf('en') === 0 && v.name.length > 0); })[0] || null;
     }
+    /** Basic RT3·4·5: 화면별 여성 / Inter 64–70·Adv 71–77: 남성 / 그 외 API TTS는 RT3와 동일 음으로 */
+    function previewTtsVoiceForCurrentFlow() {
+      var i = screenIndex;
+      var V = TTS_VOICES_BY_LEVEL;
+      if (i >= 64 && i <= 70) return V.intermediate || 'echo';
+      if (i >= 71 && i <= 77) return V.advanced || 'onyx';
+      if (i >= 43 && i <= 49) return V.basicRealTalk3 || V.basic || 'shimmer';
+      if (i >= 50 && i <= 56) return V.basicRealTalk4 || V.basic || 'coral';
+      if (i >= 57 && i <= 63) return V.basicRealTalk5 || V.basic || 'nova';
+      return V.basicRealTalk3 || V.basic || 'shimmer';
+    }
     function speakRoleplayApiTTS(text, onEnd, onFail) {
       fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text.trim(), voice: 'coral', speed: VOICE_SPEED_CFG.ttsSpeed })
+        body: JSON.stringify({ text: text.trim(), voice: previewTtsVoiceForCurrentFlow(), speed: VOICE_SPEED_CFG.ttsSpeed })
       }).then(function (res) {
         if (!res.ok) { if (onFail) onFail(); else onEnd(); return null; }
         return res.blob();

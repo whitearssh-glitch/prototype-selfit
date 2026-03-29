@@ -1,7 +1,7 @@
 /**
  * Real Talk 6 – Favorite Movies 대화 화면
- * 6턴 대화. Mock AI + TTS(echo 남성) + STT.
- * man1.png, realTalk6TTS (echo — 아동용 맑은 남성 TTS)
+ * 6턴 대화. Mock AI + TTS(Intermediate 여성, tts-voices-by-level) + STT.
+ * man1.png — Inter A
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';

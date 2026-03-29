@@ -1,14 +1,15 @@
 /**
- * Real Talk 7 – TTS (남자 음성)
- * Real Talk 6과 동일. voice='echo' (맑은 남성, 아동 학습용).
+ * Real Talk 7 – TTS (Advanced: Adv A)
+ * 남성 음성 — `tts-voices-by-level.json` → advanced
  */
 
 import { VOICE_SPEED } from './config/voiceSpeed';
+import { TTS_VOICES_BY_LEVEL } from './config/ttsVoicesByLevel';
 
 let currentAudio: HTMLAudioElement | null = null;
 let speakSeq = 0;
 
-const VOICE = 'echo'; // onyx보다 밝고 맑은 남성 (아동 학습용, OpenAI TTS)
+const VOICE = TTS_VOICES_BY_LEVEL.advanced;
 
 async function speakVoiceRSS(text: string, onEnd?: () => void): Promise<void> {
   const mySeq = ++speakSeq;

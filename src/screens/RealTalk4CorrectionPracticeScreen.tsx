@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSTT } from '../useSTT';
-import { speak, stopSpeaking } from '../realTalk3TTS';
+import { speakRealTalk4, stopSpeaking } from '../realTalk3TTS';
 import { evaluateCorrectionPractice } from '../realTalk4Gemini';
 import { getCorrectionPracticeItems } from '../realTalk4Types';
 import type { ErrorLogItem } from '../realTalk4Types';
@@ -101,13 +101,13 @@ export function RealTalk4CorrectionPracticeScreen({ items, onComplete }: RealTal
         setTimeout(() => {
           setIsBlinking(false);
           stopSpeaking();
-          speak(current.corrected, () => setShowMic(true));
+          speakRealTalk4(current.corrected, () => setShowMic(true));
         }, 1000);
       } else {
         setTextKey((k) => k + 1);
         setShowText(true);
         stopSpeaking();
-        speak(current.corrected, () => {
+        speakRealTalk4(current.corrected, () => {
           setTimeout(() => {
             setShowStar(true);
             playDingDong();
@@ -144,7 +144,7 @@ export function RealTalk4CorrectionPracticeScreen({ items, onComplete }: RealTal
     }
     setShowText(true);
     setShowMic(false);
-    speak(items[0].corrected, () => setShowMic(true));
+    speakRealTalk4(items[0].corrected, () => setShowMic(true));
     return () => stopSpeaking();
   }, []);
 
@@ -154,7 +154,7 @@ export function RealTalk4CorrectionPracticeScreen({ items, onComplete }: RealTal
     if (!item) return;
     stopSpeaking();
     setShowMic(false);
-    speak(item.corrected, () => setShowMic(true));
+    speakRealTalk4(item.corrected, () => setShowMic(true));
     return () => stopSpeaking();
   }, [index]);
 

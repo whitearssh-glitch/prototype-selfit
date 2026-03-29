@@ -1,12 +1,12 @@
 /**
- * Real Talk 3 – 인덱스 44
- * 11턴 대화 (AI 6턴, 사용자 5턴). Mock AI + TTS + STT.
+ * Real Talk 3 – 인덱스 44 (Basic, ver.2)
+ * 11턴 대화 (AI 6턴, 사용자 5턴). TTS = tts-voices-by-level.json → basic.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TOPIC_TEXT } from '../App';
 import { useSTT } from '../useSTT';
-import { speak, stopSpeaking } from '../realTalk3TTS';
+import { speakRealTalk3, stopSpeaking } from '../realTalk3TTS';
 import {
   evaluateUserUtterance,
   getCathyFirstPhrase,
@@ -41,7 +41,7 @@ function playDingDong() {
 }
 
 type RealTalk3ScreenProps = {
-  /** GO 버튼 클릭 시 speak()가 호출된 후 종료되면 true. 사용자 제스처 보장용 */
+  /** GO 버튼 클릭 시 TTS가 호출된 후 종료되면 true. 사용자 제스처 보장용 */
   firstPhraseDone?: boolean;
   /** GO 클릭 후 speak 재생 중 (직접 진입이 아님) */
   firstPhraseInProgress?: boolean;
@@ -85,7 +85,7 @@ export function RealTalk3Screen({ firstPhraseDone = false, firstPhraseInProgress
     cathyPhraseKoRef.current = phraseKo;
     setCurrentCathyPhrase(phrase);
     setCurrentCathyPhraseKo(phraseKo);
-    speak(phrase, () => setShowMic(true));
+    speakRealTalk3(phrase, () => setShowMic(true));
   }, []);
 
   const doComplete = useCallback(() => {
@@ -107,7 +107,7 @@ export function RealTalk3Screen({ firstPhraseDone = false, firstPhraseInProgress
 
       if (result.isLastTurn) {
         setShowMic(false);
-        speak(result.cathyPhrase, () => {
+        speakRealTalk3(result.cathyPhrase, () => {
           setTimeout(() => {
             setShowStarPopup(true);
             playDingDong();
@@ -131,7 +131,7 @@ export function RealTalk3Screen({ firstPhraseDone = false, firstPhraseInProgress
         setShowTextAbove(true);
         setPhase('no-speech');
         stopSpeaking(); // 이전 TTS 정지 후 재생 (겹침 방지)
-        speak(cathyPhraseRef.current, () => setShowMic(true));
+        speakRealTalk3(cathyPhraseRef.current, () => setShowMic(true));
         return;
       }
 
@@ -157,10 +157,10 @@ export function RealTalk3Screen({ firstPhraseDone = false, firstPhraseInProgress
         const directionPhrase = result.correction.type === 'naturalness'
           ? "So close! You can also say!"
           : "Nice try! Say it like this.";
-        speak(directionPhrase, () => {
+        speakRealTalk3(directionPhrase, () => {
           setCorrectionText(result.correction!.sentence);
           setShowTextAbove(true);
-          speak(result.correction!.sentence, () => setShowMic(true));
+          speakRealTalk3(result.correction!.sentence, () => setShowMic(true));
         });
         return;
       }
@@ -177,7 +177,7 @@ export function RealTalk3Screen({ firstPhraseDone = false, firstPhraseInProgress
           return next;
         });
         // 주제 이탈 시 요약에 추가하지 않음 (피드백 문장 제외)
-        speak(result.cathyPhrase, () => setShowMic(true));
+        speakRealTalk3(result.cathyPhrase, () => setShowMic(true));
         return;
       }
 
@@ -202,7 +202,7 @@ export function RealTalk3Screen({ firstPhraseDone = false, firstPhraseInProgress
       cathyPhraseKoRef.current = first.ko;
       setPhase('user');
       setShowMic(false);
-      // speak()는 App에서 GO 클릭 시 호출 (Chrome 사용자 제스처 필요)
+      // TTS는 App에서 GO 클릭 시 호출 (Chrome 사용자 제스처 필요)
     }
   }, []);
 
@@ -217,7 +217,7 @@ export function RealTalk3Screen({ firstPhraseDone = false, firstPhraseInProgress
 
   const onListenClick = useCallback(() => {
     const first = getCathyFirstPhrase();
-    speak(first.en, () => setShowMic(true));
+    speakRealTalk3(first.en, () => setShowMic(true));
   }, []);
 
   const showListenBtn = !showMic && !firstPhraseDone && !firstPhraseInProgress && userTurnIndex === 0;

@@ -67,7 +67,7 @@ import { getCathyFirstPhrase as getCathyFirstPhrase4 } from './realTalk4Gemini';
 import { getCathyFirstPhrase as getCathyFirstPhrase5 } from './realTalk5Gemini';
 import { getCathyFirstPhrase as getCathyFirstPhrase6 } from './realTalk6Gemini';
 import { getCathyFirstPhrase as getCathyFirstPhrase7 } from './realTalk7Gemini';
-import { speak, stopSpeaking } from './realTalk3TTS';
+import { speakRealTalk3, speakRealTalk4, speakRealTalk5, stopSpeaking } from './realTalk3TTS';
 import { speak as speak6, stopSpeaking as stopSpeaking6 } from './realTalk6TTS';
 import { speak as speak7, stopSpeaking as stopSpeaking7 } from './realTalk7TTS';
 import { getCorrectionPracticeItems } from './realTalk3Types';
@@ -280,7 +280,7 @@ export default function App() {
   const handleRealTalk3Go = () => {
     const first = getCathyFirstPhrase();
     setRealTalk3FirstPhraseInProgress(true);
-    speak(first.en, () => {
+    speakRealTalk3(first.en, () => {
       setRealTalk3FirstPhraseDone(true);
       setRealTalk3FirstPhraseInProgress(false);
     });
@@ -290,7 +290,7 @@ export default function App() {
   const handleRealTalk4Go = () => {
     const first = getCathyFirstPhrase4();
     setRealTalk4FirstPhraseInProgress(true);
-    speak(first.en, () => {
+    speakRealTalk4(first.en, () => {
       setRealTalk4FirstPhraseDone(true);
       setRealTalk4FirstPhraseInProgress(false);
     });
@@ -300,7 +300,7 @@ export default function App() {
   const handleRealTalk5Go = () => {
     const first = getCathyFirstPhrase5();
     setRealTalk5FirstPhraseInProgress(true);
-    speak(first.en, () => {
+    speakRealTalk5(first.en, () => {
       setRealTalk5FirstPhraseDone(true);
       setRealTalk5FirstPhraseInProgress(false);
     });

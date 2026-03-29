@@ -1926,11 +1926,15 @@ Evaluate this English speaking session. Output ONLY valid JSON:
         logTtsUsage(text);
 
         if (useOpenAI) {
-          // OpenAI TTS: https://api.openai.com/v1/audio/speech (tts-1; 기본 여성 coral — 아동 학습용 밝은 톤)
-          const voice = String(body.voice ?? 'coral').trim() || 'coral';
-          const voiceRssToOpenAI = { Linda: 'coral', Amy: 'coral', Mary: 'shimmer', Zoe: 'coral', Alice: 'shimmer' };
-          const openaiVoices = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'fable', 'onyx', 'nova', 'sage', 'shimmer', 'verse'];
-          const voiceId = voiceRssToOpenAI[voice] || (openaiVoices.includes(voice.toLowerCase()) ? voice.toLowerCase() : 'coral');
+          // OpenAI TTS (클라이언트가 voice 전달; 없으면 basic 기본 shimmer)
+          const rawVoice = String(body.voice ?? 'shimmer').trim() || 'shimmer';
+          const voiceRssToOpenAI = { Linda: 'shimmer', Amy: 'shimmer', Mary: 'shimmer', Zoe: 'shimmer', Alice: 'shimmer' };
+          /** OpenAI audio/speech 현재 enum (verse·ballad 등은 거부될 수 있음 → 치환) */
+          const openaiVoices = new Set(['alloy', 'ash', 'coral', 'echo', 'fable', 'onyx', 'nova', 'sage', 'shimmer']);
+          const legacyToOpenai = { verse: 'onyx', ballad: 'fable' };
+          let v = rawVoice.toLowerCase();
+          if (legacyToOpenai[v]) v = legacyToOpenai[v];
+          const voiceId = voiceRssToOpenAI[rawVoice] || (openaiVoices.has(v) ? v : 'shimmer');
           const speed = Math.max(0.25, Math.min(4, Number(body.speed) || DEFAULT_TTS_SPEED));
           const ttsRes = await fetch('https://api.openai.com/v1/audio/speech', {
             method: 'POST',
@@ -1966,13 +1970,13 @@ Evaluate this English speaking session. Output ONLY valid JSON:
             ash: 'Amy',
             ballad: 'Amy',
             coral: 'Amy',
-            echo: 'Amy',
+            echo: 'Alice',
             fable: 'Alice',
             nova: 'Amy',
             onyx: 'Amy',
-            sage: 'Mary',
+            sage: 'Amy',
             shimmer: 'Mary',
-            verse: 'Amy',
+            verse: 'Lily',
           };
           let voice = String(body.voice ?? 'Zoe').trim() || 'Zoe';
           if (!voiceToLang[voice]) {
