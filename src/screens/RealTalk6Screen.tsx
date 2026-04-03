@@ -1,3 +1,4 @@
+import { ThinkingImage } from '../components/ThinkingImage';
 /**
  * Real Talk 6 – Favorite Movies 대화 화면
  * 6턴 대화. Mock AI + TTS(Intermediate 여성, tts-voices-by-level) + STT.
@@ -271,7 +272,7 @@ export function RealTalk6Screen({ firstPhraseDone = false, firstPhraseInProgress
           )}
         </div>
         <div className="realtalk-main">
-          <img src={REALTALK6_IMAGE} alt="" className="realtalk-main-image" />
+          <ThinkingImage src={REALTALK6_IMAGE} className="realtalk-main-image" evaluating={isEvaluating} />
         </div>
         <div className="realtalk2-text-below realtalk2-slot-two-lines" aria-hidden="true">
           <span className="realtalk2-text-placeholder" />

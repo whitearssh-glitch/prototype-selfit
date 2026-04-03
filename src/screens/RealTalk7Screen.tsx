@@ -1,3 +1,4 @@
+import { ThinkingImage } from '../components/ThinkingImage';
 /**
  * Real Talk 7 – Ordering Hamburgers 대화 화면
  * 11턴 대화 (5 user turns). Mock AI + TTS(Advanced 여성) + STT.
@@ -273,7 +274,7 @@ export function RealTalk7Screen({ firstPhraseDone = false, firstPhraseInProgress
           )}
         </div>
         <div className="realtalk-main">
-          <img src={REALTALK7_IMAGE} alt="" className="realtalk-main-image" />
+          <ThinkingImage src={REALTALK7_IMAGE} className="realtalk-main-image" evaluating={isEvaluating} />
         </div>
         <div className="realtalk2-text-below realtalk2-slot-two-lines" aria-hidden="true">
           <span className="realtalk2-text-placeholder" />

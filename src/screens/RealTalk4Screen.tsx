@@ -1,3 +1,4 @@
+import { ThinkingImage } from '../components/ThinkingImage';
 /**
  * Real Talk 4 – Grocery Shopping 대화 화면
  * 11턴 대화 (AI 6턴, 사용자 5턴). Mock AI + TTS + STT.
@@ -285,7 +286,7 @@ export function RealTalk4Screen({ firstPhraseDone = false, firstPhraseInProgress
           )}
         </div>
         <div className="realtalk-main">
-          <img src={REALTALK4_IMAGE} alt="" className="realtalk-main-image" />
+          <ThinkingImage src={REALTALK4_IMAGE} className="realtalk-main-image" evaluating={isEvaluating} />
         </div>
         <div className="realtalk2-text-below realtalk2-slot-two-lines" aria-hidden="true">
           <span className="realtalk2-text-placeholder" />

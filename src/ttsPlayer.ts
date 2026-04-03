@@ -25,11 +25,26 @@ export function unlockAudioContext(): void {
   sharedAudio.play().catch(() => {});
 }
 
+// ── TTS 로딩 상태 pub/sub ────────────────────────────────────────────────────
+type TtsPhase = 'loading' | 'idle';
+const phaseListeners = new Set<(p: TtsPhase) => void>();
+
+function notifyPhase(p: TtsPhase): void {
+  phaseListeners.forEach((fn) => fn(p));
+}
+
+/** TTS 로딩 상태 구독. 반환값을 cleanup으로 호출하면 해제됨 */
+export function subscribeTtsPhase(fn: (p: TtsPhase) => void): () => void {
+  phaseListeners.add(fn);
+  return () => phaseListeners.delete(fn);
+}
+
 // ── 재생 상태 ───────────────────────────────────────────────────────────────
 let currentPrevUrl: string | null = null;
 let playSeq = 0;
 
 export function stopTtsPlayer(): void {
+  notifyPhase('idle');
   playSeq++;
   if (sharedAudio) {
     sharedAudio.pause();
@@ -52,6 +67,7 @@ export async function playForKey(key: TtsVoiceConfigKey, text: string, onEnd?: (
 
   if (setting.mode === 'openai') {
     stopTtsPlayer();
+    notifyPhase('loading');
     const seq = ++playSeq;
     let url: string | null = null;
     try {
@@ -90,8 +106,10 @@ export async function playForKey(key: TtsVoiceConfigKey, text: string, onEnd?: (
         if (seq === playSeq) onEnd?.();
       };
 
+      notifyPhase('idle');
       await audio.play();
     } catch {
+      notifyPhase('idle');
       if (url) { URL.revokeObjectURL(url); currentPrevUrl = null; }
       if (seq === playSeq) {
         await speakBrowserTTS(setting.voice, trimmed, onEnd);

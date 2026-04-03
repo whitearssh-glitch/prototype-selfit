@@ -1,3 +1,4 @@
+import { ThinkingImage } from '../components/ThinkingImage';
 /**
  * Real Talk 3 – 인덱스 44 (Basic, ver.2)
  * 11턴 대화 (AI 6턴, 사용자 5턴). TTS = tts-voices-by-level.json → basic.
@@ -272,7 +273,7 @@ export function RealTalk3Screen({ firstPhraseDone = false, firstPhraseInProgress
           )}
         </div>
         <div className="realtalk-main">
-          <img src={REALTALK_IMAGE_GIRL1} alt="" className="realtalk-main-image" />
+          <ThinkingImage src={REALTALK_IMAGE_GIRL1} className="realtalk-main-image" evaluating={isEvaluating} />
         </div>
         <div className="realtalk2-text-below realtalk2-slot-two-lines" aria-hidden="true">
           <span className="realtalk2-text-placeholder" />

@@ -1,3 +1,4 @@
+import { ThinkingImage } from '../components/ThinkingImage';
 /**
  * Real Talk 5 – Meet New Friends 대화 화면
  * 7턴 대화 (AI 4턴, 사용자 3턴). Mock AI + TTS + STT.
@@ -266,7 +267,7 @@ export function RealTalk5Screen({ firstPhraseDone = false, firstPhraseInProgress
           )}
         </div>
         <div className="realtalk-main">
-          <img src={REALTALK5_IMAGE} alt="" className="realtalk-main-image" />
+          <ThinkingImage src={REALTALK5_IMAGE} className="realtalk-main-image" evaluating={isEvaluating} />
         </div>
         <div className="realtalk2-text-below realtalk2-slot-two-lines" aria-hidden="true">
           <span className="realtalk2-text-placeholder" />
