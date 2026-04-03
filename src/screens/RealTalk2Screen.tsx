@@ -155,7 +155,7 @@ export function RealTalk2Screen({ onNext }: RealTalk2ScreenProps) {
     }
   }, [attemptCount, playRealtalk1, playSecondIncorrectSequence, playThirdIncorrectSequence]);
 
-  const { start: startSTT, isListening, useWhisper } = useSTT(onSTTResult, { useApiStt: true });
+  const { start: startSTT, isListening, useWhisper } = useSTT(onSTTResult, { useApiStt: false });
 
   const onMicClick = useCallback(() => {
     if (!showMic) return;
@@ -257,7 +257,7 @@ useEffect(() => {
               'mic-btn mic-btn--step3' + (isListening ? (useWhisper ? ' mic-btn--recording' : ' mic-btn--listening') : '') + (showMic ? '' : ' realtalk2-mic--hidden')
             }
             onClick={onMicClick}
-            disabled={!showMic || (!useWhisper && isListening)}
+            disabled={!showMic || isListening}
             aria-label="Microphone"
           >
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
