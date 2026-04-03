@@ -61,7 +61,7 @@ export function RealTalk3CorrectionPracticeScreen({ items, onComplete }: RealTal
   const isLast = index >= items.length - 1;
 
   const onResultRef = useRef<(t: string) => void>(() => {});
-  const { start: startSTT, isListening } = useSTT((t) => onResultRef.current(t), { useApiStt: false });
+  const { start: startSTT, isListening, useWhisper } = useSTT((t) => onResultRef.current(t), { useApiStt: false });
 
   const handleResult = useCallback(
     async (transcript: string) => {
@@ -202,7 +202,7 @@ export function RealTalk3CorrectionPracticeScreen({ items, onComplete }: RealTal
         <div className="screen-bottom">
           <button
             type="button"
-            className={'mic-btn mic-btn--step3' + (isListening ? ' mic-btn--recording' : '') + (showMic ? '' : ' realtalk2-mic--hidden')}
+            className={'mic-btn mic-btn--step3' + (isListening ? (useWhisper ? ' mic-btn--recording' : ' mic-btn--listening') : '') + (showMic ? '' : ' realtalk2-mic--hidden')}
             onClick={onMicClick}
             disabled={!showMic || isListening || isEvaluating}
             aria-label="Microphone"

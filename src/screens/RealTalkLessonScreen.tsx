@@ -529,9 +529,9 @@ export function RealTalkLessonScreen({ onNext }: RealTalkLessonScreenProps) {
           )}
           <button
             type="button"
-            className={`realtalk-lesson-mic ${isListening ? 'realtalk-lesson-mic--on' : ''}`}
+            className={`realtalk-lesson-mic${isListening ? (useWhisper ? ' mic-btn--recording' : ' realtalk-lesson-mic--on mic-btn--listening') : ''}`}
             onClick={toggleMic}
-            disabled={!canSpeak}
+            disabled={!canSpeak || (!useWhisper && isListening)}
             aria-label={isListening ? '녹음 중지' : sessionComplete ? '세션 완료' : '말하기'}
           >
             <svg

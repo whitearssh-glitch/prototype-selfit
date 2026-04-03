@@ -72,7 +72,7 @@ export function RealTalk3Screen({ firstPhraseDone = false, firstPhraseInProgress
   errorLogRef.current = errorLog;
 
   const onResultRef = useRef<(t: string) => void>(() => {});
-  const { start: startSTT, isListening } = useSTT(
+  const { start: startSTT, isListening, useWhisper } = useSTT(
     (t) => onResultRef.current(t),
     { useApiStt: false }
   );
@@ -291,7 +291,7 @@ export function RealTalk3Screen({ firstPhraseDone = false, firstPhraseInProgress
           ) : (
             <button
               type="button"
-              className={'mic-btn mic-btn--step3' + (isListening ? ' mic-btn--recording' : '') + (showMic ? '' : ' realtalk2-mic--hidden')}
+              className={'mic-btn mic-btn--step3' + (isListening ? (useWhisper ? ' mic-btn--recording' : ' mic-btn--listening') : '') + (showMic ? '' : ' realtalk2-mic--hidden')}
               onClick={onMicClick}
               disabled={!showMic || isListening || isEvaluating}
               aria-label="Microphone"

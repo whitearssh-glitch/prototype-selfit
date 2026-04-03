@@ -56,7 +56,7 @@ export function RealTalkScreen({ onNext, imageOnly, imageOnlyNoGo }: RealTalkScr
   const onResult37 = useCallback((_transcript: string) => {
     playDingDong();
   }, []);
-  const { start: startSTT, isListening } = useSTT(imageOnlyNoGo ? onResult37 : () => {}, { useApiStt: false });
+  const { start: startSTT, isListening, useWhisper } = useSTT(imageOnlyNoGo ? onResult37 : () => {}, { useApiStt: true });
 
   useEffect(() => {
     if (imageOnly) {
@@ -137,9 +137,9 @@ export function RealTalkScreen({ onNext, imageOnly, imageOnlyNoGo }: RealTalkScr
           {imageOnlyNoGo && (
             <button
               type="button"
-              className={'mic-btn mic-btn--step3' + (isListening ? ' mic-btn--recording' : '') + (!showMic37 ? ' realtalk-mic37--hidden' : '')}
+              className={'mic-btn mic-btn--step3' + (isListening ? (useWhisper ? ' mic-btn--recording' : ' mic-btn--listening') : '') + (!showMic37 ? ' realtalk-mic37--hidden' : '')}
               onClick={startSTT}
-              disabled={isListening}
+              disabled={!useWhisper && isListening}
               aria-label="Microphone"
               aria-hidden={!showMic37}
             >

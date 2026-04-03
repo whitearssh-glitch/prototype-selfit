@@ -70,7 +70,7 @@ export function LectureScreen6({ onNext }: { onNext: () => void }) {
         <div className="screen-bottom">
           <button
             type="button"
-            className={'mic-btn' + (isListening ? ' mic-btn--recording' : '')}
+            className={'mic-btn' + (isListening ? (useWhisper ? ' mic-btn--recording' : ' mic-btn--listening') : '')}
             onClick={start}
             disabled={(!useWhisper && isListening) || recognitionDone}
             aria-label={useWhisper ? (isListening ? 'Stop and transcribe' : 'Start recording') : 'Microphone'}

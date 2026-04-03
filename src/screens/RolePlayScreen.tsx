@@ -624,7 +624,7 @@ export function RolePlayScreen({ scriptIndex = 0, onNext }: { scriptIndex?: numb
             )}
             <button
               type="button"
-              className={'mic-btn mic-btn--step3' + (isListening ? ' mic-btn--recording' : '')}
+              className={'mic-btn mic-btn--step3' + (isListening ? (useWhisper ? ' mic-btn--recording' : ' mic-btn--listening') : '')}
               onClick={startRecognition}
               disabled={showFeedback || (!useWhisper && isListening)}
               aria-label={useWhisper ? (isListening ? 'Stop and transcribe' : 'Start recording') : 'Microphone'}
