@@ -39,3 +39,5 @@ export const TTS_VOICES_BY_LEVEL = {
 } as const;
 
 export type TtsVoiceConfigKey = keyof typeof TTS_VOICES_BY_LEVEL;
+
+export const TTS_SAMPLE_TEXT = 'Hello, I am happy today.';

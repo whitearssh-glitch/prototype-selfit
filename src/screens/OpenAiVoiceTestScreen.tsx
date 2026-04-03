@@ -4,9 +4,10 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { stopBrowserTTS } from '../browserSpeechTTS';
-import { OPENAI_TTS_VOICE_IDS } from '../config/ttsVoicesByLevel';
+import { OPENAI_TTS_VOICE_IDS, TTS_SAMPLE_TEXT } from '../config/ttsVoicesByLevel';
+import { useBrowserVoices } from '../hooks/useBrowserVoices';
 
-const DEFAULT_SAMPLE = 'Hello, I am happy today.';
+const DEFAULT_SAMPLE = TTS_SAMPLE_TEXT;
 type Tab = 'openai' | 'browser';
 
 // ──────────────────────────────────────────────
@@ -100,19 +101,7 @@ function OpenAiTab({ sampleText }: { sampleText: string }) {
 function BrowserTab({ sampleText }: { sampleText: string }) {
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-
-  useEffect(() => {
-    function loadVoices() {
-      const v = window.speechSynthesis.getVoices().filter((x) => x.lang.toLowerCase().startsWith('en'));
-      if (v.length) setVoices(v);
-    }
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
-  }, []);
+  const voices = useBrowserVoices();
 
   useEffect(() => () => stopBrowserTTS(), []);
 

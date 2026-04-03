@@ -5,11 +5,10 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { OPENAI_TTS_VOICE_IDS } from '../config/ttsVoicesByLevel';
+import { OPENAI_TTS_VOICE_IDS, TTS_SAMPLE_TEXT } from '../config/ttsVoicesByLevel';
 import { getVoiceSetting, setVoiceSetting, type TtsVoiceConfigKey, type VoiceSetting } from '../ttsVoiceSettings';
 import { stopBrowserTTS } from '../browserSpeechTTS';
-
-const SAMPLE_TEXT = 'Hello, I am happy today.';
+import { useBrowserVoices } from '../hooks/useBrowserVoices';
 type Tab = 'openai' | 'browser';
 
 // ── OpenAI 탭 ────────────────────────────────
@@ -37,7 +36,7 @@ function OpenAiVoiceList({
       const res = await fetch('/api/tts-preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: SAMPLE_TEXT, voice }),
+        body: JSON.stringify({ text: TTS_SAMPLE_TEXT, voice }),
       });
       if (seq !== playSeqRef.current) return;
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -89,25 +88,15 @@ function BrowserVoiceList({
   selected: VoiceSetting;
   onSelect: (s: VoiceSetting) => void;
 }) {
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const voices = useBrowserVoices();
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
-
-  useEffect(() => {
-    function load() {
-      const v = window.speechSynthesis.getVoices().filter((x) => x.lang.toLowerCase().startsWith('en'));
-      if (v.length) setVoices(v);
-    }
-    load();
-    window.speechSynthesis.onvoiceschanged = load;
-    return () => { window.speechSynthesis.onvoiceschanged = null; };
-  }, []);
 
   useEffect(() => () => stopBrowserTTS(), []);
 
   const playVoice = useCallback((voiceName: string) => {
     stopBrowserTTS();
     setPlayingVoice(voiceName);
-    const u = new SpeechSynthesisUtterance(SAMPLE_TEXT);
+    const u = new SpeechSynthesisUtterance(TTS_SAMPLE_TEXT);
     u.lang = 'en-US';
     const target = voices.find((v) => v.name === voiceName);
     if (target) u.voice = target;
