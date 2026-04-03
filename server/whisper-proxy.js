@@ -1886,6 +1886,51 @@ Evaluate this English speaking session. Output ONLY valid JSON:
       res.end(JSON.stringify({ available: true, mode: 'browser-speech', provider: 'speech-synthesis' }));
       return;
     }
+    if (req.url === '/api/tts-preview' && req.method === 'POST') {
+      if (!OPENAI_KEY) {
+        res.statusCode = 503;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'OPENAI_API_KEY not configured' }));
+        return;
+      }
+      try {
+        const raw = await readBody(req);
+        const body = JSON.parse(raw.toString('utf8'));
+        const text = String(body.text ?? '').trim();
+        if (!text) {
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'text required' }));
+          return;
+        }
+        const openaiVoices = new Set(['alloy', 'ash', 'coral', 'echo', 'fable', 'onyx', 'nova', 'sage', 'shimmer']);
+        const rawVoice = String(body.voice ?? 'shimmer').trim().toLowerCase();
+        const voice = openaiVoices.has(rawVoice) ? rawVoice : 'shimmer';
+        const openaiRes = await fetch('https://api.openai.com/v1/audio/speech', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: 'tts-1', input: text, voice }),
+        });
+        if (!openaiRes.ok) {
+          const err = await openaiRes.text();
+          res.statusCode = openaiRes.status;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: err }));
+          return;
+        }
+        const audioBuffer = await openaiRes.arrayBuffer();
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.end(Buffer.from(audioBuffer));
+      } catch (e) {
+        const msg = String(e.message || e);
+        console.error('[TTS-preview] exception', msg);
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: msg }));
+      }
+      return;
+    }
     if (req.url === '/api/tts' && req.method === 'POST') {
       try {
         const raw = await readBody(req);

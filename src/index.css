@@ -691,6 +691,35 @@ html.app-step5-margins {
   filter: brightness(1.05);
 }
 
+.tts-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0.5rem 0 0.1rem;
+}
+
+.tts-tab {
+  flex: 1;
+  border: 1.5px solid rgba(173, 20, 87, 0.3);
+  background: rgba(255, 255, 255, 0.45);
+  color: #880e4f;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 0.5rem;
+  border-radius: 0.65rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.tts-tab--active {
+  background: linear-gradient(135deg, #880e4f 0%, #d81b60 100%);
+  border-color: transparent;
+  color: #fff;
+}
+
+.tts-tab:not(.tts-tab--active):hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
 /* Corner Intro Screen – full-screen corner title card */
 .corner-intro-screen {
   position: absolute;
