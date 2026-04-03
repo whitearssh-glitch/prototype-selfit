@@ -167,7 +167,7 @@ export function OpenAiVoiceTestScreen({ onBack }: { onBack: () => void }) {
     <div className="openai-voice-test-screen">
       <div className="openai-voice-test-inner">
         <button type="button" className="openai-voice-test-back" onClick={onBack}>
-          ← 홈
+          Back
         </button>
         <h1 className="openai-voice-test-title">TTS 음성 미리듣기</h1>
 

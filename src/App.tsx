@@ -345,6 +345,9 @@ export default function App() {
         screenIndex !== 32 &&
         screenIndex !== TTS_VOICE_TEST_SCREEN_INDEX && (
         <header className={'app-header' + (screenIndex >= 2 && screenIndex <= 24 ? ' app-header--step1' : '') + (screenIndex === 26 || screenIndex === 27 || screenIndex === 28 || screenIndex === 30 || screenIndex === 31 || screenIndex === 36 || screenIndex === 37 || screenIndex === 38 || screenIndex === 39 || screenIndex === 40 || screenIndex === 41 || screenIndex === 42 || screenIndex === 43 || screenIndex === 44 || screenIndex === 45 || screenIndex === 46 || screenIndex === 47 || screenIndex === 48 || screenIndex === 49 || screenIndex === 50 || screenIndex === 51 || screenIndex === 52 || screenIndex === 53 || screenIndex === 54 || screenIndex === 55 || screenIndex === 56 || screenIndex === 57 || screenIndex === 58 || screenIndex === 59 || screenIndex === 60 || screenIndex === 61 || screenIndex === 62 || screenIndex === 63 || screenIndex === 64 || screenIndex === 65 || screenIndex === 66 || screenIndex === 67 || screenIndex === 68 || screenIndex === 69 || screenIndex === 70 || screenIndex === 71 || screenIndex === 72 || screenIndex === 73 || screenIndex === 74 || screenIndex === 75 || screenIndex === 76 || screenIndex === 77 ? ' app-header--step3' : '') + (screenIndex === 33 || screenIndex === 34 || screenIndex === 35 ? ' app-header--step5' : '')}>
+          <button type="button" className="app-header-back" onClick={() => setScreenIndex(0)}>
+            Back
+          </button>
           <span className="app-header-text">{screenIndex >= 71 && screenIndex <= 77 ? 'Advanced 01 Day 01' : screenIndex >= 64 && screenIndex <= 70 ? 'Inter 01 Day 01' : screenIndex >= 50 && screenIndex <= 56 ? 'Basic 05 Day 01' : HEADER_TITLE}</span>
         </header>
       )}
