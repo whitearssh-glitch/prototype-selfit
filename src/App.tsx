@@ -63,6 +63,8 @@ import { RealTalk7EvaluationScreen } from './screens/RealTalk7EvaluationScreen';
 import { RealTalk7ErrorReviewScreen } from './screens/RealTalk7ErrorReviewScreen';
 import { RealTalk7CorrectionPracticeScreen } from './screens/RealTalk7CorrectionPracticeScreen';
 import { OpenAiVoiceTestScreen } from './screens/OpenAiVoiceTestScreen';
+import { TtsSettingsPanel } from './screens/TtsSettingsPanel';
+import type { TtsVoiceConfigKey } from './ttsVoiceSettings';
 import { getCathyFirstPhrase } from './realTalk3Gemini';
 import { getCathyFirstPhrase as getCathyFirstPhrase4 } from './realTalk4Gemini';
 import { getCathyFirstPhrase as getCathyFirstPhrase5 } from './realTalk5Gemini';
@@ -100,8 +102,17 @@ function getInitialScreenIndex(): number {
   return 0;
 }
 
+function getTtsVoiceKey(idx: number): TtsVoiceConfigKey | null {
+  if (idx >= 50 && idx <= 56) return 'basicRealTalk4';
+  if (idx >= 57 && idx <= 63) return 'basicRealTalk5';
+  if (idx >= 64 && idx <= 70) return 'intermediate';
+  if (idx >= 71 && idx <= 77) return 'advanced';
+  return null;
+}
+
 export default function App() {
   const [screenIndex, setScreenIndex] = useState(getInitialScreenIndex);
+  const [ttsSettingsOpen, setTtsSettingsOpen] = useState(false);
   const [realTalk3Data, setRealTalk3Data] = useState<RealTalk3Data | null>(null);
   const [realTalk3Evaluation, setRealTalk3Evaluation] = useState<SessionEvaluation | null>(null);
   const [realTalk3FirstPhraseDone, setRealTalk3FirstPhraseDone] = useState(false);
@@ -349,6 +360,11 @@ export default function App() {
             Back
           </button>
           <span className="app-header-text">{screenIndex >= 71 && screenIndex <= 77 ? 'Advanced 01 Day 01' : screenIndex >= 64 && screenIndex <= 70 ? 'Inter 01 Day 01' : screenIndex >= 50 && screenIndex <= 56 ? 'Basic 05 Day 01' : HEADER_TITLE}</span>
+          {getTtsVoiceKey(screenIndex) && (
+            <button type="button" className="app-header-tts-setting" onClick={() => setTtsSettingsOpen(true)}>
+              TTS
+            </button>
+          )}
         </header>
       )}
 
@@ -371,6 +387,12 @@ export default function App() {
         )}
         {screenIndex === TTS_VOICE_TEST_SCREEN_INDEX && (
           <OpenAiVoiceTestScreen onBack={() => setScreenIndex(0)} />
+        )}
+        {ttsSettingsOpen && getTtsVoiceKey(screenIndex) && (
+          <TtsSettingsPanel
+            voiceKey={getTtsVoiceKey(screenIndex)!}
+            onClose={() => setTtsSettingsOpen(false)}
+          />
         )}
         {screenIndex === 1 && <CornerIntroScreen step="STEP 1" title="Patterns" step1 onNext={goNext} />}
         {screenIndex === 2 && <LectureScreen1 onNext={goNext} />}

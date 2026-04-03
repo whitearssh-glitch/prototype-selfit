@@ -42,6 +42,30 @@ function ensureVoicesLoaded(): Promise<void> {
   });
 }
 
+/**
+ * 특정 SpeechSynthesis 보이스 이름으로 직접 발화 (서버 호출 없음)
+ */
+export async function speakBrowserTTSDirect(voiceName: string, text: string, onEnd?: () => void): Promise<void> {
+  const trimmed = text.trim();
+  if (!trimmed) { onEnd?.(); return; }
+  stopBrowserTTS();
+  const mySeq = speakSeq;
+  if (typeof window === 'undefined' || !window.speechSynthesis) { onEnd?.(); return; }
+  await ensureVoicesLoaded();
+  if (mySeq !== speakSeq) return;
+  try {
+    if (typeof window.speechSynthesis.resume === 'function') window.speechSynthesis.resume();
+  } catch { /* ignore */ }
+  const u = new SpeechSynthesisUtterance(trimmed);
+  u.lang = 'en-US';
+  u.rate = VOICE_SPEED.browserUtteranceRate;
+  const target = window.speechSynthesis.getVoices().find((v) => v.name === voiceName);
+  if (target) u.voice = target;
+  u.onend = () => { if (mySeq === speakSeq) onEnd?.(); };
+  u.onerror = () => { if (mySeq === speakSeq) onEnd?.(); };
+  window.speechSynthesis.speak(u);
+}
+
 /** 진행 중 발화 취소 + 이후 onEnd 무시 */
 export function stopBrowserTTS(): void {
   speakSeq += 1;

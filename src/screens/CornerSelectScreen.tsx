@@ -102,7 +102,7 @@ export function CornerSelectScreen({
         </div>
         <hr className="corner-select-divider" aria-hidden />
         <div className="corner-select-version">
-          <h2 className="corner-select-version-heading corner-select-version-heading--setting">setting</h2>
+          <h2 className="corner-select-version-heading corner-select-version-heading--setting">etc</h2>
           <section className="corner-select-group">
             <div className="corner-select-row">
               <button type="button" className="corner-select-btn corner-select-btn--step3 corner-select-btn--wide" onClick={onOpenOpenAiVoiceTest} aria-label="TTS 미리듣기">
