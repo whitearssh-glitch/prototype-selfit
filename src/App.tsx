@@ -73,6 +73,7 @@ import { getCathyFirstPhrase as getCathyFirstPhrase7 } from './realTalk7Gemini';
 import { speakRealTalk3, speakRealTalk4, speakRealTalk5, stopSpeaking } from './realTalk3TTS';
 import { speak as speak6, stopSpeaking as stopSpeaking6 } from './realTalk6TTS';
 import { speak as speak7, stopSpeaking as stopSpeaking7 } from './realTalk7TTS';
+import { unlockAudioContext } from './ttsPlayer';
 import { getCorrectionPracticeItems } from './realTalk3Types';
 import { getCorrectionPracticeItems as getCorrectionPracticeItems4 } from './realTalk4Types';
 import { getCorrectionPracticeItems as getCorrectionPracticeItems5 } from './realTalk5Types';
@@ -307,6 +308,7 @@ export default function App() {
   };
 
   const handleRealTalk4Go = () => {
+    unlockAudioContext();
     const first = getCathyFirstPhrase4();
     setRealTalk4FirstPhraseInProgress(true);
     speakRealTalk4(first.en, () => {
@@ -317,6 +319,7 @@ export default function App() {
   };
 
   const handleRealTalk5Go = () => {
+    unlockAudioContext();
     const first = getCathyFirstPhrase5();
     setRealTalk5FirstPhraseInProgress(true);
     speakRealTalk5(first.en, () => {
@@ -327,6 +330,7 @@ export default function App() {
   };
 
   const handleRealTalk6Go = () => {
+    unlockAudioContext();
     const first = getCathyFirstPhrase6();
     setRealTalk6FirstPhraseInProgress(true);
     speak6(first.en, () => {
@@ -337,6 +341,7 @@ export default function App() {
   };
 
   const handleRealTalk7Go = () => {
+    unlockAudioContext();
     const first = getCathyFirstPhrase7();
     setRealTalk7FirstPhraseInProgress(true);
     speak7(first.en, () => {
