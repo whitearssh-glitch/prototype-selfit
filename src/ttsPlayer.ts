@@ -1,50 +1,40 @@
 /**
  * 통합 TTS 플레이어 — VoiceSetting 모드에 따라 OpenAI 또는 SpeechSynthesis로 재생
  *
- * AudioContext를 한 번 unlock하면 이후 사용자 제스처 없이도 재생 가능.
- * unlockAudioContext()는 최초 사용자 클릭 시점(GO 버튼 등)에 호출해야 함.
+ * iOS autoplay 정책: 같은 HTMLAudioElement를 재사용하면 user gesture로
+ * 한 번 unlock된 뒤 async 콜백에서도 계속 play() 가능.
+ * unlockAudioContext()를 GO 버튼 클릭 시 반드시 호출해야 함.
  */
 import { getVoiceSetting, type TtsVoiceConfigKey } from './ttsVoiceSettings';
 import { speakBrowserTTS, speakBrowserTTSDirect, stopBrowserTTS } from './browserSpeechTTS';
 import { VOICE_SPEED } from './config/voiceSpeed';
 
-// ── AudioContext (한 번 resume되면 이후 제스처 불필요) ──────────────────────
-let audioCtx: AudioContext | null = null;
+// ── 공유 오디오 엘리먼트 (GO 클릭 시 unlock, 이후 재사용) ─────────────────
+let sharedAudio: HTMLAudioElement | null = null;
 
-function getAudioContext(): AudioContext {
-  if (!audioCtx) {
-    audioCtx = new AudioContext();
-  }
-  return audioCtx;
-}
-
-/** GO 버튼 등 사용자 제스처 핸들러 내에서 1회 호출 */
+/** GO 버튼 등 사용자 제스처 핸들러에서 1회 호출 — 이후 async에서도 play() 가능 */
 export function unlockAudioContext(): void {
-  try {
-    const ctx = getAudioContext();
-    if (ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
-    }
-    // 무음 버퍼 재생으로 iOS Safari unlock
-    const buf = ctx.createBuffer(1, 1, 22050);
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    src.connect(ctx.destination);
-    src.start(0);
-  } catch {
-    /* ignore */
+  if (!sharedAudio) {
+    sharedAudio = new Audio();
   }
+  // user gesture 컨텍스트 내에서 play()를 호출해 엘리먼트를 unlock
+  sharedAudio.play().catch(() => {});
 }
 
 // ── 재생 상태 ───────────────────────────────────────────────────────────────
-let currentSource: AudioBufferSourceNode | null = null;
+let currentPrevUrl: string | null = null;
 let playSeq = 0;
 
 export function stopTtsPlayer(): void {
   playSeq++;
-  if (currentSource) {
-    try { currentSource.stop(); } catch { /* already stopped */ }
-    currentSource = null;
+  if (sharedAudio) {
+    sharedAudio.pause();
+    sharedAudio.onended = null;
+    sharedAudio.onerror = null;
+  }
+  if (currentPrevUrl) {
+    URL.revokeObjectURL(currentPrevUrl);
+    currentPrevUrl = null;
   }
   stopBrowserTTS();
 }
@@ -59,6 +49,7 @@ export async function playForKey(key: TtsVoiceConfigKey, text: string, onEnd?: (
   if (setting.mode === 'openai') {
     stopTtsPlayer();
     const seq = ++playSeq;
+    let url: string | null = null;
     try {
       const res = await fetch('/api/tts-preview', {
         method: 'POST',
@@ -70,27 +61,34 @@ export async function playForKey(key: TtsVoiceConfigKey, text: string, onEnd?: (
         await speakBrowserTTS(setting.voice, trimmed, seq === playSeq ? onEnd : undefined);
         return;
       }
-      const arrayBuffer = await res.arrayBuffer();
+      const blob = await res.blob();
       if (seq !== playSeq) return;
 
-      const ctx = getAudioContext();
-      if (ctx.state === 'suspended') await ctx.resume();
-      if (seq !== playSeq) return;
+      url = URL.createObjectURL(blob);
+      currentPrevUrl = url;
 
-      const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-      if (seq !== playSeq) return;
+      // unlock된 공유 엘리먼트 재사용, 없으면 새로 생성
+      const audio = sharedAudio ?? new Audio();
+      audio.onended = null;
+      audio.onerror = null;
+      audio.src = url;
 
-      const source = ctx.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(ctx.destination);
-      currentSource = source;
-      source.onended = () => {
-        if (seq === playSeq) { currentSource = null; onEnd?.(); }
+      audio.onended = () => {
+        if (url) { URL.revokeObjectURL(url); currentPrevUrl = null; }
+        audio.onended = null;
+        audio.onerror = null;
+        if (seq === playSeq) onEnd?.();
       };
-      source.start(0);
+      audio.onerror = () => {
+        if (url) { URL.revokeObjectURL(url); currentPrevUrl = null; }
+        audio.onended = null;
+        audio.onerror = null;
+        if (seq === playSeq) onEnd?.();
+      };
+
+      await audio.play();
     } catch {
-      // decodeAudioData 실패 또는 기타 오류 → SpeechSynthesis 폴백
-      currentSource = null;
+      if (url) { URL.revokeObjectURL(url); currentPrevUrl = null; }
       if (seq === playSeq) {
         await speakBrowserTTS(setting.voice, trimmed, onEnd);
       }
