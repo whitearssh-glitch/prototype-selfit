@@ -289,7 +289,7 @@ export function RealTalk6Screen({ firstPhraseDone = false, firstPhraseInProgress
           ) : (
             <button
               type="button"
-              className={'mic-btn mic-btn--step3' + (showMic ? '' : ' realtalk2-mic--hidden')}
+              className={'mic-btn mic-btn--step3' + (isListening ? ' mic-btn--recording' : '') + (showMic ? '' : ' realtalk2-mic--hidden')}
               onClick={onMicClick}
               disabled={!showMic || isEvaluating || (!useWhisper && isListening)}
               aria-label={useWhisper && isListening ? '녹음 종료 (다시 누르기)' : '마이크'}

@@ -137,7 +137,7 @@ export function RealTalkScreen({ onNext, imageOnly, imageOnlyNoGo }: RealTalkScr
           {imageOnlyNoGo && (
             <button
               type="button"
-              className={'mic-btn mic-btn--step3' + (!showMic37 ? ' realtalk-mic37--hidden' : '')}
+              className={'mic-btn mic-btn--step3' + (isListening ? ' mic-btn--recording' : '') + (!showMic37 ? ' realtalk-mic37--hidden' : '')}
               onClick={startSTT}
               disabled={isListening}
               aria-label="Microphone"

@@ -290,7 +290,7 @@ export function RealTalk3Screen({ firstPhraseDone = false, firstPhraseInProgress
           ) : (
             <button
               type="button"
-              className={'mic-btn mic-btn--step3' + (showMic ? '' : ' realtalk2-mic--hidden')}
+              className={'mic-btn mic-btn--step3' + (isListening ? ' mic-btn--recording' : '') + (showMic ? '' : ' realtalk2-mic--hidden')}
               onClick={onMicClick}
               disabled={!showMic || isListening || isEvaluating}
               aria-label="Microphone"

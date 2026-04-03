@@ -1559,6 +1559,32 @@ html.app-step5-margins {
   box-shadow: 0 2px 12px rgba(92, 107, 192, 0.35);
 }
 
+/* Recording active state */
+.mic-btn--recording,
+.mic-btn--recording.mic-btn--step3 {
+  background: linear-gradient(135deg, #c62828 0%, #e53935 50%, #ef5350 100%) !important;
+  box-shadow: 0 2px 16px rgba(229, 57, 53, 0.55) !important;
+  animation: mic-pulse 1.2s ease-in-out infinite;
+}
+
+/* Stop icon: hide mic SVG, show white square via ::after */
+.mic-btn--recording svg {
+  display: none;
+}
+.mic-btn--recording::after {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 4px;
+}
+
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 2px 16px rgba(229, 57, 53, 0.55); transform: scale(1); }
+  50% { box-shadow: 0 4px 28px rgba(229, 57, 53, 0.8); transform: scale(1.07); }
+}
+
 /* ===== Role Play Screen (Index 26) ===== */
 /* Real Talk (index 30) – 스텝3 컬러, 토픽 영역 동일 */
 .realtalk-layout {

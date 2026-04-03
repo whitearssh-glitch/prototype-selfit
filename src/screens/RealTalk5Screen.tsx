@@ -284,7 +284,7 @@ export function RealTalk5Screen({ firstPhraseDone = false, firstPhraseInProgress
           ) : (
             <button
               type="button"
-              className={'mic-btn mic-btn--step3' + (showMic ? '' : ' realtalk2-mic--hidden')}
+              className={'mic-btn mic-btn--step3' + (isListening ? ' mic-btn--recording' : '') + (showMic ? '' : ' realtalk2-mic--hidden')}
               onClick={onMicClick}
               disabled={!showMic || isEvaluating || (!useWhisper && isListening)}
               aria-label={useWhisper && isListening ? '녹음 중 (1.5초 침묵 시 자동 전송, 또는 다시 눌러 즉시 전송)' : '마이크'}
