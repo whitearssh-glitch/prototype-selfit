@@ -12,12 +12,16 @@ import { VOICE_SPEED } from './config/voiceSpeed';
 // ── 공유 오디오 엘리먼트 (GO 클릭 시 unlock, 이후 재사용) ─────────────────
 let sharedAudio: HTMLAudioElement | null = null;
 
+// 1-frame 무음 WAV (iOS unlock용 — src 없이 play()하면 AbortError로 unlock 안 됨)
+const SILENT_WAV = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+
 /** GO 버튼 등 사용자 제스처 핸들러에서 1회 호출 — 이후 async에서도 play() 가능 */
 export function unlockAudioContext(): void {
   if (!sharedAudio) {
     sharedAudio = new Audio();
   }
-  // user gesture 컨텍스트 내에서 play()를 호출해 엘리먼트를 unlock
+  // 유효한 src로 play()해야 iOS에서 엘리먼트가 실제로 unlock됨
+  sharedAudio.src = SILENT_WAV;
   sharedAudio.play().catch(() => {});
 }
 
