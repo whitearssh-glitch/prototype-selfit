@@ -26,6 +26,9 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   Object.assign(process.env, env);
   return {
+    server: {
+      allowedHosts: ['bgrok.thebermuda.net'],
+    },
     plugins: [
       {
         name: 'inject-preview-voice-config',
