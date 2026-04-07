@@ -7,6 +7,12 @@
 
 import type { ErrorLogItem, SummaryItem } from './realTalk7Types';
 
+function randomIntInclusive(min: number, max: number): number {
+  const a = Math.ceil(min);
+  const b = Math.floor(max);
+  return Math.floor(Math.random() * (b - a + 1)) + a;
+}
+
 export type AIEvaluationResult = {
   cathyPhrase: string;
   cathyPhraseKo?: string;
@@ -163,6 +169,22 @@ export function evaluateUserUtterance(
 
   // 마지막 턴: AI 마무리
   if (isLastUserTurn) {
+    const asksPrice =
+      t.includes('price') ||
+      t.includes('cost') ||
+      t.includes('total') ||
+      t.includes('how much') ||
+      t.includes('how many dollars') ||
+      t.includes('$');
+    if (asksPrice) {
+      const price = randomIntInclusive(10, 20);
+      return {
+        cathyPhrase: `It's $${price}. Thanks! Enjoy your meal!`,
+        cathyPhraseKo: `${price}달러예요. 고마워요! 맛있게 드세요!`,
+        isMainDialogue: true,
+        isLastTurn: true,
+      };
+    }
     return {
       cathyPhrase: "Thank you! Enjoy your meal!",
       cathyPhraseKo: '감사합니다! 맛있게 드세요!',

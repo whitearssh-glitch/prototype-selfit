@@ -59,6 +59,25 @@ function enforceClosingPhraseNoQuestion(result, fallbackEn, fallbackKo) {
   result.cathyPhraseKo = fallbackKo;
 }
 
+function isRealTalk7PriceQuestion(userText) {
+  const t = String(userText ?? '').trim().toLowerCase();
+  if (!t) return false;
+  return (
+    t.includes('price') ||
+    t.includes('cost') ||
+    t.includes('total') ||
+    t.includes('how much') ||
+    t.includes('how many dollars') ||
+    t.includes('$')
+  );
+}
+
+function randomIntInclusive(min, max) {
+  const a = Math.ceil(Number(min));
+  const b = Math.floor(Number(max));
+  return Math.floor(Math.random() * (b - a + 1)) + a;
+}
+
 function enforceRealTalk6ClosingNoQuestion(result, userText) {
   if (!result?.isLastTurn || result.correction) return;
   const en = String(result.cathyPhrase ?? '').trim();
@@ -100,6 +119,33 @@ function buildRealTalk5ClosingPhrase(userText) {
     en: `${shown}! Me, too! Let's be good friends!`,
     ko: `${shown}! 나도! 좋은 친구 되자!`,
   };
+}
+
+function normalizeHintOneWord(s) {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, ' ')
+    .trim()
+    .split(/\s+/)[0] || '';
+}
+
+function parseHintsFromContent(content) {
+  const raw = String(content || '').trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```\s*$/i, '');
+
+  try {
+    const j = JSON.parse(raw);
+    const arr = Array.isArray(j) ? j : Array.isArray(j?.hints) ? j.hints : null;
+    if (arr) return arr.map((x) => normalizeHintOneWord(x)).filter(Boolean);
+  } catch {
+    // ignore
+  }
+
+  return raw
+    .split(/[\n,]/g)
+    .map((x) => normalizeHintOneWord(x))
+    .filter(Boolean);
 }
 
 /** RT5 마지막 턴: 사용자가 말한 나이로 반응 후 마무리. "Nice to meet you"는 이 턴에 쓰지 않음 */
@@ -1371,7 +1417,7 @@ Evaluate this English speaking session. Output ONLY valid JSON:
         const isLastUserTurn = userTurnIndex === 4;
 
         // STEP 1: Grammar check FIRST - catch ALL grammar/spelling errors before main dialogue
-        const grammarCheckPrompt = `Topic: Favorite Movies. Turn ${userTurnIndex} expected: Turn 0=I like/don't like movies, Turn 1=I like [movie], Turn 2=I like/don't like it, Turn 3=Yes let's go/No I can't, Turn 4=time/date or How about Saturday.
+        const grammarCheckPrompt = `Topic: Favorite Movies. Turn ${userTurnIndex} expected: Turn 0=I like/don't like movies, Turn 1=I like scary/funny/comedy/action movies (genre choice) OR I like [movie title], Turn 2=I like/don't like it, Turn 3=Yes let's go/No I can't, Turn 4=time/date or How about Saturday.
 User said: "${userText}"
 Check for ANY grammar, spelling, or sentence structure error (wrong word order, missing words, wrong verb, contractions: don't not dont, let's not lets, can't not cant, spelling: movies not moives, Saturday not saterday, etc).
 Reply JSON only. If error: { "hasError": true, "correction": { "type": "grammar", "sentence": "correct English", "explanation": "한글 설명 (해요체)" } }. If correct: { "hasError": false }.`;
@@ -1421,7 +1467,7 @@ Reply JSON only. If error: { "hasError": true, "correction": { "type": "grammar"
         }
 
         const systemPrompt = `You are Kevin, a friend talking about favorite movies. Topic: Favorite Movies.
-Kevin speaks 6 times: Turn 0=long time since movie + do you like movies?, Turn 1=react + what's your favorite movie?, Turn 2=react + do you like movie theater?, Turn 3=react + how about we go this weekend?, Turn 4=if yes: what time? / if no: come on let's go together, when? Turn 5=if yes: see you then bye / if no: that's okay, next time bye. (Turn 5 is Kevin's LAST response - after user turn 4.)
+Kevin speaks 6 times: Turn 0=long time since movie + do you like movies?, Turn 1=react + ask what kind of movies they like (give a choice: scary or funny), Turn 2=react + do you like movie theater?, Turn 3=react + how about we go this weekend?, Turn 4=if yes: what time? / if no: come on let's go together, when? Turn 5=if yes: see you then bye / if no: that's okay, next time bye. (Turn 5 is Kevin's LAST response - after user turn 4.)
 When isLastTurn is true: cathyPhrase MUST be a closing statement only (e.g. "See you then! Bye!" or "That's okay. Let's go next time. Bye!"). MUST NOT end with ?. Do NOT ask a new question.
 Key expressions: I like / I don't like / Let's / How about.
 
@@ -1447,13 +1493,13 @@ Evaluate and respond with JSON only:
   "isLastTurn": ${isLastUserTurn}
 }
 
-Turn 0: User says like movies → Kevin: "Cool! What's your favorite movie?". User says DON'T like movies → Kevin MUST ask: "Oh, I see. So what movie did you watch recently?"
-Turn 1: User says favorite movie (e.g. "I like Toy Story", "I like Frozen" - need movie name or 3+ words) → Kevin asks if they like going to the movie theater.
+Turn 0: User says like movies → Kevin: "Cool! What kind of movies do you like? Scary or funny?". User says DON'T like movies → Kevin MUST ask: "Oh, I see. So what movie did you watch recently?"
+Turn 1: User answers with a kind of movie (e.g. "I like scary movies", "Funny ones", "Comedy", "I like Toy Story") → Kevin asks if they like going to the movie theater.
 Turn 2: User says yes/no → Kevin suggests going this weekend.
 Turn 3: User says yes → Kevin: "Great! What time works for you?". User says no → Kevin: "Come on, let's go together! When would be good for you?"
 Turn 4 (LAST user turn): User says time/date (positive, e.g. "Saturday", "next week", "next weekend") → Kevin: acknowledge (e.g. "Saturday! " or "Next week! ") + "See you then! Bye!". User says no/negative (e.g. "no", "next time", "maybe") → Kevin: "That's okay. Let's go next time. Bye!" (NEVER repeat "Come on, let's go together!"). MUST set isLastTurn=true. On isLastTurn, cathyPhrase must NOT end with ?.
 
-CORRECTION (MANDATORY for ALL turns 0-4): If user has ANY grammar or spelling error, ALWAYS return correction. NEVER accept and move on. Apply to every turn: Turn 0 (like/movies), Turn 1 (movie name), Turn 2 (like it), Turn 3 (yes/no, let's, can't), Turn 4 (time/date). Examples: "moives"→"movies", "I no like"→"I don't like", "lets"→"let's", "cant"→"can't", "saterday"→"Saturday". correction: { "type": "grammar", "sentence": "correct form", "explanation": "한글 설명" }.`;
+CORRECTION (MANDATORY for ALL turns 0-4): If user has ANY grammar or spelling error, ALWAYS return correction. NEVER accept and move on. Apply to every turn: Turn 0 (like/movies), Turn 1 (genre or movie name), Turn 2 (like it), Turn 3 (yes/no, let's, can't), Turn 4 (time/date). Examples: "moives"→"movies", "I no like"→"I don't like", "lets"→"let's", "cant"→"can't", "saterday"→"Saturday". correction: { "type": "grammar", "sentence": "correct form", "explanation": "한글 설명" }.`;
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -1633,6 +1679,87 @@ Evaluate this English speaking session. Output ONLY valid JSON:
         const convText = conversationSummary.map((m) => `${m.speaker}: ${m.textEn || ''}`).join('\n');
         const isLastUserTurn = userTurnIndex === 4;
 
+        // Enforce the same turn-by-turn "context match" rules as the mock,
+        // so food type/material does not matter as long as 핵심 키워드가 포함되면 통과.
+        const t = userText.toLowerCase();
+        const lastAi = conversationSummary.filter((m) => m && m.speaker === 'Kevin').slice(-1)[0];
+        const lastQ = String(lastAi?.textEn || '').toLowerCase();
+        const tooShort = t.length <= 3;
+        const hasAny = (words) => words.some((w) => t.includes(w));
+
+        // Turn 0: expecting an order item (burger/hamburger/etc.)
+        if (
+          userTurnIndex === 0 &&
+          /what would you like to order|what do you want/i.test(lastQ) &&
+          !tooShort
+        ) {
+          const orderWords = ['hamburger', 'burger', 'fries', 'drink', 'cheeseburger', 'order'];
+          if (!hasAny(orderWords)) {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({
+              cathyPhrase: "Let's answer the question!",
+              cathyPhraseKo: '질문에 맞게 답해볼까요?',
+              isMainDialogue: false,
+              correction: { type: 'context', sentence: "I want a hamburger.", explanation: '주문할 메뉴를 말해주세요.' },
+              isOffTopic: false,
+              isLastTurn: false,
+            }));
+            return;
+          }
+        }
+        // Turn 1: expecting size
+        if (userTurnIndex === 1 && /size|how big/i.test(lastQ) && !tooShort) {
+          const sizeWords = ['small', 'medium', 'large', 'big', 'regular'];
+          if (!hasAny(sizeWords)) {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({
+              cathyPhrase: "Let's answer the question!",
+              cathyPhraseKo: '질문에 맞게 답해볼까요?',
+              isMainDialogue: false,
+              correction: { type: 'context', sentence: "Large, please.", explanation: '사이즈를 말해주세요. (small, medium, large)' },
+              isOffTopic: false,
+              isLastTurn: false,
+            }));
+            return;
+          }
+        }
+        // Turn 2: expecting yes/no or extra item
+        if (userTurnIndex === 2 && /anything else|else|more/i.test(lastQ) && t.length > 4) {
+          const okWords = ['yes', 'no', 'fries', 'drink', 'that', 'all', 'nothing', 'no thanks'];
+          if (!hasAny(okWords)) {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({
+              cathyPhrase: "Let's answer the question!",
+              cathyPhraseKo: '질문에 맞게 답해볼까요?',
+              isMainDialogue: false,
+              correction: { type: 'context', sentence: "No, that's all.", explanation: '"Yes" 또는 "No, that\'s all" 등으로 답해주세요.' },
+              isOffTopic: false,
+              isLastTurn: false,
+            }));
+            return;
+          }
+        }
+        // Turn 3: expecting for here / to go
+        if (userTurnIndex === 3 && /for here|to go|here or/i.test(lastQ) && !tooShort) {
+          const placeWords = ['here', 'go', 'take', 'out', 'stay'];
+          if (!hasAny(placeWords)) {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({
+              cathyPhrase: "Let's answer the question!",
+              cathyPhraseKo: '질문에 맞게 답해볼까요?',
+              isMainDialogue: false,
+              correction: { type: 'context', sentence: "For here, please.", explanation: '"For here" 또는 "To go"로 답해주세요.' },
+              isOffTopic: false,
+              isLastTurn: false,
+            }));
+            return;
+          }
+        }
+
         const grammarCheckPrompt = `Topic: Ordering Hamburgers. User is ordering at a hamburger shop. This is SPEECH (발화) - user speaks, STT transcribes. Do NOT check spelling.
 
 GRAMMAR ERROR check only: subject-verb agreement (I want, he wants), tense (present: want not wanted), articles (a/an/the: "I want a hamburger"), plural forms (two hamburgers not two hamburger).
@@ -1754,6 +1881,15 @@ CONTEXT ERROR: Check if the user's answer MATCHES your previous question. Turn 0
             : ct === 'context'
               ? '질문에 맞게 답해볼까요?'
               : '좋은 시도야! 이렇게 말해볼까?';
+        }
+
+        if (isLastUserTurn && isRealTalk7PriceQuestion(userText) && !result.correction) {
+          // If the user asks the price on the last turn, answer price and close.
+          const price = randomIntInclusive(10, 20);
+          result.cathyPhrase = `It's $${price}. Thanks! Enjoy your meal!`;
+          result.cathyPhraseKo = `${price}달러예요. 고마워요! 맛있게 드세요!`;
+          result.isMainDialogue = true;
+          result.isOffTopic = false;
         }
         enforceClosingPhraseNoQuestion(result, 'Thank you! Enjoy your meal!', '감사합니다! 맛있게 드세요!');
         res.statusCode = 200;
@@ -1877,6 +2013,140 @@ Evaluate this English speaking session. Output ONLY valid JSON:
         res.statusCode = 500;
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({ error: msg, useMock: true }));
+      }
+      return;
+    }
+    if (req.url === '/api/realtalk8-hints' && req.method === 'POST') {
+      if (!OPENAI_KEY) {
+        res.statusCode = 503;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'OPENAI_API_KEY not set', hints: ['red', 'milk', 'please'], useMock: true }));
+        return;
+      }
+      try {
+        const raw = await readBody(req);
+        const body = JSON.parse(raw.toString('utf8'));
+        const cathyPhrase = String(body.cathyPhrase ?? '').trim();
+        const conversationSummary = Array.isArray(body.conversationSummary) ? body.conversationSummary : [];
+        const userTurnIndex = Math.max(0, Math.min(10, Number(body.userTurnIndex) || 0));
+
+        const convText = conversationSummary.map((m) => `${m.speaker}: ${m.textEn || ''}`).join('\n');
+        const userPrompt = `You generate word hints for a 7-9 year old learning English.
+Context: Grocery shopping.
+AI just said:\n${cathyPhrase || '(empty)'}
+Conversation so far:\n${convText || '(empty)'}
+
+Return EXACTLY 3 helpful English hint words the child can say next.
+Rules:
+- output JSON only: {"hints":["word","word","word"]}
+- each hint must be ONE word (no spaces), lowercase a-z only
+- hints must be distinct
+`;
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_KEY}` },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: 'You output only valid JSON. No extra text.' },
+              { role: 'user', content: userPrompt },
+            ],
+            max_tokens: 80,
+            temperature: 0.4,
+          }),
+        });
+
+        if (!response.ok) {
+          res.statusCode = response.status;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'API error', hints: ['red', 'milk', 'please'], useMock: true }));
+          return;
+        }
+        const data = await response.json();
+        logOpenAIUsage('realtalk8-hints', data);
+        const content = data.choices?.[0]?.message?.content?.trim() ?? '';
+        const parsed = parseHintsFromContent(content);
+        const uniq = Array.from(new Set(parsed)).filter(Boolean);
+        const hints = uniq.slice(0, 3);
+        if (hints.length !== 3) throw new Error('invalid hints');
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ hints, userTurnIndex }));
+      } catch (e) {
+        const msg = String(e?.message || e);
+        console.error('[OpenAI /api/realtalk8-hints] exception:', msg);
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: msg, hints: ['red', 'milk', 'please'], useMock: true }));
+      }
+      return;
+    }
+    if (req.url === '/api/realtalk10-hints' && req.method === 'POST') {
+      if (!OPENAI_KEY) {
+        res.statusCode = 503;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'OPENAI_API_KEY not set', hints: ['scary', 'funny', 'action'], useMock: true }));
+        return;
+      }
+      try {
+        const raw = await readBody(req);
+        const body = JSON.parse(raw.toString('utf8'));
+        const cathyPhrase = String(body.cathyPhrase ?? '').trim();
+        const conversationSummary = Array.isArray(body.conversationSummary) ? body.conversationSummary : [];
+        const userTurnIndex = Math.max(0, Math.min(10, Number(body.userTurnIndex) || 0));
+
+        const convText = conversationSummary.map((m) => `${m.speaker}: ${m.textEn || ''}`).join('\n');
+        const userPrompt = `You generate word hints for a 7-9 year old learning English.
+Context: Favorite movies / going to a movie theater.
+AI just said:\n${cathyPhrase || '(empty)'}
+Conversation so far:\n${convText || '(empty)'}
+
+Return EXACTLY 3 helpful English hint words the child can say next.
+Rules:
+- output JSON only: {"hints":["word","word","word"]}
+- each hint must be ONE word (no spaces), lowercase a-z only
+- hints must be distinct
+`;
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_KEY}` },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: 'You output only valid JSON. No extra text.' },
+              { role: 'user', content: userPrompt },
+            ],
+            max_tokens: 80,
+            temperature: 0.4,
+          }),
+        });
+
+        if (!response.ok) {
+          res.statusCode = response.status;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'API error', hints: ['scary', 'funny', 'action'], useMock: true }));
+          return;
+        }
+        const data = await response.json();
+        logOpenAIUsage('realtalk10-hints', data);
+        const content = data.choices?.[0]?.message?.content?.trim() ?? '';
+        const parsed = parseHintsFromContent(content);
+        const uniq = Array.from(new Set(parsed)).filter(Boolean);
+        const hints = uniq.slice(0, 3);
+        if (hints.length !== 3) throw new Error('invalid hints');
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ hints, userTurnIndex }));
+      } catch (e) {
+        const msg = String(e?.message || e);
+        console.error('[OpenAI /api/realtalk10-hints] exception:', msg);
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: msg, hints: ['scary', 'funny', 'action'], useMock: true }));
       }
       return;
     }

@@ -5,7 +5,7 @@
  *
  * 대화 흐름:
  * 0: 영화 안 본 지 오래됐다면서 영화 좋아하냐고 질문
- * 1: 학생 대답에 반응 + 제일 좋아하는 영화가 뭔지 물어보기
+ * 1: 학생 대답에 반응 + 어떤 종류 영화 좋아하는지(무서운/재미있는 등) 물어보기
  * 2: 학생 대답에 반응 + 영화관 가는 것도 좋아하는지 질문
  * 3: 학생 대답에 반응 + 이번 주말에 영화 보러 가자고 제안
  * 4: 학생 좋다고 하면 시간 물어보기 / 싫다고 하면 에이 그러지 말고 같이 가자~ 언제가 좋은지 물어보기
@@ -34,7 +34,7 @@ const CATHY_FIRST_PHRASE_KO = '영화 본 지 오래됐어. 영화 좋아해?';
 /** Cathy 기본 시퀀스 (긍정 흐름) */
 const CATHY_PHRASES: { en: string; ko: string }[] = [
   { en: "It's been a long time since I watched a movie. Do you like movies?", ko: '영화 본 지 오래됐어. 영화 좋아해?' },
-  { en: "Cool! What's your favorite movie?", ko: '좋아! 제일 좋아하는 영화 뭐야?' },
+  { en: 'Cool! What kind of movies do you like? Scary or funny?', ko: '좋아! 어떤 종류의 영화 좋아해? 무서운 거 아님 재미있는 거?' },
   { en: "Nice! Do you like going to the movie theater?", ko: '좋다! 영화관 가는 거 좋아해?' },
   { en: "Me too! How about we go see a movie this weekend?", ko: '나도! 이번 주말에 영화 보러 갈래?' },
   { en: "Great! What time works for you?", ko: '좋아! 몇 시가 좋아?' },
@@ -127,7 +127,7 @@ export function evaluateUserUtterance(
   };
   if (isQuestionLike(t) && userTurnIndex >= 1 && userTurnIndex <= 5) {
     const redirects: Record<number, { en: string; ko: string }> = {
-      1: { en: "Cool! What's your favorite movie?", ko: '좋아! 제일 좋아하는 영화 뭐야?' },
+      1: { en: 'Cool! What kind of movies do you like? Scary or funny?', ko: '좋아! 어떤 종류의 영화 좋아해? 무서운 거 아님 재미있는 거?' },
       2: { en: "Nice! Do you like going to the movie theater?", ko: '좋다! 영화관 가는 거 좋아해?' },
       3: { en: "Me too! How about we go see a movie this weekend?", ko: '나도! 이번 주말에 영화 보러 갈래?' },
       4: { en: "Great! What time works for you?", ko: '좋아! 몇 시가 좋아?' },
@@ -180,19 +180,36 @@ export function evaluateUserUtterance(
       };
     }
     return {
-      cathyPhrase: "Cool! What's your favorite movie?",
-      cathyPhraseKo: '좋아! 제일 좋아하는 영화 뭐야?',
+      cathyPhrase: 'Cool! What kind of movies do you like? Scary or funny?',
+      cathyPhraseKo: '좋아! 어떤 종류의 영화 좋아해? 무서운 거 아님 재미있는 거?',
       isMainDialogue: true,
       isLastTurn: false,
     };
   }
 
-  // Turn 1: 좋아하는 영화 말하기 (영화 이름 또는 3단어 이상 필요 - "I like"만으로는 부족)
+  // Turn 1: 장르/종류 선택 답하기 (scary, funny, comedy, action 등 또는 영화 제목)
   if (userTurnIndex === 1) {
     const movieWords = ['movie', 'film', 'toy', 'frozen', 'lion', 'spider', 'avenger', 'minion', 'coco', 'inside', 'finding', 'nemo', 'dory', 'moana', 'encanto'];
+    const genreWords = [
+      'scary',
+      'funny',
+      'comedy',
+      'action',
+      'horror',
+      'cartoon',
+      'kids',
+      'romantic',
+      'sad',
+      'animation',
+      'superhero',
+      'disney',
+      'pixar',
+      'marvel',
+    ];
     const wordCount = t.split(/\s+/).filter(Boolean).length;
     const hasMovie = movieWords.some((w) => t.includes(w));
-    const hasEnoughContent = hasMovie || wordCount >= 3;
+    const hasGenre = genreWords.some((w) => t.includes(w));
+    const hasEnoughContent = hasGenre || hasMovie || wordCount >= 3;
     if (!hasEnoughContent) {
       return {
         cathyPhrase: "Nice try! Say it like this.",
@@ -200,8 +217,8 @@ export function evaluateUserUtterance(
         isMainDialogue: false,
         correction: {
           type: 'grammar',
-          sentence: "I like Toy Story.",
-          explanation: '"I like + 영화 이름"으로 말해요.',
+          sentence: 'I like funny movies.',
+          explanation: '"I like scary movies." 또는 "I like funny movies."처럼 말해요.',
         },
       };
     }
@@ -318,7 +335,24 @@ export function evaluateUserUtterance(
   }
 
   // 주제 이탈
-  const topicWords = ['movie', 'like', 'cinema', 'theater', 'go', 'weekend', 'time', 'yes', 'no', 'lets', 'how about'];
+  const topicWords = [
+    'movie',
+    'like',
+    'cinema',
+    'theater',
+    'go',
+    'weekend',
+    'time',
+    'yes',
+    'no',
+    'lets',
+    'how about',
+    'scary',
+    'funny',
+    'comedy',
+    'action',
+    'horror',
+  ];
   const onTopic = topicWords.some((w) => t.includes(w));
   if (!onTopic && t.length > 3) {
     const nextPhrase = userTurnIndex >= 4 ? CATHY_TURN5_NO : CATHY_PHRASES[Math.min(nextCathyIdx, CATHY_PHRASES.length - 1)];
